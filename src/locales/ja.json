@@ -1,0 +1,64 @@
+{
+	"chat": {
+		"sidebar": {
+			"add_new_chat": "新しいチャット",
+			"dates": {
+				"last_year": "去年",
+				"legacy": "なんでまだ取ってあるの",
+				"this_month": "今月",
+				"this_week": "今週",
+				"this_year": "今年",
+				"today": "今日"
+			},
+			"docs": "操作ガイド",
+			"settings": {
+				"account": {
+					"title": "アカウント",
+					"advanced_settings": "詳細設定",
+					"sign_in": "ログイン",
+					"sign_out": "ログアウト"
+				},
+				"preferences": {
+					"lang": "言語",
+					"mode": "モード",
+					"theme": "テーマ",
+					"title": "設定"
+				}
+			}
+		}
+	},
+	"common": {
+		"guest": "ゲスト",
+		"locales": {
+			"en": "English",
+			"ja": "日本語",
+			"zh-TW": "繁體中文"
+		}
+	},
+	"layout": {
+		"chat": {
+			"description": "コードベースのテンプレート開発向けの実験的な AI チャットアプリです。",
+			"title": "ダッシュボード"
+		},
+		"homepage": {
+			"description": "コードベースのテンプレート開発向けの実験的な AI チャットアプリです。",
+			"title": "プロジェクト τ",
+			"heading": "<title>{name}</title> へようこそ"
+		},
+		"signin": {
+			"description": "コードベースのテンプレート開発向けの実験的な AI チャットアプリです。",
+			"title": "ログイン"
+		}
+	},
+	"not_found": {
+		"title": "ページが見つかりません"
+	},
+	"signin": {
+		"already": "すでにサインインしています。",
+		"by_provider": "{provider} でログイン",
+		"or": "またはゲストとして続行"
+	},
+	"toast": {
+		"error_title": "ちょっと 🤏🌌 した問題が発生しました"
+	}
+}

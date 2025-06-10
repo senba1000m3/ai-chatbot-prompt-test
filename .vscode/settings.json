@@ -1,0 +1,11 @@
+{
+	"files.associations": { "*.css": "tailwindcss" },
+	"files.exclude": { "**/node_modules/*": true },
+    "tailwindCSS.experimental.configFile": "src/app/globals.css",
+	"i18n-ally.indent": 4,
+	"i18n-ally.keystyle": "nested",
+	"i18n-ally.localesPaths": ["src/locales"],
+	"i18n-ally.sourceLanguage": "en",
+	"i18n-ally.tabStyle": "tab",
+	"i18n-ally.sortKeys": true
+}

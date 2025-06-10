@@ -1,0 +1,1 @@
+export const ICON_IMG_URL = "https://feiax0ct75.ufs.sh/f/uqxElYaldN9nJmFb3wSgUQw0iyMlVu7sSOAFCavkoxHptfzR";

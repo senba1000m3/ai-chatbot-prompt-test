@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+	<style type="text/css">
+		.st0{fill:#FD4C7C;}
+	</style>
+	<g>
+		<path class="st0" d="M256,34.3l-15.45,427.98L512,477.7L256,34.3z"/>
+		<path style="fill:#FC7161;" d="M256,34.3l-46.36,427.98h256.42L256,34.3z"/>
+		<path style="fill:#FA9647;" d="M0,477.7l256-85.99V34.3L0,477.7z"/>
+		<path style="fill:#FF2796;" d="M458.47,446.8L256,376.26L0,477.7h512L458.47,446.8z"/>
+		<path class="st0" d="M256,329.9L0,477.7l458.47-30.91L256,329.9z"/>
+	</g>
+</svg>

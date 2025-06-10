@@ -1,0 +1,64 @@
+{
+	"chat": {
+		"sidebar": {
+			"add_new_chat": "New Chat",
+			"dates": {
+				"last_year": "Last Year",
+				"legacy": "Why are You Still Keeping These",
+				"this_month": "This Month",
+				"this_week": "This Week",
+				"this_year": "This Year",
+				"today": "Today"
+			},
+			"docs": "Instruction Manual",
+			"settings": {
+				"account": {
+					"advanced_settings": "Advanced Settings",
+					"sign_in": "Sign In",
+					"sign_out": "Sign Out",
+					"title": "Account"
+				},
+				"preferences": {
+					"lang": "Language",
+					"mode": "Mode",
+					"theme": "Theme",
+					"title": "Preferences"
+				}
+			}
+		}
+	},
+	"common": {
+		"guest": "Guest",
+		"locales": {
+			"en": "English",
+			"ja": "日本語",
+			"zh-TW": "繁體中文"
+		}
+	},
+	"layout": {
+		"chat": {
+			"description": "An experimental AI chat app for code-based template development.",
+			"title": "Dashboard"
+		},
+		"homepage": {
+			"description": "An experimental AI chat app for code-based template development.",
+			"title": "Project τ",
+			"heading": "Welcome to <title>{name}</title>"
+		},
+		"signin": {
+			"description": "An experimental AI chat app for code-based template development.",
+			"title": "Sign in"
+		}
+	},
+	"not_found": {
+		"title": "Page Not Found"
+	},
+	"signin": {
+		"already": "You're already signed in.",
+		"by_provider": "Continue with {provider}",
+		"or": "or continue as a guest"
+	},
+	"toast": {
+		"error_title": "A small 🤏🌌 issue occurred..."
+	}
+}
