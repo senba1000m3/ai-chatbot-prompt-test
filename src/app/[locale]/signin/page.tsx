@@ -34,7 +34,7 @@ function SignInPageSuspenseContent() {
 	useEffect(() => {
 		if (session) {
 			toast.info(t("signin.already"), {
-				duration: 1000,
+				duration: 2000,
 				onAutoClose: () => router.push("/chat"),
 				onDismiss: () => router.push("/chat"),
 			});
@@ -55,12 +55,17 @@ function SignInPageSuspenseContent() {
 	return (
 		<WrapperLayout className="grid h-svh">
 			<header className="place-self-center grid justify-items-center gap-6">
-				<Button size="lg" className="btn-chrome" onClick={async () => signIn.social({
-					provider: "google",
-					callbackURL: "/chat",
-					errorCallbackURL: "/signin",
-				})}>
-					{t("signin.by_provider", { provider: "Google" })}
+				<Button
+					size="lg"
+					className="btn-chrome"
+					onClick={async () => signIn.social({
+						provider: "google",
+						callbackURL: "/chat",
+						errorCallbackURL: "/signin",
+					})}
+					disabled={!!session}
+				>
+					<span>{t("signin.by_provider", { provider: "Google" })}</span>
 				</Button>
 				<Anchor
 					href="/chat"

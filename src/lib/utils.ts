@@ -1,3 +1,5 @@
+import { customAlphabet } from "nanoid";
+
 // shadcn
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -42,4 +44,10 @@ export function generatePreviewMetadata(
 			creatorId: "1631300792928854023",
 		},
 	};
+}
+
+export function nanoid(length: number = 16): string {
+	const nanoidAlphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	const nanoidGenerator = customAlphabet(nanoidAlphabet, length);
+	return nanoidGenerator();
 }

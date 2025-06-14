@@ -2,7 +2,7 @@ import { cva } from "class-variance-authority";
 import { cn } from "@/lib/utils"
 
 // Components & UI
-import { Slot } from "@radix-ui/react-slot";
+import { Slot as SlotPrimitive } from "radix-ui";
 import { H1, H2, H3, H4, H5, H6 } from "./typography";
 
 // Constants & Variables
@@ -53,7 +53,7 @@ function WrapperLayout({
 	asChild = false,
 	...props
 }: React.ComponentProps<"div"> & WrapperLayoutProps & AsChild) {
-	const Comp = asChild ? Slot : "div";
+	const Comp = asChild ? SlotPrimitive.Slot : "div";
 
 	return (
 		<Comp

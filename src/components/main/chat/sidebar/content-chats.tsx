@@ -1,5 +1,6 @@
 "use client";
-import { usePathname } from "next/navigation";
+import { useRouter, usePathname } from "@/lib/i18n/navigation";
+import { useChatStore } from "@/lib/store/chat";
 import { useTranslations } from "next-intl";
 import {
 	isThisMonth,
@@ -9,8 +10,11 @@ import {
 	parseISO,
 } from "date-fns";
 
+// SWR
+import useSWR from "swr";
+import fetcher from "@/lib/fetcher";
+
 // Components & UI
-import Link from "next/link";
 import {
 	SidebarGroup,
 	SidebarGroupLabel,
@@ -25,69 +29,21 @@ import { MessagesSquare } from "lucide-react";
 type Chat = {
 	id: string;
 	title: string;
-	updated_at: string;
+	updatedAt: string;
 };
-
-const CHATS: Chat[] = [
-	{
-		id: "LUQrKIg",
-		title: "Project Kickoff",
-		updated_at: "2025-06-11T02:00:10.979337Z"
-	},
-	{
-		id: "xYb5yLf",
-		title: "UI Feedback",
-		updated_at: "2025-06-09T02:00:10.979337Z"
-	},
-	{
-		id: "J8LYDkF",
-		title: "API Integration",
-		updated_at: "2025-06-07T02:00:10.979337Z"
-	},
-	{
-		id: "h24W3Qv",
-		title: "Localization Setup",
-		updated_at: "2025-06-03T02:00:10.979337Z"
-	},
-	{
-		id: "wIVnRBr",
-		title: "Performance Debugging",
-		updated_at: "2025-05-27T02:00:10.979337Z"
-	},
-	{
-		id: "RIo8v2l",
-		title: "Feature Planning",
-		updated_at: "2025-05-11T02:00:10.979337Z"
-	},
-	{
-		id: "ObTvQMN",
-		title: "Bug Triage",
-		updated_at: "2025-04-11T02:00:10.979337Z"
-	},
-	{
-		id: "uXUhB8J",
-		title: "Team Sync",
-		updated_at: "2025-03-12T02:00:10.979337Z"
-	},
-	{
-		id: "Q5XLMtt",
-		title: "Security Review",
-		updated_at: "2024-12-12T02:00:10.979337Z"
-	},
-	{
-		id: "bFOk3Bq",
-		title: "Release Retrospective",
-		updated_at: "2023-06-10T02:00:10.979337Z"
-	}
-];
 
 
 
 export function ChatSidebarChats() {
+	const router = useRouter();
 	const pathname = usePathname();
 	const t = useTranslations("chat.sidebar.dates");
+	const setChatId = useChatStore(state => state.setChatId);
 
-	const chatGroups = groupChatsByTime(CHATS);
+	const { data, error, isLoading } = useSWR("/api/chats", fetcher);
+	const chats = data?.data || [];
+
+	const chatGroups = groupChatsByTime(chats);
 
 	return (
 		<>
@@ -102,12 +58,13 @@ export function ChatSidebarChats() {
 								<SidebarMenuButton
 									tooltip={`${t(label)}: ${chat.title}`}
 									isActive={pathname === `/chat/${chat.id}`}
-									asChild
+									onClick={() => {
+										setChatId(chat.id);
+										router.push(`/chat/${chat.id}`);
+									}}
 								>
-									<Link href={`/chat/${chat.id}`}>
-										<MessagesSquare />
-										{chat.title}
-									</Link>
+									<MessagesSquare />
+									{chat.title}
 								</SidebarMenuButton>
 							</SidebarMenuItem>
 						))}
@@ -130,7 +87,7 @@ function groupChatsByTime(chats: Chat[]) {
 	};
 
 	for (const chat of chats) {
-		const updatedAt = parseISO(chat.updated_at);
+		const updatedAt = parseISO(chat.updatedAt);
 		const year = updatedAt.getFullYear();
 
 		if (isToday(updatedAt)) {

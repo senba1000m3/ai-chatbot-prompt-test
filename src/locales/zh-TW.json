@@ -1,5 +1,13 @@
 {
 	"chat": {
+		"input": {
+			"placeholder": "在此輸入您的訊息..."
+		},
+		"model": {
+			"command_empty": "找不到模型。",
+			"search": "搜尋模型...",
+			"select": "選擇模型..."
+		},
 		"sidebar": {
 			"add_new_chat": "新增聊天",
 			"dates": {
@@ -24,6 +32,12 @@
 					"theme": "主題",
 					"title": "偏好"
 				}
+			}
+		},
+		"welcome": {
+			"title": "歡迎回來，{name}！",
+			"examples": {
+				"integral": "請計算 \\( x^3 \\) 的不定積分。"
 			}
 		}
 	},

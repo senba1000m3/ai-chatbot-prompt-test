@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { signOut, useSession } from "@/lib/auth/client";
@@ -60,6 +61,9 @@ function FooterDropdownMenuTrigger() {
 	const email = session?.user?.email;
 	// const role = session?.user?.role;
 
+	const [mounted, setMounted] = useState(false);
+	useEffect(() => setMounted(true), []);
+
 	return (
 		<DropdownMenuTrigger asChild>
 			<SidebarMenuButton size="lg" className="gap-3">
@@ -72,9 +76,9 @@ function FooterDropdownMenuTrigger() {
 					)}
 				</Avatar>
 				<div className="flex-1 grid [&_>_*]:truncate">
-					{isPending ? (
+					{!mounted || isPending ? (
 						<Loader2
-							className="size-4 animate-spin"
+							className="size-4 animate-spin duration-200"
 							suppressHydrationWarning
 						/>
 					) : (
@@ -94,7 +98,7 @@ function FooterDropdownMenuTrigger() {
 
 function FooterDropdownMenuContent() {
 	return (
-		<DropdownMenuContent className="min-w-2xs sm:min-w-xs">
+		<DropdownMenuContent className="min-w-2xs sm:min-w-xs bg-popover/40 backdrop-blur-lg">
 			{/* Preferences */}
 			<PreferencesDropdownMenuGroup />
 

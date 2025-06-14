@@ -55,6 +55,7 @@ import type { LocaleParam } from "@/types";
 // Metadata
 const url = "/";
 const author = "Outegral Studio";
+const keywords: string[] = [];  // TODO: SEO keywords
 export async function generateMetadata(
 	{ params }: { params: LocaleParam }
 ): Promise<Metadata> {
@@ -70,7 +71,7 @@ export async function generateMetadata(
 		description: t("description"),
 		applicationName: t("title"),
 		category: "technology",
-		keywords: [],  // TODO: SEO keywords
+		keywords,
 		authors: [{ name: author }],
 		creator: author,
 		publisher: author,
@@ -110,6 +111,12 @@ export default async function RootLayout({
 			)}
 			suppressHydrationWarning
 		>
+			<head>
+				<link
+					rel="stylesheet"
+					href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css"
+				/>
+			</head>
 			<body>
 				<NextIntlClientProvider>
 					<Providers>

@@ -10,6 +10,7 @@ import { ICON_IMG_URL } from "@/lib/constant";
 // Types
 type MessageProps = {
 	showAvatar?: boolean;
+	keepAvatarSpace?: boolean;
 	avatarSrc?: string;
 	avatarAlt?: string;
 	avatarFallback?: string;
@@ -17,8 +18,20 @@ type MessageProps = {
 
 
 
+function MessageGroup({
+	className,
+	...props
+}: React.ComponentProps<"div">) {
+	return (
+		<div
+			className={cn("@container/message-group flex flex-col gap-8", className)}
+			{...props}
+		/>
+	);
+}
+
 const messageVariants = cva(
-	"relative flex gap-x-2 px-3 py-1.5 hover:bg-accent/40 after:block after:size-10 after:shrink-0",
+	"relative flex gap-x-3 py-1.5",
 	{
 		variants: {
 			side: {
@@ -37,27 +50,38 @@ function Message({
 	children,
 	side,
 	showAvatar = true,
+	keepAvatarSpace = false,
 	avatarSrc = ICON_IMG_URL,
 	avatarAlt = "Avatar",
 	avatarFallback = "T",
 	...props
 }: React.ComponentProps<"div"> &
 	VariantProps<typeof messageVariants> & MessageProps) {
+	const shouldRenderAvatar = showAvatar || keepAvatarSpace;
+
 	return (
 		<div
-			className={cn(messageVariants({ side }), className)}
+			className={cn(
+				messageVariants({ side }),
+				keepAvatarSpace && "after:block after:size-10 after:shrink-0",
+				className
+			)}
 			{...props}
 		>
-			<Avatar>
-				{showAvatar && <>
-					<AvatarImage
-						className="select-none pointer-events-none"
-						src={avatarSrc}
-						alt={avatarAlt}
-					/>
-					<AvatarFallback>{avatarFallback}</AvatarFallback>
-				</>}
-			</Avatar>
+			{shouldRenderAvatar && (
+				<Avatar>
+					{showAvatar && (
+						<>
+							<AvatarImage
+								className="select-none pointer-events-none"
+								src={avatarSrc}
+								alt={avatarAlt}
+							/>
+							<AvatarFallback>{avatarFallback}</AvatarFallback>
+						</>
+					)}
+				</Avatar>
+			)}
 			{children}
 		</div>
 	);
@@ -68,8 +92,8 @@ const messageContentVariants = cva(
 	{
 		variants: {
 			variant: {
-				default: "text-justify",
-				bubble: "max-w-96 xl:max-w-[40%] px-4 py-2 bg-secondary text-secondary-foreground rounded-[1.25rem]",
+				default: "grow",  // text-justify
+				bubble: "px-4 py-3 bg-secondary text-secondary-foreground rounded-2xl",
 			},
 		},
 		defaultVariants: {
@@ -131,4 +155,4 @@ function MessageSeparator({
 	);
 }
 
-export { Message, MessageContent, MessageSeparator };
+export { Message, MessageContent, MessageGroup, MessageSeparator };

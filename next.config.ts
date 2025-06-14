@@ -54,8 +54,18 @@ const nextConfig: NextConfig = {
 				hostname: "feiax0ct75.ufs.sh",  // TAI V4 (Common)
 				pathname: "/f/**",
 			},
+			{
+				protocol: "https",
+				hostname: "hackmd.io",
+				pathname: "/_uploads/**",
+			},
 		]
-	}
+	},
+	turbopack: {
+		resolveAlias: {
+			"micromark-extension-math": "micromark-extension-llm-math",
+		},
+	},
 };
 
 const withNextIntl = createNextIntlPlugin("./src/lib/i18n/request.ts");

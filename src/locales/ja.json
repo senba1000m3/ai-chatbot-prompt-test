@@ -1,5 +1,13 @@
 {
 	"chat": {
+		"input": {
+			"placeholder": "メッセージを入力..."
+		},
+		"model": {
+			"command_empty": "モデルが見つかりませんでした。",
+			"search": "モデルを検索...",
+			"select": "モデルを選択..."
+		},
 		"sidebar": {
 			"add_new_chat": "新しいチャット",
 			"dates": {
@@ -24,6 +32,12 @@
 					"theme": "テーマ",
 					"title": "設定"
 				}
+			}
+		},
+		"welcome": {
+			"title": "おかえりなさい、{name}さん！",
+			"examples": {
+				"integral": "\\( x^3 \\) の不定積分を計算する。"
 			}
 		}
 	},

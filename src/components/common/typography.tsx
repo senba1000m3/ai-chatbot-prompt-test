@@ -3,15 +3,41 @@ import { cn } from "@/lib/utils";
 // Components & UI
 import Link from "next/link";
 import Image from "next/image";
-import { Slot } from "@radix-ui/react-slot";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Slot as SlotPrimitive } from "radix-ui";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
 
 // Markdown
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import remarkBreaks from "remark-breaks";
+import rehypeKatex from "rehype-katex";
+
+// Shiki
+import ShikiHighlighter, {
+	createHighlighterCore,
+	createOnigurumaEngine,
+} from "react-shiki/core";
+import { bundledLanguages } from "shiki/bundle/web";
+import OneLight from "@shikijs/themes/one-light"
+import OneDarkPro from "@shikijs/themes/one-dark-pro";
+
+const highlighter = await createHighlighterCore({
+	themes: [OneLight, OneDarkPro],
+	langs: Object.values(bundledLanguages),
+	engine: createOnigurumaEngine(import("shiki/wasm")),
+});
 
 // Types & Interfaces
 import type { AsChild } from "@/types";
+import { isValidElement } from "react";
 export type MarkdownTextProps = {
 	renderH1?: boolean;
 }
@@ -24,7 +50,8 @@ function MarkdownText({
 }: React.ComponentProps<typeof Markdown> & MarkdownTextProps) {
 	return (
 		<Markdown
-			remarkPlugins={[[remarkGfm, { singleTilde: false }]]}
+			remarkPlugins={[remarkMath, remarkBreaks, [remarkGfm, { singleTilde: false }]]}
+			rehypePlugins={[rehypeKatex]}
 			components={{
 				h1: ({ children, ...props }) => renderH1 ? <H1 id={extractId(children)} {...props}>{children}</H1> : null,
 				h2: ({ children, ...props }) => <H2 id={extractId(children)} {...props}>{children}</H2>,
@@ -32,14 +59,19 @@ function MarkdownText({
 				h4: ({ children, ...props }) => <H4 id={extractId(children)} {...props}>{children}</H4>,
 				h5: ({ children, ...props }) => <H5 id={extractId(children)} {...props}>{children}</H5>,
 				h6: ({ children, ...props }) => <H6 id={extractId(children)} {...props}>{children}</H6>,
+				ul: UL,
+				ol: OL,
+				li: LI,
+				p: P,
 				hr: ({ ...props }) => <hr className="mt-4 border-t" {...props} />,
-				p: ({ children, ...props }) => <P {...props}>{children}</P>,
+				pre: Code,
+				code: InlineCode,
+				blockquote: Blockquote,
 				a: ({ children, href, ...props }) => (
 					href
 						? <Anchor href={href} {...props}>{children}</Anchor>
 						: <span {...props}>{children}</span>
 				),
-				pre: ({ children, ...props }) => <pre className="max-w-full overflow-x-auto" {...props}>{children}</pre>,
 				img: ({ src, alt, width, height, ...props }) => {
 					if (typeof src !== "string") return null;
 					return(
@@ -54,12 +86,12 @@ function MarkdownText({
 						/>
 					);
 				},
-				table: ({ children, ...props }) => <Table {...props}>{children}</Table>,
-				thead: ({ children, ...props }) => <TableHeader {...props}>{children}</TableHeader>,
-				tbody: ({ children, ...props }) => <TableBody {...props}>{children}</TableBody>,
-				tr: ({ children, ...props }) => <TableRow {...props}>{children}</TableRow>,
-				th: ({ children, ...props }) => <TableHead {...props}>{children}</TableHead>,
-				td: ({ children, ...props }) => <TableCell {...props}>{children}</TableCell>,
+				table: ({ children, ...props }) => <Table className="overflow-x-auto" {...props}>{children}</Table>,
+				thead: TableHeader,
+				tbody: TableBody,
+				tr: TableRow,
+				th: TableHead,
+				td: TableCell,
             }}
 			{...props}
 		/>
@@ -79,7 +111,7 @@ function Display({
 	asChild = false,
 	...props
 }: React.ComponentProps<"h1"> & AsChild) {
-	const Comp = asChild ? Slot : "h1";
+	const Comp = asChild ? SlotPrimitive.Slot : "h1";
 
 	return <Comp className={cn("scroll-m-20 font-display text-5xl sm:text-6xl font-extrabold tracking-tight", className)} {...props} />;
 }
@@ -89,7 +121,7 @@ function H1({
 	asChild = false,
 	...props
 }: React.ComponentProps<"h1"> & AsChild) {
-	const Comp = asChild ? Slot : "h1";
+	const Comp = asChild ? SlotPrimitive.Slot : "h1";
 
 	return <Comp className={cn("scroll-m-20 text-3xl font-bold tracking-tight", className)} {...props} />;
 }
@@ -99,7 +131,7 @@ function H2({
 	asChild = false,
 	...props
 }: React.ComponentProps<"h2"> & AsChild) {
-	const Comp = asChild ? Slot : "h2";
+	const Comp = asChild ? SlotPrimitive.Slot : "h2";
 
 	return <Comp className={cn("mt-12 scroll-m-20 text-2xl font-semibold tracking-tight first:mt-0 [&+p]:!mt-4", className)} {...props} />;
 }
@@ -109,9 +141,9 @@ function H3({
 	asChild = false,
 	...props
 }: React.ComponentProps<"h3"> & AsChild) {
-	const Comp = asChild ? Slot : "h3";
+	const Comp = asChild ? SlotPrimitive.Slot : "h3";
 
-	return <Comp className={cn("mt-8 scroll-m-20 text-xl font-semibold tracking-tight [&+p]:!mt-2", className)} {...props} />;
+	return <Comp className={cn("mt-8 scroll-m-20 text-xl font-semibold tracking-tight first:mt-0 [&+p]:!mt-2", className)} {...props} />;
 }
 
 function H4({
@@ -119,7 +151,7 @@ function H4({
 	asChild = false,
 	...props
 }: React.ComponentProps<"h4"> & AsChild) {
-	const Comp = asChild ? Slot : "h4";
+	const Comp = asChild ? SlotPrimitive.Slot : "h4";
 
 	return <Comp className={cn("scroll-m-20 text-lg font-semibold tracking-tight", className)} {...props} />;
 }
@@ -129,7 +161,7 @@ function H5({
 	asChild = false,
 	...props
 }: React.ComponentProps<"h5"> & AsChild) {
-	const Comp = asChild ? Slot : "h5";
+	const Comp = asChild ? SlotPrimitive.Slot : "h5";
 
 	return <Comp className={cn("scroll-m-20 text-base font-medium tracking-tight", className)} {...props} />;
 }
@@ -139,9 +171,39 @@ function H6({
 	asChild = false,
 	...props
 }: React.ComponentProps<"h6"> & AsChild) {
-	const Comp = asChild ? Slot : "h6";
+	const Comp = asChild ? SlotPrimitive.Slot : "h6";
 
 	return <Comp className={cn("scroll-m-20 text-sm font-medium tracking-tight", className)} {...props} />;
+}
+
+function UL({
+	className,
+	asChild = false,
+	...props
+}: React.ComponentProps<"ul"> & AsChild) {
+	const Comp = asChild ? SlotPrimitive.Slot : "ul";
+
+	return <Comp className={cn("list-disc list-outside [&:not(:first-child)]:mt-1 pl-6 marker:text-xs marker:text-[color-mix(in_oklch,_var(--primary),_white_20%)]", className)} {...props} />;
+}
+
+function OL({
+	className,
+	asChild = false,
+	...props
+}: React.ComponentProps<"ol"> & AsChild) {
+	const Comp = asChild ? SlotPrimitive.Slot : "ol";
+
+	return <Comp className={cn("list-decimal list-outside [&:not(:first-child)]:mt-1 pl-6 marker:text-[color-mix(in_oklch,_var(--primary),_white_20%)]", className)} {...props} />;
+}
+
+function LI({
+	className,
+	asChild = false,
+	...props
+}: React.ComponentProps<"li"> & AsChild) {
+	const Comp = asChild ? SlotPrimitive.Slot : "li";
+
+	return <Comp className={cn("leading-relaxed my-1 pl-1", className)} {...props} />;
 }
 
 function P({
@@ -149,29 +211,9 @@ function P({
 	asChild = false,
 	...props
 }: React.ComponentProps<"p"> & AsChild) {
-	const Comp = asChild ? Slot : "p";
+	const Comp = asChild ? SlotPrimitive.Slot : "p";
 
 	return <Comp className={cn("leading-relaxed [&:not(:first-child)]:mt-4", className)} {...props} />;
-}
-
-function Blockquote({
-	className,
-	asChild = false,
-	...props
-}: React.ComponentProps<"blockquote"> & AsChild) {
-	const Comp = asChild ? Slot : "blockquote";
-
-	return <Comp className={cn("border-l-2 pl-6 font-serif italic", className)} {...props} />;
-}
-
-function InlineCode({
-	className,
-	asChild = false,
-	...props
-}: React.ComponentProps<"code"> & AsChild) {
-	const Comp = asChild ? Slot : "code";
-
-	return <Comp className={cn("bg-muted relative rounded px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold", className)} {...props} />;
 }
 
 function Muted({
@@ -179,9 +221,66 @@ function Muted({
 	asChild = false,
 	...props
 }: React.ComponentProps<"p"> & AsChild) {
-	const Comp = asChild ? Slot : "p";
+	const Comp = asChild ? SlotPrimitive.Slot : "p";
 
 	return <Comp className={cn("text-muted-foreground text-xs", className)} {...props} />;
+}
+
+function Code({
+	className,
+	children,
+	...props
+}: React.ComponentProps<"pre">) {
+	if (!isValidElement(children)) return null;
+
+	const {
+		className: codeClassName,
+		children: code
+	} = children.props as React.ComponentProps<"code">;
+	const match = codeClassName?.match(/language-(\w+)/);
+	const language = match ? match[1] : "plaintext";
+
+	return (
+		<ShikiHighlighter
+			highlighter={highlighter}
+			language={language}
+			theme={OneDarkPro}
+			// TODO: Theme breaks when passing light and dark themes
+			// theme={{
+			// 	light: OneLight,
+			// 	dark: OneDarkPro,
+			// }}
+			defaultColor="dark"
+			as="div"
+			delay={100}
+			showLanguage={false}
+			showLineNumbers={language !== "plaintext"}
+			className={cn("overflow-hidden text-sm [&_pre]:rounded-t-none! py-2", className)}  // [&_pre]:whitespace-pre-wrap
+			{...props}
+		>
+			{String(code).trim()}
+		</ShikiHighlighter>
+	);
+};
+
+function InlineCode({
+	className,
+	asChild = false,
+	...props
+}: React.ComponentProps<"code"> & AsChild) {
+	const Comp = asChild ? SlotPrimitive.Slot : "code";
+
+	return <Comp className={cn("bg-muted relative rounded px-[0.3rem] py-[0.2rem] font-mono text-sm", className)} {...props} />;
+}
+
+function Blockquote({
+	className,
+	asChild = false,
+	...props
+}: React.ComponentProps<"blockquote"> & AsChild) {
+	const Comp = asChild ? SlotPrimitive.Slot : "blockquote";
+
+	return <Comp className={cn("border-[color-mix(in_oklch,_var(--primary),_white_10%)] border-l-3 pl-6 font-serif italic [&:not(:first-child)]:mt-4", className)} {...props} />;
 }
 
 function Anchor({
@@ -202,9 +301,10 @@ export {
 	MarkdownText,
 	Display,
 	H1, H2, H3, H4, H5, H6,
-	P,
-	Blockquote,
-	InlineCode,
+	UL, OL, LI, P,
 	Muted,
+	Code,
+	InlineCode,
+	Blockquote,
 	Anchor,
 };

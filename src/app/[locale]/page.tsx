@@ -1,6 +1,6 @@
 "use client";
-// import { useState, useEffect, Fragment } from "react";
-import { Fragment } from "react";
+import { useState, useEffect, Fragment } from "react";
+import { useRouter } from "@/lib/i18n/navigation";
 import { useTranslations } from "next-intl";
 // import { subscribeUser, unsubscribeUser } from "../actions";
 
@@ -14,6 +14,7 @@ import { SectionLayout, WrapperLayout } from "@/components/common/layouts";
 
 // Icons & Images
 import {
+	ChevronDown,
 	CloudUpload,
 	Code,
 	GitBranch,
@@ -31,6 +32,7 @@ import {
 
 // Constants & Variables
 import type { LucideIcon } from "lucide-react";
+import Silk from "@/components/main/silk";
 type Requirement = {
 	checked: boolean;
 	icon: LucideIcon;
@@ -41,7 +43,7 @@ type Requirement = {
 
 const REQUIREMENTS: Record<string, Requirement[]> = {
 	"core": [
-		{ checked: false, icon: MessagesSquare, name: "Chat with Various LLMs", description: "Implement support for multiple language models and providers" },
+		{ checked: true, icon: MessagesSquare, name: "Chat with Various LLMs", description: "Implement support for multiple language models and providers" },
 		{ checked: true, icon: Users, name: "Authentication & Sync", description: "User authentication with chat history synchronization" },
 		{ checked: true, icon: Globe, name: "Browser Friendly", description: "Ensure the app works smoothly in a web browser without native installations" },
 		{ checked: true, icon: Zap, name: "Easy to Try", description: "Provide an easily accessible demo or onboarding experience" },
@@ -63,34 +65,23 @@ const REQUIREMENTS: Record<string, Requirement[]> = {
 
 
 export default function HomePage() {
-	const t = useTranslations("layout.homepage");
+	const router = useRouter();
+
+	useEffect(() => {
+		router.prefetch("/signin");
+	}, [router]);
 
 	return (
-		<div className="py-8">
+		<div className="relative pb-8">
+			<Silk
+				className="absolute! left-0 top-0 h-svh! opacity-50 mask-b-to-transparent mask-b-from-50% -z-1"
+				scale={1.25}
+			/>
 			<WrapperLayout>
-				<header className="grid h-[75svh]">
-					<div className="place-self-center grid justify-items-center text-center">
-						{/* <Display>Welcome to <span className="inline-block">Project τ</span></Display> */}
-						<Display className="text-balance">
-							{t.rich("heading", {
-								title: (chunks) => <span className="inline-block">{chunks}</span>,
-								name: t("title"),
-							})}
-						</Display>
-						<P className="leading-relaxed text-muted-foreground">
-							{t("description")}
-						</P>
-						<Button size="lg" className="btn-chrome mt-12" asChild>
-							<Link href="/signin">
-								<span>Get Started</span>
-							</Link>
-						</Button>
-						{/* <PushNotificationManager /> */}
-					</div>
-				</header>
+				<HomePageHeader />
 				<WrapperLayout width={1280} asChild>
 					<main className="py-4">
-						<T3ChatCloneathon />
+						<T3ChatCloneathonSection />
 					</main>
 				</WrapperLayout>
 			</WrapperLayout>
@@ -98,7 +89,44 @@ export default function HomePage() {
 	);
 }
 
-function T3ChatCloneathon() {
+function HomePageHeader() {
+	const t = useTranslations("layout.homepage");
+
+	return (
+		<header className="relative grid h-svh">
+			<div className="place-self-center grid justify-items-center text-center">
+				{/* <Display>Welcome to <span className="inline-block">Project τ</span></Display> */}
+				<Display className="text-balance">
+					{t.rich("heading", {
+						title: (chunks) => <span className="inline-block">{chunks}</span>,
+						name: t("title"),
+					})}
+				</Display>
+				<P className="leading-relaxed text-muted-foreground">
+					{t("description")}
+				</P>
+				<Button size="lg" className="btn-chrome mt-12" asChild>
+					<Link href="/signin">
+						<span>Get Started</span>
+					</Link>
+				</Button>
+				{/* <PushNotificationManager /> */}
+			</div>
+			<Button
+				variant="ghost"
+				size="lg"
+				className="absolute bottom-8 left-1/2 -translate-x-1/2 size-12 animate-bounce"
+				onClick={() => window.scrollTo(({
+					top: window?.visualViewport?.height ?? window.innerHeight,
+				}))}
+			>
+				<ChevronDown className="size-5" />
+			</Button>
+		</header>
+	);
+}
+
+function T3ChatCloneathonSection() {
 	return (
 		<SectionLayout title="">
 			<H2 id="requirements">T3 Chat Cloneathon Requirements</H2>

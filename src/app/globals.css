@@ -147,13 +147,14 @@
 
 
 /* ---------------------------- STYLES ---------------------------- */
-/* First try of recreating the chrome button:
+/*
+ * First try of recreating the chrome button:
  * https://www.instagram.com/p/DHCNFL8Aciw
  * How am I supposed to write this s**t in `button.tsx`?
  */
 @layer components {
 	.btn-chrome {
-		@apply relative bg-linear-to-b focus-visible:ring-0! !rounded-full transform-3d;
+		@apply relative bg-linear-to-b focus-visible:ring-0! !rounded-full disabled:[&>*]:opacity-50 disabled:opacity-100! transform-3d;
 		@apply from-zinc-300 to-[color-mix(in_oklch,_var(--primary),_black_5%)] dark:to-[color-mix(in_oklch,_var(--primary),_black_15%)];
 		/* Hover */
 		@apply [&>*]:transition hover:[&>*]:brightness-115 hover:before:brightness-115 hover:after:brightness-115;
@@ -175,3 +176,7 @@
 		}
 	}
 }
+/*
+ * Why not glow the inner part too?
+ * Because it breaks the button :)
+ */

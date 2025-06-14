@@ -1,5 +1,13 @@
 {
 	"chat": {
+		"input": {
+			"placeholder": "Type your message here..."
+		},
+		"model": {
+			"command_empty": "No model found.",
+			"search": "Search models...",
+			"select": "Select model..."
+		},
 		"sidebar": {
 			"add_new_chat": "New Chat",
 			"dates": {
@@ -24,6 +32,12 @@
 					"theme": "Theme",
 					"title": "Preferences"
 				}
+			}
+		},
+		"welcome": {
+			"title": "Welcome back, {name}!",
+			"examples": {
+				"integral": "Calculate the indefinite integral of \\( x^3 \\)."
 			}
 		}
 	},

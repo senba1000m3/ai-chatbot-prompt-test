@@ -7,7 +7,7 @@ import type { LocaleParam } from "@/types";
 
 // Metadata
 const url = "/signin";
-const keywords: string[] = [];
+const keywords: string[] = [];  // TODO: Keywords for SEO
 export async function generateMetadata(
 	{ params }: { params: LocaleParam }
 ): Promise<Metadata> {
@@ -34,5 +34,9 @@ export async function generateMetadata(
 
 
 export default function SignInLayout({ children }: React.ComponentProps<"main">) {
-    return <main>{children}</main>;
+    return (
+		<main>
+			{children}
+		</main>
+	);
 }
