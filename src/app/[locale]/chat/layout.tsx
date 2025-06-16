@@ -1,12 +1,6 @@
 import { generatePreviewMetadata, getFullTitle } from "@/lib/utils";
 import { getTranslations } from "next-intl/server";
 
-// Auth
-import fetcher from "@/lib/fetcher";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
-
 // Components & UI
 import { ChatSidebar } from "@/components/main/chat/sidebar";
 import { ChatLayoutHeader } from "@/components/main/chat/chat-header";
@@ -17,30 +11,24 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 
 // Types & Interfaces
 import type { Metadata } from "next";
-import type { ChatParams } from "@/types";
+import type { LocaleParam } from "@/types";
 
 // Metadata
 const url = "/chat";
 export async function generateMetadata(
-	{ params }: { params: ChatParams }
+	{ params }: { params: LocaleParam }
 ): Promise<Metadata> {
-	const { locale, chatId } = await params;
-	const t = await getTranslations({ locale, namespace: "layout" });
+	const { locale } = await params;
+	const t = await getTranslations({ locale, namespace: "layout.chat" });
 
-	// TODO: Move to sub layout.tsx
-	let title = t("homepage.title");
-	if (chatId) {
-		const chatData = await fetcher(`/api/chats/${chatId}`);
-		const chatTitle = chatData?.data?.title;
-		if (chatTitle) title = chatTitle;
-	}
-
+	const title = t("title");
+	const description = t("description");
 	return {
 		title,
-		description: t("chat.description"),
+		description,
 		...generatePreviewMetadata({
 			title: getFullTitle(title),
-			description: t("chat.description"),
+			description,
 			url,
 		}),
 		robots: {
@@ -53,12 +41,6 @@ export async function generateMetadata(
 
 
 export default async function ChatLayout({ children }: React.ComponentProps<"main">) {
-	const session = await auth.api.getSession({ headers: await headers() });
-	if (!session) {
-		// const error = encodeURIComponent("Unauthorized");
-		// redirect(`/signin?error=${error}`);
-	}
-
 	return (
 		<SidebarProvider className="h-svh">
 			<ChatSidebar />
@@ -71,7 +53,7 @@ export default async function ChatLayout({ children }: React.ComponentProps<"mai
 					<ChatResizablePanel minSize={30}>
 						{children}
 					</ChatResizablePanel>
-					<BlockResizablePanel minSize={20} />
+					<BlockResizablePanel minSize={30} />
 				</ResizablePanelGroup>
 			</main>
 		</SidebarProvider>

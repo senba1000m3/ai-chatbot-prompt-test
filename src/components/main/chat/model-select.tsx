@@ -67,7 +67,7 @@ export function ChatModelSelect() {
 											setOpen(false);
 										}}
 									>
-										{m.model}
+										{m.name}
 										{m.model === model && <Check className="ml-auto" />}
 									</CommandItem>
 								))}

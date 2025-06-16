@@ -1,3 +1,4 @@
+// Tools
 import { StepBlockTool } from "./step-block";
 
 // Types & Interfaces
@@ -5,7 +6,7 @@ import { ChatTool } from "@/types/chat";
 
 
 
-const TOOLS: ChatTool[] = [
+const TOOLS: ChatTool<any, any>[] = [
 	StepBlockTool,
 ];
 

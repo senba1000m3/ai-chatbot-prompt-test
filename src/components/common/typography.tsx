@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 // Components & UI
 import Link from "next/link";
 import Image from "next/image";
+import { Code } from "./shiki-highlighter";
 import { Slot as SlotPrimitive } from "radix-ui";
 import {
 	Table,
@@ -20,24 +21,8 @@ import remarkMath from "remark-math";
 import remarkBreaks from "remark-breaks";
 import rehypeKatex from "rehype-katex";
 
-// Shiki
-import ShikiHighlighter, {
-	createHighlighterCore,
-	createOnigurumaEngine,
-} from "react-shiki/core";
-import { bundledLanguages } from "shiki/bundle/web";
-import OneLight from "@shikijs/themes/one-light"
-import OneDarkPro from "@shikijs/themes/one-dark-pro";
-
-const highlighter = await createHighlighterCore({
-	themes: [OneLight, OneDarkPro],
-	langs: Object.values(bundledLanguages),
-	engine: createOnigurumaEngine(import("shiki/wasm")),
-});
-
 // Types & Interfaces
 import type { AsChild } from "@/types";
-import { isValidElement } from "react";
 export type MarkdownTextProps = {
 	renderH1?: boolean;
 }
@@ -226,43 +211,6 @@ function Muted({
 	return <Comp className={cn("text-muted-foreground text-xs", className)} {...props} />;
 }
 
-function Code({
-	className,
-	children,
-	...props
-}: React.ComponentProps<"pre">) {
-	if (!isValidElement(children)) return null;
-
-	const {
-		className: codeClassName,
-		children: code
-	} = children.props as React.ComponentProps<"code">;
-	const match = codeClassName?.match(/language-(\w+)/);
-	const language = match ? match[1] : "plaintext";
-
-	return (
-		<ShikiHighlighter
-			highlighter={highlighter}
-			language={language}
-			theme={OneDarkPro}
-			// TODO: Theme breaks when passing light and dark themes
-			// theme={{
-			// 	light: OneLight,
-			// 	dark: OneDarkPro,
-			// }}
-			defaultColor="dark"
-			as="div"
-			delay={100}
-			showLanguage={false}
-			showLineNumbers={language !== "plaintext"}
-			className={cn("overflow-hidden text-sm [&_pre]:rounded-t-none! py-2", className)}  // [&_pre]:whitespace-pre-wrap
-			{...props}
-		>
-			{String(code).trim()}
-		</ShikiHighlighter>
-	);
-};
-
 function InlineCode({
 	className,
 	asChild = false,
@@ -303,7 +251,6 @@ export {
 	H1, H2, H3, H4, H5, H6,
 	UL, OL, LI, P,
 	Muted,
-	Code,
 	InlineCode,
 	Blockquote,
 	Anchor,

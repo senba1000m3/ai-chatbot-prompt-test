@@ -1,6 +1,14 @@
 {
 	"chat": {
+		"content": {
+			"tools": {
+				"open_step_blocks": "點擊以打開步驟列表"
+			}
+		},
 		"input": {
+			"disabled": "訊息需有文字",
+			"enabled": "發送訊息",
+			"loading": "{character} 正在輸入...",
 			"placeholder": "在此輸入您的訊息..."
 		},
 		"model": {
@@ -33,6 +41,11 @@
 					"title": "偏好"
 				}
 			}
+		},
+		"type": {
+			"chat": "聊天",
+			"unknown": "未知的{chat}",
+			"untitled": "未命名的{chat}"
 		},
 		"welcome": {
 			"title": "歡迎回來，{name}！",

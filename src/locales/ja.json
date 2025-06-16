@@ -1,6 +1,14 @@
 {
 	"chat": {
+		"content": {
+			"tools": {
+				"open_step_blocks": "ステップを開く"
+			}
+		},
 		"input": {
+			"disabled": "テキストを入力して",
+			"enabled": "メッセージを送信",
+			"loading": "{character} が入力中...",
 			"placeholder": "メッセージを入力..."
 		},
 		"model": {
@@ -33,6 +41,11 @@
 					"title": "設定"
 				}
 			}
+		},
+		"type": {
+			"chat": "チャット",
+			"unknown": "不明な{chat}",
+			"untitled": "無題の{chat}"
 		},
 		"welcome": {
 			"title": "おかえりなさい、{name}さん！",

@@ -17,6 +17,7 @@ interface ToolStoreProps {
 	toolResults: Record<string, ToolResult>;
 	initToolResult: (toolCallId: string, toolName: string, title?: string) => void;
 	appendToolResult: (toolCallId: string, toolResult: ToolResult) => void;
+	getToolResult: (toolResultId: string) => ToolResult | undefined;
 };
 
 
@@ -63,6 +64,10 @@ export const useToolStore = create<ToolStoreProps>(
 					},
 				};
 			});
-		}
+		},
+		getToolResult: (toolResultId: string) => {
+			const { toolResults } = get();
+			return toolResults[toolResultId] || undefined;
+		},
 	})
 );

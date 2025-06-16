@@ -10,7 +10,13 @@ export function ChatResizablePanel({
 	...props
 }: React.ComponentProps<typeof ResizablePanel>) {
 	return (
-		<ResizablePanel className="relative" {...props}>
+		<ResizablePanel
+			id="chat-resizable-panel"
+			className="relative"
+			defaultSize={100}
+			order={1}
+			{...props}
+		>
 			{children}
 			<div className="absolute bottom-0 left-0 w-full">
 				<WrapperLayout className="" width={960}>

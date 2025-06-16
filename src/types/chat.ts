@@ -5,16 +5,16 @@ import type { z, ZodObject, ZodRawShape } from "zod";
 
 
 export interface ChatTool<
-	Schema extends ZodRawShape = ZodRawShape,
-	Parameters extends ZodRawShape = ZodRawShape,
+	Parameters extends ZodObject<ZodRawShape> = ZodObject<ZodRawShape>,
+	Schema extends ZodObject<ZodRawShape> = ZodObject<ZodRawShape>,
 > {
 	name: string;
 	type: "block" | "inline";
 	guidePrompt: string;
-	tool: Tool<ZodObject<Parameters>>;
-	schema: ZodObject<Schema>;
+	tool: Tool<Parameters>;
+	schema: Schema;
 	useStream: boolean;
-	action: (args: z.infer<ZodObject<Parameters>>) => Promise<any>;
+	action: (args: z.infer<Parameters>) => Promise<any> | any;
 	component: React.ComponentType<any>;
 }
 

@@ -1,16 +1,24 @@
+"use client";
 import { useCallback, useTransition } from "react";
 import { useChatStore } from "@/lib/store/chat";
 import { useToolStore } from "@/lib/store/tool";
 
+import fetcher from "@/lib/fetcher";
+import { match } from "ts-pattern";
+import { nanoid } from "@/lib/utils";
 import { generate } from "@/lib/chat/actions";
 import { receiveStream, receiveObjectStream } from "@/lib/chat/utils";
-import { match } from "ts-pattern";
 
 // Constants & Variables
 import { CHAT_TOOL_CONFIGS } from "@/lib/chat/tools";
 
 // Types & Interfaces
+import type { CoreUserMessage } from "ai";
 import type { ChatOptions } from "@/types/chat";
+type HandleSubmitProps = {
+	createUserMessagesForAI?: (input: string) => CoreUserMessage[];
+	onNewChatCallback?: (newChatId: string) => Promise<void> | void;
+};
 
 
 
@@ -22,7 +30,7 @@ export function useChatManager() {
 	const setIsLoading = useChatStore(state => state.setIsLoading);
 	const getMessageArray = useChatStore(state => state.getMessageArray);
 
-	// TODO
+	// TODO: Better everything
 	const executeTool = useCallback(
 		async (toolCallId: string, toolName: string, args: any) => {
 			try {
@@ -57,22 +65,32 @@ export function useChatManager() {
 						})();
 					}
 				});
-			} catch (error) {
-
+			} catch (error: any) {
+				console.error("ERR::TOOL::EXEC:", error.message);
 			}
 		}, []
 	);
 
 	const sendMessage = useCallback(
-		async ({ chatId, messages: newMessages = [], model, character }: ChatOptions) => {
+		async ({
+			chatId,
+			messages: newMessages = [],
+			model,
+			character,
+		}: ChatOptions) => {
 			startChatTransition(async () => {
-				// Here goes a function that converts the enitre block into a message
+				// TODO: A function that converts the enitre block tool result into a message
 
 				const messages = [
-					...getMessageArray().slice(0, -1),  // History
+					// History messages (but without the latest user message)
+					...getMessageArray().slice(0, -1),
 					// Block type tool result as message?
+					// TODO: Block tool result messages
+					// The latest user message should be included here
 					...newMessages,
 				];
+
+				// Generate and receive the text stream
 				const fullStreamValue = await generate({
 					chatId,
 					messages,
@@ -84,8 +102,74 @@ export function useChatManager() {
 		}, []
 	);
 
+	const handleSubmit = useCallback(
+		async ({
+			createUserMessagesForAI,
+			onNewChatCallback,
+		}: HandleSubmitProps = {}): Promise<void> => {
+			const {
+				chatId,
+				input,
+				setInput,
+				model,
+				character,
+				appendMessage,
+			} = useChatStore.getState();
+
+			// Since we get a copy of input,
+			// we can safely clear the input state
+			if (!input.trim()) return;
+			setInput("");
+
+			// Append the message for UI display
+			const message: CoreUserMessage = {
+				role: "user",
+				content: [{ type: "text", text: input.trim() }],
+			};
+			appendMessage(message);
+
+			// Create a new chat if no chatId is present,
+			// then run the callback
+			let finalChatId = chatId;
+			if (!finalChatId) {
+				finalChatId = nanoid();
+
+				// POST the chat first
+				await fetcher("/api/chats", {
+					method: "POST",
+					data: { id: finalChatId },
+				});
+
+				// Then run the callback (most likely `router.push()`)
+				await onNewChatCallback?.(finalChatId);
+			}
+
+			// Then POST the user message, it needs the chatId FK
+			await fetcher("/api/messages", {
+				method: "POST",
+				data: {
+					chatId: finalChatId,
+					...message,
+				},
+			});
+
+			// Generate and send the user message for AI
+			const messages = createUserMessagesForAI
+				? createUserMessagesForAI(input.trim())
+				: [message];
+
+			await sendMessage({
+				chatId: finalChatId,
+				messages,
+				model,
+				character,
+			});
+		}, []
+	);
+
 	return {
 		executeTool,
 		sendMessage,
+		handleSubmit,
 	};
 }

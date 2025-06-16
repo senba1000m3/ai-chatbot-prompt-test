@@ -1,6 +1,14 @@
 {
 	"chat": {
+		"content": {
+			"tools": {
+				"open_step_blocks": "Click to open step view"
+			}
+		},
 		"input": {
+			"disabled": "Message requires text",
+			"enabled": "Send message",
+			"loading": "{character} is typing...",
 			"placeholder": "Type your message here..."
 		},
 		"model": {
@@ -33,6 +41,11 @@
 					"title": "Preferences"
 				}
 			}
+		},
+		"type": {
+			"chat": "Chat",
+			"unknown": "Unknown {chat}",
+			"untitled": "Untitled {chat}"
 		},
 		"welcome": {
 			"title": "Welcome back, {name}!",

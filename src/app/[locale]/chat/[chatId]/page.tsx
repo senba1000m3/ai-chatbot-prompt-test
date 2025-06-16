@@ -2,6 +2,7 @@
 import { use, useEffect } from "react";
 import { useChatStore } from "@/lib/store/chat";
 import { useToolStore } from "@/lib/store/tool";
+import { useTranslations } from "next-intl";
 
 // SWR
 import useSWR from "swr";
@@ -21,6 +22,7 @@ import type { Chat } from "@/lib/db/schema";
 export default function ChatPage(props: {
 	params: ChatParams,
 }) {
+	const t = useTranslations("chat.type");
 	const params = use(props.params);
 	const chatId = params.chatId;
 
@@ -36,13 +38,20 @@ export default function ChatPage(props: {
 		setIsBlockOpen(false);
 	}, [chatId]);
 
-	// Set chat title to Zustand store
+	// Set chat title to Zustand store and document
 	useEffect(() => {
 		const setChatTitle = useChatStore.getState().setChatTitle;
 
-		if (error) setChatTitle("Unknown Chat");
-		if (chatTitle) setChatTitle(chatTitle);
-	}, [chatTitle]);
+		if (error) {
+			const title = t("unknown", { chat: t("chat") });
+			setChatTitle(title);
+			document.title = title;
+		} else {
+			const untitled = t("untitled", { chat: t("chat") });
+			setChatTitle(chatTitle || untitled);
+			document.title = chatTitle || untitled;
+		}
+	}, [chatTitle, error]);
 
 	return (
 		<ScrollArea className="size-full" scrollHideDelay={1000}>

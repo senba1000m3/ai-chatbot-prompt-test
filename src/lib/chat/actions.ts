@@ -2,14 +2,16 @@
 import { createIdGenerator, streamText } from "ai";
 import { createStreamableValue } from "ai/rsc";
 import { getModelProvider } from "@/lib/chat/models";
+import { ensureError } from "@/lib/response";
 
 // Auth
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { userAuthorization } from "@/lib/auth/utils";
 
 // Database
 import { db } from "@/lib/db/drizzle";
 import { messages as DrizzleMessages } from "@/lib/db/schema";
+import { Redis } from "@upstash/redis";
+const redis = Redis.fromEnv();
 
 // Constants & Variables
 import { CHAT_TOOLS, CHAT_TOOL_CONFIGS, CHAT_TOOL_NAMES } from "./tools";
@@ -27,13 +29,16 @@ export async function generate({
 	model,
 	character,
 }: ChatOptions): Promise<StreamableValue> {
-	// TODO: Auth & Rate Limit
+	// TODO: Rate Limit
+	const user = await userAuthorization();
 
 	const stream = createStreamableValue();
 	const provider = getModelProvider(model);
 	if (!provider) throw new Error(`Model provider not found for model: ${model}`);
 
 	(async () => {
+		const characterPrompt = await redis.get(character);
+
 		const result = streamText({
 			model: provider(model),
 			system: `
@@ -47,33 +52,32 @@ export async function generate({
 			messages,
 			tools: CHAT_TOOLS,
 			experimental_generateMessageId: createIdGenerator({ size: 16 }),
-			async onFinish({ finishReason, usage, toolCalls, toolResults, response }) {
-				const session = await auth.api.getSession({ headers: await headers() });
+			async onFinish({ finishReason, response, usage }) {
+				console.log("STREAM::TX::FIN:", finishReason);
 
-				const userId = session?.user?.id;
-				const model = response.modelId;
-				const message = response.messages[0];  // TODO: Handle multiple messages
-				const createdAt = response.timestamp;
-				const updatedAt = response.timestamp;
+				const baseTimestamp = new Date(response.timestamp).getTime();
+				const dbMessages = response.messages.map((message, index) => {
+					const timestamp = new Date(baseTimestamp + index);
 
-				const msg = {
-					id: message.id,
-					role: message.role,
-					content: message.content,
-					chatId,
-					userId,
-					metadata: {
-						model,
-						usage,
-					},
-					createdAt,
-					updatedAt,
-				};
-				console.log(`Message finished, reason: ${finishReason}.`);
-				await db.insert(DrizzleMessages).values(msg).onConflictDoNothing();
+					return {
+						id: message.id,
+						role: message.role,
+						content: message.content,
+						chatId,
+						userId: user.id,
+						metadata: {
+							model: response.modelId,
+							usage,
+						},
+						createdAt: timestamp,
+						updatedAt: timestamp,
+					}
+				});
+				await db.insert(DrizzleMessages).values(dbMessages).onConflictDoNothing();
 			},
-			onError({ error }) {
-				console.error(`ERR::STREAM::TX: ${error}`);
+			onError({ error: err }) {
+				const error = ensureError(err);
+				console.error("ERR::STREAM::TX:", error.message);
 			},
 			maxSteps: 10,
 		});
@@ -84,8 +88,9 @@ export async function generate({
 			for await (const part of result.fullStream) {
 				stream.update(part);
 			}
-		} catch (error: any) {
-			console.error("Error in streaming:", error);
+		} catch (err) {
+			const error = ensureError(err);
+			console.error("ERR::STREAM:", error.message);
 		}
 
 		stream.done();

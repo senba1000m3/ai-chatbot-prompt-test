@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { nanoid } from "@/lib/utils";
 
 // Types & Interfaces
-import { CoreMessage } from "ai";
+import type { CoreMessage } from "ai";
 interface ChatStoreProps {
 	// Chat related
 	chatId: string;
@@ -13,8 +13,12 @@ interface ChatStoreProps {
 	setInput: (input: string) => void;
 	isLoading: boolean;
 	setIsLoading: (isLoading: boolean) => void;
+
+	// Chat Options
 	model: string;
 	setModel: (model: string) => void;
+	character: string;
+	setCharacter: (character: string) => void;
 
 	handleChatChange: (newChatId: string) => void;
 
@@ -39,8 +43,12 @@ export const useChatStore = create<ChatStoreProps>(
 		setInput: (input: string) => set({ input }),
 		isLoading: false,
 		setIsLoading: (isLoading: boolean) => set({ isLoading }),
-		model: "gemini-2.5-flash-preview-05-20",
+
+		// Chat Options
+		model: "gpt-4o",
 		setModel: (model: string) => set({ model }),
+		character: "tai-chan",
+		setCharacter: (character: string) => set({ character }),
 
 		handleChatChange: (newChatId: string) => {
 			const {
@@ -95,7 +103,6 @@ export const useChatStore = create<ChatStoreProps>(
 					messageOrderArray: [...messageOrderArray, id],
 				};
 			});
-			console.log("Appended message:", message);
 		},
 		getMessageArray: () => {
 			const { messages, messageOrderArray } = get();
@@ -103,7 +110,6 @@ export const useChatStore = create<ChatStoreProps>(
 		},
 		clearMessages: () => {
 			set({ messages: {}, messageOrderArray: [] });
-			console.log("Cleared messages");
 		},
 	})
 );

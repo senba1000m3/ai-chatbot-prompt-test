@@ -60,7 +60,7 @@ export default function ChatPage() {
 				{showHeader && !isPending && (
 					<motion.header
 						key="chat-header"
-						className="max-w-xl m-auto"
+						className="max-w-2xl m-auto"
 						variants={HEADER_VARIANTS}
 						initial="hidden"
 						animate="visible"

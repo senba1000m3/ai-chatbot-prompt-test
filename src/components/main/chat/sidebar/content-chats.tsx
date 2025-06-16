@@ -1,13 +1,11 @@
 "use client";
 import { useRouter, usePathname } from "@/lib/i18n/navigation";
-import { useChatStore } from "@/lib/store/chat";
 import { useTranslations } from "next-intl";
 import {
 	isThisMonth,
 	isThisWeek,
 	isThisYear,
 	isToday,
-	parseISO,
 } from "date-fns";
 
 // SWR
@@ -22,15 +20,13 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Icons & Images
 import { MessagesSquare } from "lucide-react";
 
-type Chat = {
-	id: string;
-	title: string;
-	updatedAt: string;
-};
+// Types & Interfaces
+import type { Chat } from "@/lib/db/schema";
 
 
 
@@ -38,14 +34,31 @@ export function ChatSidebarChats() {
 	const router = useRouter();
 	const pathname = usePathname();
 	const t = useTranslations("chat.sidebar.dates");
-	const setChatId = useChatStore(state => state.setChatId);
 
-	const { data, error, isLoading } = useSWR("/api/chats", fetcher);
-	const chats = data?.data || [];
-
+	const { data, error, isLoading } = useSWR<Chat[]>(
+		"/api/chats", async (url: string) => {
+			const response = await fetcher(url);
+			if (!response.success) throw new Error(response.message);
+			return response.data;
+		}
+	);
+	const chats = data || [];
 	const chatGroups = groupChatsByTime(chats);
 
 	return (
+		isLoading ? (
+			<SidebarGroup>
+				<SidebarMenu>
+					{Array.from({ length: 5 }).map((_, index) => (
+						<SidebarMenuItem key={index}>
+							<SidebarMenuButton disabled asChild>
+								<Skeleton className="duration-400" />
+							</SidebarMenuButton>
+						</SidebarMenuItem>
+					))}
+				</SidebarMenu>
+			</SidebarGroup>
+		) :
 		<>
 			{chatGroups.map(({ label, items }) => (
 				<SidebarGroup key={label}>
@@ -58,10 +71,7 @@ export function ChatSidebarChats() {
 								<SidebarMenuButton
 									tooltip={`${t(label)}: ${chat.title}`}
 									isActive={pathname === `/chat/${chat.id}`}
-									onClick={() => {
-										setChatId(chat.id);
-										router.push(`/chat/${chat.id}`);
-									}}
+									onClick={() => router.push(`/chat/${chat.id}`)}
 								>
 									<MessagesSquare />
 									{chat.title}
@@ -76,6 +86,13 @@ export function ChatSidebarChats() {
 }
 
 function groupChatsByTime(chats: Chat[]) {
+	chats.sort((a, b) => {
+		const aUpdatedAt = new Date(a.updatedAt).getTime();
+		const bUpdatedAt = new Date(b.updatedAt).getTime();
+
+		return bUpdatedAt - aUpdatedAt;
+	});
+
 	const thisYear = new Date().getFullYear();
 	const groups: Record<string, Chat[]> = {
 		today: [],
@@ -87,7 +104,7 @@ function groupChatsByTime(chats: Chat[]) {
 	};
 
 	for (const chat of chats) {
-		const updatedAt = parseISO(chat.updatedAt);
+		const updatedAt = new Date(chat.updatedAt);
 		const year = updatedAt.getFullYear();
 
 		if (isToday(updatedAt)) {

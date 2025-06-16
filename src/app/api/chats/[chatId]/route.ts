@@ -1,34 +1,55 @@
+import {
+	type Result,
+	NotFoundError,
+	ensureError
+} from "@/lib/response";
+
 // Auth
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { userAuthorization } from "@/lib/auth/utils";
 
 // Database
 import { db } from "@/lib/db/drizzle";
+import type { Chat } from "@/lib/db/schema";
 
 
 
 export async function GET(
 	_req: Request,
-	{ params }: { params: { chatId: string } }
+	{ params }: { params: Promise<{ chatId: string }> }
 ): Promise<Response> {
-	const session = await auth.api.getSession({ headers: await headers() });
-	const userId = session?.user?.id;
-
-	if (!userId) return new Response("Unauthorized", { status: 401 });
+	const chatId = (await params).chatId;
 
 	try {
-		const chatId = params.chatId;
-		const chat = await db.query.chats.findFirst({
-			where: ((chats, { eq }) => eq(chats.id, chatId)),
+		const user = await userAuthorization();
+
+		const chatData = await db.query.chats.findFirst({
+			where: (chats, { and, eq }) =>
+				and(
+					eq(chats.userId, user.id),
+					eq(chats.id, chatId)
+				),
 		});
-		const data = chat ?? {};
-		const message = "Chat fetched successfully.";
-		return Response.json({ data, message, level: "info" }, { status: 200 });
-	} catch (error: any) {
+
+		if (!chatData) throw new NotFoundError("Chat not found.");
+		return Response.json(
+			{
+				success: true,
+				data: chatData,
+				level: "info",
+				message: `Chat \`${chatId}\` fetched successfully.`,
+			} satisfies Result<Chat>,
+			{ status: 200 }
+		);
+	} catch (err) {
+		const error = ensureError(err);
 		console.error(`ERR::CHAT::GET: ${error.message}`);
-		return Response.json({
-			message: `Failed to fetch chat: ${error.message}`,
-			level: "error"
-		}, { status: 500 });
+
+		return Response.json(
+			{
+				success: false,
+				message: `Failed to fetch chat \`${chatId}\`, reason: ${error.message}`,
+			} satisfies Result,
+			{ status: error.status }
+		);
 	}
 }

@@ -1,8 +1,7 @@
 import { tool } from "ai";
-import { z } from "zod";
 
-import { schema } from "./schema";
-import { parameters } from "./parameters";
+// Tool
+import { parameters, schema } from "./metadata";
 import { generateStepsAction } from "./action";
 import { StepBlock } from "./component";
 
@@ -12,8 +11,8 @@ import type { ChatTool } from "@/types/chat";
 
 
 export const StepBlockTool: ChatTool<
-	typeof schema,
-	typeof parameters
+	typeof parameters,
+	typeof schema
 > = {
 	name: "step_block",
 	type: "block",
@@ -31,15 +30,15 @@ export const StepBlockTool: ChatTool<
 		- For student 追問問題, please answer directly in the conversation.
 	`,
 	tool: tool({
-		description: "A tool for generate structure answer of physics problem IN 繁體中文 #zh-TW.",
-		parameters: z.object(parameters),
+		description: "A tool for generate structure answer of mathematics, physics, code, or any solution steps content that requires formulas in user's input language.",
+		parameters: parameters,
 		execute: async () => {
 			return {
 				content: "A step answer was created and is now visible to the user.",
 			};
 		},
 	}),
-	schema: z.object(schema),
+	schema: schema,
 	useStream: true,
 	action: async (args) => await generateStepsAction(args),
 	component: StepBlock,
