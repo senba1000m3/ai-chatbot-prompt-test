@@ -17,9 +17,9 @@ type ChatModel = ChatModelConfig & {
 
 
 const OPENAI_AI_MODELS: ChatModelConfig[] = [
-	{ model: "o4-mini", name: "o4 Mini", webSearch: false },
+	{ model: "o4-mini", name: "o4-mini", webSearch: false },
 	{ model: "o3", name: "o3", webSearch: false },
-	{ model: "o3-mini", name: "o3 Mini", webSearch: false },
+	{ model: "o3-mini", name: "o3-mini", webSearch: false },
 	{ model: "gpt-4.1", name: "GPT-4.1", webSearch: true },
 	{ model: "gpt-4.1-mini", name: "GPT-4.1 mini", webSearch: true },
 	{ model: "gpt-4.1-nano", name: "GPT-4.1 nano", webSearch: false },

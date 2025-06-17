@@ -68,11 +68,14 @@ export const useChatStore = create<ChatStoreProps>()(
 				const {
 					chatId,
 					setChatId,
+					setChatTitle,
 					setIsLoading,
 					clearMessages,
 				} = get();
 
 				if (newChatId === chatId) return;
+
+				if (!newChatId) setChatTitle("");
 
 				// Don't clear messages if route change started from `/chat`
 				if (chatId) clearMessages();

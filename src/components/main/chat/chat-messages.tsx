@@ -47,7 +47,7 @@ function LoadingMessage() {
 		<Message
 			className="group [div[data-role=user]+&]:mt-2"
 			side="left"
-			showAvatar
+			showAvatar={false}
 			keepAvatarSpace
 			data-role="assistant"
 		>

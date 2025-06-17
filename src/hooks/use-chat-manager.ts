@@ -195,7 +195,6 @@ export function useChatManager() {
 			}
 
 			// TODO: Better state handling
-			setIsLoading(false);
 		}, [router, sendMessage]
 	);
 

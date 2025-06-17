@@ -5,6 +5,7 @@ import { match } from "ts-pattern";
 
 // Constants & Variables
 import { CHAT_TOOL_CONFIGS } from "./tools";
+const THROTTLE_INTERVAL = 80;  // ms
 
 // Types & Interfaces
 import type {
@@ -33,7 +34,7 @@ export async function receiveStream(
 		for (const [message] of calls) {
 			appendMessage(message);
 		}
-	}, 10);
+	}, THROTTLE_INTERVAL);
 
 	let messageContent: Array<TextPart | ToolCallPart> = [];
 
@@ -131,8 +132,10 @@ export async function receiveStream(
 					})
 					.with({ type: "error" }, () => { console.error("ERR::STREAM::RX::Part:", part) })
 					.exhaustive();
-
 			}
+
+			const setIsLoading = useChatStore.getState().setIsLoading;
+			setIsLoading(false);
 		} catch (error: any) {
 			console.error("ERR::STREAM::RX:", error);
 		}
@@ -149,7 +152,7 @@ export async function receiveObjectStream(
 		for (const [toolCallId, result] of calls) {
 			appendToolResult(toolCallId, result);
 		}
-	}, 10);
+	}, THROTTLE_INTERVAL);
 
 	const { schema } = CHAT_TOOL_CONFIGS[toolName];
 
