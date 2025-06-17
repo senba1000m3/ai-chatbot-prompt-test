@@ -24,10 +24,7 @@ export default async function ChatPage(props: {
 		where: (chats, { eq }) => eq(chats.id, chatId)
 	});
 
-	if (!chatData?.public) {
-		const error = encodeURIComponent("Unauthorized");
-		redirect(`/?error=${error}`);
-	}
+	if (!chatData?.public) redirect("/");
 
 	const messages = await db.query.messages.findMany({
 		where: (messages, { eq }) => eq(messages.chatId, chatId)

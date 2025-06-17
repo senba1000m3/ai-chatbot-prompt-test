@@ -58,7 +58,7 @@ function SignInPageSuspenseContent() {
 
 	return (
 		<WrapperLayout className="grid h-svh">
-			<header className="place-self-center grid justify-items-center gap-6">
+			<header className="place-self-center grid justify-items-center gap-6 p-2 text-center">
 				<Button
 					size="lg"
 					className="btn-chrome"

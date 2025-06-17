@@ -142,8 +142,10 @@ function PreferencesDropdownMenuGroup() {
 
 function AccountDropdownMenuGroup() {
 	const t = useTranslations("chat.sidebar.settings.account");
-	const { data: session } = useSession();
+	const { data: session, isPending } = useSession();
 	const router = useRouter();
+
+	const [isLoading, setIsLoading] = useState(false);
 
 	return (
 		<DropdownMenuGroup>
@@ -154,15 +156,23 @@ function AccountDropdownMenuGroup() {
 				<Settings2 />
 				<span>{t("advanced_settings")}</span>
 			</DropdownMenuItem>
-			{session ? (
-				<DropdownMenuItem onSelect={async () => {
-					await signOut({
-						fetchOptions: {
-							onSuccess: () => router.push("/"),
-						}
-					});
-				}}>
-					<LogOut className="text-destructive" />
+			{!isPending && session ? (
+				<DropdownMenuItem
+					disabled={isPending || isLoading}
+					onSelect={async () => {
+						setIsLoading(true);
+						await signOut({
+							fetchOptions: {
+								onSuccess: () => {
+									router.push("/");
+									setIsLoading(false);
+								},
+								onError: () => setIsLoading(false),
+							}
+						});
+					}}
+				>
+					{isLoading ? <Loader2 className="animate-spin duration-200" /> : <LogOut className="text-destructive" />}
 					<span className="text-destructive">{t("sign_out")}</span>
 				</DropdownMenuItem>
 			) : (
