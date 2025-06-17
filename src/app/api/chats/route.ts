@@ -18,7 +18,9 @@ export async function POST(req: Request): Promise<Response> {
 		const chatData = {
 			id: passedChatData?.id || nanoid(),
 			userId: user.id,
+			shortId: null,
 			title: passedChatData?.title || "Untitled Chat",
+			public: false,
 			createdAt: new Date(),
 			updatedAt: new Date(),
 		};
