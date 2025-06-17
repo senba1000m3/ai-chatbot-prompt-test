@@ -52,7 +52,7 @@ export function Code({
 		? children.props as React.ComponentProps<"code">
 		: null;
 	const rawCode = codeElement?.children ?? "";
-	const code = typeof rawCode === "string" ? rawCode : String(rawCode).trim();
+	const code = typeof rawCode === "string" ? rawCode.trim() : String(rawCode).trim();
 	const codeClassName = codeElement?.className ?? "";
 	const matchLang = codeClassName?.match(/language-(\w+)/);
 	const language = matchLang ? matchLang[1] : "plaintext";
@@ -103,6 +103,7 @@ export function Code({
 				delay={100}
 				showLanguage={false}
 				showLineNumbers={language !== "plaintext"}
+				tabindex={-1}
 				className={cn(
 					"text-sm [&_pre]:p-0! [&_pre]:px-5! [&_pre]:py-1.5! [&_pre]:rounded-t-none! [&_pre]:rounded-b-md!",
 					className

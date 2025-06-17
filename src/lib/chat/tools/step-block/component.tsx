@@ -1,4 +1,5 @@
 "use client";
+import { memo } from "react";
 
 // Tool
 import type { StepBlockSchema } from "@/lib/chat/tools/step-block/metadata";
@@ -22,16 +23,16 @@ export function StepBlock({ result, ...props }: { result: StepBlockSchema }) {
 			{...props}
 		>
 			{result.steps.map((step, index) => (
-				<StepBlockItem key={index} step={step} index={index} />
+				<StepBlockItem key={step.concept} step={step} index={index} />
 			))}
 		</Accordion>
 	);
 }
 
-function StepBlockItem({ step, index }: {
+const StepBlockItem = memo(({ step, index }: {
 	step: StepBlockSchema["steps"][number],
 	index: number
-}) {
+}) => {
 	return (
 		<AccordionItem
 			className=" bg-card text-card-foreground rounded-xl border! shadow-sm overflow-clip"
@@ -52,4 +53,5 @@ function StepBlockItem({ step, index }: {
 			</AccordionContent>
 		</AccordionItem>
 	);
-}
+});
+StepBlockItem.displayName = "StepBlockItem";

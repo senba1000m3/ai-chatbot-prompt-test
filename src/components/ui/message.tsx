@@ -9,6 +9,7 @@ import { ICON_IMG_URL } from "@/lib/constant";
 
 // Types
 type MessageProps = {
+	role?: "user" | "assistant" | "tool" | "system";
 	showAvatar?: boolean;
 	keepAvatarSpace?: boolean;
 	avatarSrc?: string;
@@ -24,7 +25,7 @@ function MessageGroup({
 }: React.ComponentProps<"div">) {
 	return (
 		<div
-			className={cn("@container/message-group flex flex-col gap-8", className)}
+			className={cn("@container/message-group flex flex-col gap-10", className)}
 			{...props}
 		/>
 	);
@@ -49,6 +50,7 @@ function Message({
 	className,
 	children,
 	side,
+	role = "user",
 	showAvatar = true,
 	keepAvatarSpace = false,
 	avatarSrc = ICON_IMG_URL,
@@ -63,9 +65,10 @@ function Message({
 		<div
 			className={cn(
 				messageVariants({ side }),
-				keepAvatarSpace && "after:block after:size-10 after:shrink-0",
+				(!showAvatar && keepAvatarSpace) && "after:block after:size-10 after:shrink-0",
 				className
 			)}
+			data-role={role}
 			{...props}
 		>
 			{shouldRenderAvatar && (
@@ -88,12 +91,12 @@ function Message({
 }
 
 const messageContentVariants = cva(
-	"grid items-center",
+	"relative grid items-center",
 	{
 		variants: {
 			variant: {
 				default: "grow",  // text-justify
-				bubble: "px-4 py-2 bg-secondary text-secondary-foreground rounded-2xl",
+				bubble: "px-4 py-3 bg-secondary text-secondary-foreground rounded-2xl",
 			},
 		},
 		defaultVariants: {

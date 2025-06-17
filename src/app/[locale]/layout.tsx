@@ -112,6 +112,7 @@ export default async function RootLayout({
 			suppressHydrationWarning
 		>
 			<head>
+				<script src="https://unpkg.com/react-scan/dist/auto.global.js" async />
 				<link
 					rel="stylesheet"
 					href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css"

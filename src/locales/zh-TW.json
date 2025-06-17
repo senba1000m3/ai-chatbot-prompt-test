@@ -19,6 +19,7 @@
 		"sidebar": {
 			"add_new_chat": "新增聊天",
 			"dates": {
+				"date": "日期",
 				"last_year": "去年",
 				"legacy": "你為什麼還留著",
 				"this_month": "本月",
@@ -50,7 +51,8 @@
 		"welcome": {
 			"title": "歡迎回來，{name}！",
 			"examples": {
-				"integral": "請計算 \\( x^3 \\) 的不定積分。"
+				"integral": "請計算 \\( x^3 \\) 的不定積分。",
+				"lyrics": "搜尋 Limonène 的歌曲《ヨミビトシラズ》的歌詞，並將歌曲標題與歌詞翻譯成中文 (zh-TW) 和英文。"
 			}
 		}
 	},

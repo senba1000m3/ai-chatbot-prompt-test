@@ -19,6 +19,7 @@
 		"sidebar": {
 			"add_new_chat": "新しいチャット",
 			"dates": {
+				"date": "日付",
 				"last_year": "去年",
 				"legacy": "なんでまだ取ってあるの",
 				"this_month": "今月",
@@ -50,7 +51,8 @@
 		"welcome": {
 			"title": "おかえりなさい、{name}さん！",
 			"examples": {
-				"integral": "\\( x^3 \\) の不定積分を計算する。"
+				"integral": "\\( x^3 \\) の不定積分を計算する。",
+				"lyrics": "Limonène の楽曲「ヨミビトシラズ」の歌詞を検索し、タイトルと歌詞を繁体字中国語 (zh-TW) と英語に翻訳する。"
 			}
 		}
 	},

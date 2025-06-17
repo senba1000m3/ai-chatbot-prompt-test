@@ -198,7 +198,7 @@ function P({
 }: React.ComponentProps<"p"> & AsChild) {
 	const Comp = asChild ? SlotPrimitive.Slot : "p";
 
-	return <Comp className={cn("leading-relaxed [&:not(:first-child)]:mt-4", className)} {...props} />;
+	return <Comp className={cn("leading-relaxed [&:not(:first-child)]:mt-4 break-all", className)} {...props} />;
 }
 
 function Muted({
@@ -240,6 +240,8 @@ function Anchor({
 		<Link
 			href={href}
 			className={cn("font-medium text-primary hover:text- underline underline-offset-4", className)}
+			target={href.startsWith("https") ? "_blank" : undefined}
+			rel={href.startsWith("https") ? "noopener noreferrer" : undefined}
 			{...props}
 		/>
 	);

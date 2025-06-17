@@ -224,7 +224,7 @@ export function FileTextButton(
 				className={cn("size-4", svgClassName)}
 				variants={{
 					normal: { scale: 1 },
-					animate: { scale: 1.05, transition: { duration: 0.3, ease: "easeOut" } },
+					animate: { scale: 1.2, transition: { duration: 0.3, ease: "easeOut" } },
 				}}
 			>
 				<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />

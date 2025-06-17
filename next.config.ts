@@ -44,9 +44,10 @@ const nextConfig: NextConfig = {
 			},
 		]
 	},
-	devIndicators: {
-		position: "bottom-right",
-	},
+	// devIndicators: {
+	// 	position: "bottom-right",
+	// },
+	devIndicators: false,
 	images: {
 		remotePatterns: [
 			{

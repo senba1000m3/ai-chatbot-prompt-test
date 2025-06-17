@@ -50,10 +50,18 @@ export default async function ChatLayout({ children }: React.ComponentProps<"mai
 					className="h-[calc(100svh_-_3rem)]!"
 					direction="horizontal"
 				>
-					<ChatResizablePanel minSize={30}>
+					<ChatResizablePanel
+						defaultSize={70}
+						minSize={30}
+						order={1}
+					>
 						{children}
 					</ChatResizablePanel>
-					<BlockResizablePanel minSize={30} />
+					<BlockResizablePanel
+						defaultSize={30}
+						minSize={30}
+						order={2}
+					/>
 				</ResizablePanelGroup>
 			</main>
 		</SidebarProvider>

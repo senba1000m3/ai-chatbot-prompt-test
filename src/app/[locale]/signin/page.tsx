@@ -30,6 +30,10 @@ function SignInPageSuspenseContent() {
 	const searchParams = useSearchParams();
 	const error = searchParams.get("error");
 
+	useEffect(() => {
+		router.prefetch("/chat");
+	}, [router]);
+
 	// Redirect to `/chat` if user is already signed in
 	useEffect(() => {
 		if (session) {

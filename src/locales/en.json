@@ -19,6 +19,7 @@
 		"sidebar": {
 			"add_new_chat": "New Chat",
 			"dates": {
+				"date": "Date",
 				"last_year": "Last Year",
 				"legacy": "Why are You Still Keeping These",
 				"this_month": "This Month",
@@ -50,7 +51,8 @@
 		"welcome": {
 			"title": "Welcome back, {name}!",
 			"examples": {
-				"integral": "Calculate the indefinite integral of \\( x^3 \\)."
+				"integral": "Calculate the indefinite integral of \\( x^3 \\).",
+				"lyrics": "Find the lyrics of the song titled \"ヨミビトシラズ\" by Limonène, and translate both the title and lyrics into English and Chinese (zh-TW)."
 			}
 		}
 	},

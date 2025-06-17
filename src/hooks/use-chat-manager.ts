@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useTransition } from "react";
+import { useRouter } from "@/lib/i18n/navigation";
 import { useChatStore } from "@/lib/store/chat";
 import { useToolStore } from "@/lib/store/tool";
 
@@ -23,12 +24,10 @@ type HandleSubmitProps = {
 
 
 export function useChatManager() {
-	const [isChatPending, startChatTransition] = useTransition();
-	const [isToolPending, startToolTransition] = useTransition();
+	const router = useRouter();
 
-	const isLoading = useChatStore(state => state.isLoading);
-	const setIsLoading = useChatStore(state => state.setIsLoading);
-	const getMessageArray = useChatStore(state => state.getMessageArray);
+	const [, startChatTransition] = useTransition();
+	const [, startToolTransition] = useTransition();
 
 	// TODO: Better everything
 	const executeTool = useCallback(
@@ -77,10 +76,12 @@ export function useChatManager() {
 			messages: newMessages = [],
 			model,
 			character,
+			useWebSearch,
 		}: ChatOptions) => {
 			startChatTransition(async () => {
 				// TODO: A function that converts the enitre block tool result into a message
 
+				const getMessageArray = useChatStore.getState().getMessageArray;
 				const messages = [
 					// History messages (but without the latest user message)
 					...getMessageArray().slice(0, -1),
@@ -96,10 +97,11 @@ export function useChatManager() {
 					messages,
 					model,
 					character,
+					useWebSearch,
 				});
 				await receiveStream(fullStreamValue, executeTool);
 			});
-		}, []
+		}, [executeTool]
 	);
 
 	const handleSubmit = useCallback(
@@ -111,10 +113,14 @@ export function useChatManager() {
 				chatId,
 				input,
 				setInput,
+				setIsLoading,
 				model,
 				character,
+				useWebSearch,
 				appendMessage,
 			} = useChatStore.getState();
+
+			setIsLoading(true);
 
 			// Since we get a copy of input,
 			// we can safely clear the input state
@@ -134,13 +140,15 @@ export function useChatManager() {
 			if (!finalChatId) {
 				finalChatId = nanoid();
 
+				// Push the route first
+				router.push(`/chat/${finalChatId}`);
+
 				// POST the chat first
 				await fetcher("/api/chats", {
 					method: "POST",
 					data: { id: finalChatId },
 				});
 
-				// Then run the callback (most likely `router.push()`)
 				await onNewChatCallback?.(finalChatId);
 			}
 
@@ -163,8 +171,12 @@ export function useChatManager() {
 				messages,
 				model,
 				character,
+				useWebSearch,
 			});
-		}, []
+
+			// TODO: Better state handling
+			setIsLoading(false);
+		}, [router, sendMessage]
 	);
 
 	return {

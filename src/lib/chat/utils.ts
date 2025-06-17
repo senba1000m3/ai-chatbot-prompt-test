@@ -8,8 +8,8 @@ import { CHAT_TOOL_CONFIGS } from "./tools";
 
 // Types & Interfaces
 import type {
-	CoreAssistantMessage,
 	CoreMessage,
+	CoreAssistantMessage,
 	CoreToolMessage,
 	ObjectStreamPart,
 	TextPart,
@@ -18,6 +18,7 @@ import type {
 	ToolResultPart,
 } from "ai";
 import type { StreamableValue } from "ai/rsc";
+import type { SourcePart } from "@/types/chat";
 
 
 
@@ -26,6 +27,7 @@ export async function receiveStream(
 	streamValue: StreamableValue,
 	executeTool: any
 ) {
+	const appendSource = useChatStore.getState().appendSource;
 	const appendMessage = useChatStore.getState().appendMessage;
 	const throttledAppendMessage = throttleBuffer((calls: CoreMessage[][]) => {
 		for (const [message] of calls) {
@@ -34,7 +36,6 @@ export async function receiveStream(
 	}, 10);
 
 	let messageContent: Array<TextPart | ToolCallPart> = [];
-	const toolResults: ToolResultPart[] = [];  // ? This seems to do nothing
 
 	(async () => {
 		try {
@@ -46,6 +47,7 @@ export async function receiveStream(
 				// https://ai-sdk.dev/docs/reference/ai-sdk-core/stream-text#full-stream
 				match(part)
 					.with({ type: "text-delta" }, (part) => {
+						// console.log("STREAM::RX::TEXT_DELTA");
 						// If the last part is a TextPart, append textDelta to it
 						// Otherwise, create a new TextPart
 						const prevPart = messageContent[messageContent.length - 1];
@@ -66,9 +68,24 @@ export async function receiveStream(
 					.with({ type: "reasoning" }, () => { console.log("STREAM::RX::REASONING: Skipped") })
 					.with({ type: "reasoning-signature" }, () => { console.log("STREAM::RX::REASONING: Skipped") })
 					.with({ type: "redacted-reasoning" }, () => { console.log("STREAM::RX::REASONING: Skipped") })
-					.with({ type: "source" }, () => { console.log("STREAM::RX::SOURCE: Skipped") })
+					.with({ type: "source" }, (part) => {
+						console.log("STREAM::RX::SOURCE");
+						const source = part.source;
+						const cleanUrl = new URL(source.url);
+						cleanUrl.searchParams.delete("utm_source");
+						const sourcePart: SourcePart = {
+							type: "source",
+							source: {
+								id: source.id,
+								url: cleanUrl.toString(),
+								title: source.title,
+							},
+						};
+						appendSource(sourcePart);
+					})
 					.with({ type: "file" }, () => { console.log("STREAM::RX::FILE: Skipped") })
 					.with({ type: "tool-call" }, (part) => {
+						console.log("STREAM::RX::TOOL_CALL");
 						const { type, toolCallId, toolName, args } = part;
 						const toolCallPart: ToolCallPart = {
 							type,
@@ -89,6 +106,7 @@ export async function receiveStream(
 					.with({ type: "tool-call-streaming-start" }, () => { })  // when `toolCallStreaming` is enabled
 					.with({ type: "tool-call-delta" }, () => { })  // when `toolCallStreaming` is enabled
 					.with({ type: "tool-result" }, (part) => {
+						console.log("STREAM::RX::TOOL_RESULT");
 						messageContent = [];  // Resets content array since it's a new CoreToolMessage
 
 						const { type, toolCallId, toolName, result } = part;
@@ -100,7 +118,6 @@ export async function receiveStream(
 							isError: false,
 						};
 
-						toolResults.push(toolResultPart);  // ? This seems to do nothing
 						throttledAppendMessage({
 							role: "tool",
 							content: [toolResultPart],
@@ -131,7 +148,6 @@ export async function receiveObjectStream(
 	const throttledAppendToolResult = throttleBuffer((calls: any[][]) => {  // TODO: Fix type
 		for (const [toolCallId, result] of calls) {
 			appendToolResult(toolCallId, result);
-			console.log(`TOOL_RESULT: ID ${toolCallId}, RESULT: ${result}`);
 		}
 	}, 10);
 

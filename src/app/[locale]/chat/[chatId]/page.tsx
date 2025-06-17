@@ -26,6 +26,7 @@ export default function ChatPage(props: {
 	const params = use(props.params);
 	const chatId = params.chatId;
 
+	// @ts-expect-error fxxk fetcher type
 	const { data, error } = useSWR<{ data: Chat }>(`/api/chats/${chatId}`, fetcher);
 	const chatTitle = data?.data?.title;
 
@@ -51,11 +52,11 @@ export default function ChatPage(props: {
 			setChatTitle(chatTitle || untitled);
 			document.title = chatTitle || untitled;
 		}
-	}, [chatTitle, error]);
+	}, [chatTitle, error, t]);
 
 	return (
 		<ScrollArea className="size-full" scrollHideDelay={1000}>
-			<WrapperLayout className="pt-4 pb-40" width={960}>
+			<WrapperLayout className="pt-4 pb-48" width={960}>
 				<ChatMessages chatId={chatId} />
 			</WrapperLayout>
 		</ScrollArea>

@@ -1,16 +1,16 @@
 "use client";
 import { useCallback, useState } from "react";
-import { useRouter } from "@/lib/i18n/navigation";
 import { useChatManager } from "@/hooks/use-chat-manager";
 import { useChatStore } from "@/lib/store/chat";
 import { useTranslations } from "next-intl";
 
-// Database
-import fetcher from "@/lib/fetcher";
+// SWR
+import { mutate } from "swr";
 
 // Components & UI
 import { Button } from "@/components/ui/button";
 import { ChatModelSelect } from "./model-select";
+import { ChatWebSearchToggle } from "./web-search-toggle";
 import { SendButton } from "@/components/common/motion-buttons";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -26,7 +26,6 @@ import type { CoreUserMessage } from "ai";
 
 export function ChatInput() {
 	const t = useTranslations("chat.input");
-	const router = useRouter();
 
 	const { handleSubmit } = useChatManager();
     const [isComposing, setIsComposing] = useState(false);
@@ -34,9 +33,10 @@ export function ChatInput() {
 	// Chat related
 	const input = useChatStore(state => state.input);
 	const setInput = useChatStore(state => state.setInput);
+	const isLoading = useChatStore(state => state.isLoading);
 
 	// Combined states
-	const disabled = !input.trim() || isComposing || false;  // TODO: Change to chat state
+	const disabled = !input.trim() || isComposing || isLoading;
 
 	async function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
 		if (disabled) return;
@@ -56,9 +56,7 @@ export function ChatInput() {
 		}];
 	}, []);
 
-	const onNewChatCallback = useCallback(
-		(newChatId: string) => router.push(`/chat/${newChatId}`), []
-	);
+	function onNewChatCallback() { mutate("/api/chats"); }
 
 	return (
 		<div className="space-y-2 p-2 border border-b-0 bg-background/40 rounded-t-md backdrop-blur-lg">
@@ -72,8 +70,9 @@ export function ChatInput() {
 				placeholder={t("placeholder")}
 			/>
 			<div className="flex items-center justify-between">
-				<div>
+				<div className="flex items-center gap-2">
 					<ChatModelSelect />
+					<ChatWebSearchToggle />
 				</div>
 				<Tooltip>
 					<TooltipTrigger asChild>

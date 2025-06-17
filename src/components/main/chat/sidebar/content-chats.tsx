@@ -23,7 +23,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Icons & Images
-import { MessagesSquare } from "lucide-react";
+import { MessageCircleQuestion, MessagesSquare } from "lucide-react";
 
 // Types & Interfaces
 import type { Chat } from "@/lib/db/schema";
@@ -45,9 +45,22 @@ export function ChatSidebarChats() {
 	const chats = data || [];
 	const chatGroups = groupChatsByTime(chats);
 
+	if (error) {
+		return (
+			<SidebarGroup>
+				<SidebarGroupLabel>
+					<MessageCircleQuestion />
+				</SidebarGroupLabel>
+			</SidebarGroup>
+		);
+	}
+
 	return (
 		isLoading ? (
 			<SidebarGroup>
+				<SidebarGroupLabel>
+					{t("date")}
+				</SidebarGroupLabel>
 				<SidebarMenu>
 					{Array.from({ length: 5 }).map((_, index) => (
 						<SidebarMenuItem key={index}>

@@ -37,6 +37,7 @@ export default function ChatPage() {
 	const name = session?.user?.name || "Guest";
 
 	const [showHeader, setShowHeader] = useState(false);
+	const isLoading = useChatStore(state => state.isLoading);
 	const input = useChatStore(state => state.input);
 	const setInput = useChatStore(state => state.setInput);
 
@@ -57,10 +58,10 @@ export default function ChatPage() {
 	return (
 		<div className="size-full grid">
 			<AnimatePresence>
-				{showHeader && !isPending && (
+				{showHeader && !isPending && !isLoading && (
 					<motion.header
 						key="chat-header"
-						className="max-w-2xl m-auto"
+						className="max-w-2xl m-auto p-4"
 						variants={HEADER_VARIANTS}
 						initial="hidden"
 						animate="visible"
@@ -82,7 +83,7 @@ export default function ChatPage() {
 									<Button
 										variant="ghost"
 										size="lg"
-										className="justify-normal px-3 w-full text-muted-foreground text-left"
+										className="justify-normal w-full h-auto px-3 py-2 text-muted-foreground text-left whitespace-normal"
 										onClick={() => setInput(value as string)}
 									>
 										<MarkdownText>

@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useChatStore } from "@/lib/store/chat";
 import { useTranslations } from "next-intl";
-import { getModelNameById } from "@/lib/chat/models";
+import { getChatModel } from "@/lib/chat/models";
 
 // Components & UI
 import { Button } from "@/components/ui/button";
@@ -39,7 +39,7 @@ export function ChatModelSelect() {
 		<Popover open={open} onOpenChange={setOpen}>
 			<PopoverTrigger asChild>
 				<Button variant="ghost" size="sm">
-					{model ? getModelNameById(model) : t("select")}
+					{model ? getChatModel(model)?.name : t("select")}
 					<ChevronsUpDown />
 				</Button>
 			</PopoverTrigger>
@@ -58,7 +58,7 @@ export function ChatModelSelect() {
 								heading={key}
 								className="[&_[cmdk-group-heading]]:text-primary"
 							>
-								{value.models.map(m => (
+								{value.map(m => (
 									<CommandItem
 										key={m.model}
 										value={m.model}

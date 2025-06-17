@@ -1,7 +1,7 @@
 "use server";
 import { createIdGenerator, streamText } from "ai";
 import { createStreamableValue } from "ai/rsc";
-import { getModelProvider } from "@/lib/chat/models";
+import { getChatModel } from "@/lib/chat/models";
 import { ensureError } from "@/lib/response";
 
 // Auth
@@ -28,29 +28,38 @@ export async function generate({
 	messages = [],
 	model,
 	character,
+	useWebSearch,
 }: ChatOptions): Promise<StreamableValue> {
 	// TODO: Rate Limit
 	const user = await userAuthorization();
 
 	const stream = createStreamableValue();
-	const provider = getModelProvider(model);
-	if (!provider) throw new Error(`Model provider not found for model: ${model}`);
+	const chatModel = getChatModel(model);
+	if (!chatModel) throw new Error(`Model not available: ${model}`);
 
 	(async () => {
 		const characterPrompt = await redis.get(character);
 
 		const result = streamText({
-			model: provider(model),
+			model: chatModel.provider(
+				model,
+				(useWebSearch && chatModel.webSearch) ? chatModel?.settings ?? {} : {}
+			),
 			system: `
 				You are a helpful assistant that can answer questions and provide information based on the context provided by the user. You can also use tools to assist with tasks. The user may ask you to perform actions or provide information related to the conversation.\n
 				You are currently in a chat with a user. The user may ask you to perform actions or provide information related to the conversation. You can use tools to assist with tasks, and you can also provide information based on the context provided by the user.\n\n
-				Don't use tools if the question is not solvable by the provided tools.
-				Please separate paragraphs with the \`\\n\\n---\\n\\n\` string.
-
+				Don't use tools if the question is not solvable by the provided tools.\n\n
+				${characterPrompt
+					? `Please answer the user's question in the below character\n<character>\n${characterPrompt}\n</character>`
+					: ""
+				}\n\n
 				${CHAT_TOOL_NAMES.length > 0 ? generateBlockToolPrompt(CHAT_TOOL_NAMES) : ""}
 			`,
 			messages,
-			tools: CHAT_TOOLS,
+			tools: {
+				...CHAT_TOOLS,
+				...((useWebSearch && chatModel.webSearch) ? chatModel?.tools ?? {} : {}),
+			},
 			experimental_generateMessageId: createIdGenerator({ size: 16 }),
 			async onFinish({ finishReason, response, usage }) {
 				console.log("STREAM::TX::FIN:", finishReason);
