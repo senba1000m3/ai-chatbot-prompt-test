@@ -5,10 +5,12 @@ import { useToolStore } from "@/lib/store/tool";
 import { useTranslations } from "next-intl";
 import { match } from "ts-pattern";
 import { cn, copyToClipboard } from "@/lib/utils";
+import { getChatModel } from "@/lib/chat/models";
 
 // SWR
 import useSWRImmutable from "swr/immutable";
 import fetcher from "@/lib/fetcher";
+import { mutate } from "swr";
 
 // Components & UI
 import { toast } from "sonner";
@@ -18,15 +20,13 @@ import { MarkdownText, Muted } from "@/components/common/typography";
 import { Message, MessageContent, MessageGroup } from "@/components/ui/message";
 
 // Icons & Images
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, LoaderPinwheel } from "lucide-react";
 
 // Types & Interfaces
 import type { CoreMessage } from "ai";
 import type { Message as ChatMessage } from "@/lib/db/schema";
 import type { FetcherOptions } from "@/lib/fetcher";
 import { SourcePart } from "@/types/chat";
-import { getChatModel } from "@/lib/chat/models";
-import { mutate } from "swr";
 
 
 
@@ -35,8 +35,27 @@ export function ChatMessages({ chatId }: { chatId: string }) {
 		<MessageGroup className="gap-8">
 			<InitialMessages chatId={chatId} />
 			<CurrentMessages />
+			<LoadingMessage />
 		</MessageGroup>
 	);
+}
+
+function LoadingMessage() {
+	const isLoading = useChatStore(state => state.isLoading);
+
+	return isLoading ? (
+		<Message
+			className="group [div[data-role=user]+&]:mt-2"
+			side="left"
+			showAvatar
+			keepAvatarSpace
+			data-role="assistant"
+		>
+			<MessageContent>
+				<LoaderPinwheel className="animate-spin duration-200" />
+			</MessageContent>
+		</Message>
+	) : null;
 }
 
 function InitialMessages({ chatId }: { chatId: string }) {

@@ -81,7 +81,7 @@ export const useChatStore = create<ChatStoreProps>()(
 				setChatId(newChatId);
 
 				// TODO: Handle state reset
-				setIsLoading(false);
+				if (!(!chatId && newChatId)) setIsLoading(false);
 			},
 
 			// Message related
