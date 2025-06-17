@@ -1,8 +1,10 @@
 "use server";
 import { createIdGenerator, streamText, generateObject } from "ai";
 import { createStreamableValue } from "ai/rsc";
+import { openai } from "@ai-sdk/openai";
 import { getChatModel } from "@/lib/chat/models";
 import { ensureError } from "@/lib/response";
+import { z } from "zod";
 
 // Auth
 import { userAuthorization } from "@/lib/auth/utils";
@@ -17,11 +19,11 @@ const redis = Redis.fromEnv();
 import { CHAT_TOOLS, CHAT_TOOL_CONFIGS, CHAT_TOOL_NAMES } from "./tools";
 
 // Types & Interfaces
+import type { CoreMessage } from "ai";
 import type { StreamableValue } from "ai/rsc";
-import type { ChatOptions } from "@/types/chat";
+import { ChatOptions } from "@/types/chat";
 
-// Zod
-import { z } from 'zod';
+
 
 // https://ai-sdk.dev/cookbook/rsc/stream-text
 export async function generate({
@@ -116,35 +118,40 @@ function generateBlockToolPrompt(chatToolNames: string[]): string {
 	`;
 }
 
-export async function generateChatMeta(messages: ChatOptions["messages"]): Promise<{ title: string; tags: string[] }> {
-
+export async function generateChatMetadata({ messages }: {
+	messages: CoreMessage[];
+}): Promise<{ title: string; tags: string[] }> {
 	if (messages.length === 0) return { title: "Untitled Chat", tags: [] };
-	const user = await userAuthorization();
-	const chatModel = getChatModel("gpt-4.1-mini");
 
 	try {
 		const { object } = await generateObject({
-			model: chatModel.provider(chatModel.model),
+			model: openai("gpt-4.1-mini"),
 			schema: z.object({
-				title: z.string().describe("The title of the chat"),
-				tags: z.array(z.string()).describe("Tags related to the chat"),
+				title: z.string().describe("The title of the chat."),
+				tags: z.array(z.string()).describe("Tags related to the chat."),
 			}),
-			prompt: `You are a helpful assistant that can generate a title and tags for a chat based on the messages provided. The title should be concise and reflect the main topic of the conversation.
-		${messages.map(m => {
-				const messageText = m.content
-					.filter(c => c.type === 'text')
-					.map(c => c.text)
-					.join(" ");
-				return `\n- ${m.role}: ${messageText}`;
-			}).join('')}`,
+			prompt: `
+			You are a helpful assistant that can generate a title and tags for a chat based on the messages provided. The title should be concise and reflect the main topic of the conversation.\n\n
+			${messages.map(message => {
+				let content = "";
+				if (typeof message.content === "string") {
+					content = message.content;
+				} else {
+					content = message.content
+						.filter(c => c.type === "text")
+						.map(c => c.text).join(" ");
+				}
+
+				return `- ${message.role}: ${content}`;
+			}).join("\n")}
+			`,
 		});
-		if (object?.title) {
-			return object;
-		}
+
+		if (object?.title) return object;
 		return { title: "My Smart Chat", tags: [] };
 	} catch (err) {
 		const error = ensureError(err);
-		console.error("ERR::CHAT::META:", error.message);
-		return { title: "ERROR TITLE", tags: [] };
+		console.error("ERR::CHAT::METADATA:", error.message);
+		return { title: "My Smart Chat", tags: [] };
 	}
 }

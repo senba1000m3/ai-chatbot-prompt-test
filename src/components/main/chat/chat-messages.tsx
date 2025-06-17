@@ -52,7 +52,7 @@ function LoadingMessage() {
 			data-role="assistant"
 		>
 			<MessageContent>
-				<LoaderPinwheel className="animate-spin duration-200" />
+				<LoaderPinwheel className="size-6 text-muted-foreground animate-spin duration-200" />
 			</MessageContent>
 		</Message>
 	) : null;

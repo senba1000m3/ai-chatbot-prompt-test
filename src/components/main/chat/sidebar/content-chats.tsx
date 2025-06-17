@@ -106,8 +106,8 @@ export function ChatSidebarChats() {
 									onClick={() => router.push(`/chat/${chat.id}`)}
 								>
 									<MessagesSquare />
-									{chat.title}
-									<div className="opacity-0 group-hover/button:opacity-100 absolute right-2 top-1/2 -translate-y-1/2 transition-opacity">
+									<span className="truncate">{chat.title}</span>
+									<div className="opacity-0 group-hover/button:opacity-100 absolute right-2 top-1/2 -translate-y-1/2 transition-opacity bg-sidebar-accent mask-l-from-80% group-hover/button:mask-l-to-transparent group-data-[collapsible=icon]:hidden">
 										<ShareButton chat={chat} />
 									</div>
 								</SidebarMenuButton>

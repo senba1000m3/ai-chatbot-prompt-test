@@ -3,11 +3,12 @@ import { useCallback, useTransition } from "react";
 import { useRouter } from "@/lib/i18n/navigation";
 import { useChatStore } from "@/lib/store/chat";
 import { useToolStore } from "@/lib/store/tool";
+import { mutate } from "swr";
 
 import fetcher from "@/lib/fetcher";
 import { match } from "ts-pattern";
 import { nanoid } from "@/lib/utils";
-import { generate, generateChatMeta } from "@/lib/chat/actions";
+import { generate, generateChatMetadata } from "@/lib/chat/actions";
 import { receiveStream, receiveObjectStream } from "@/lib/chat/utils";
 
 // Constants & Variables
@@ -174,13 +175,12 @@ export function useChatManager() {
 				useWebSearch,
 			});
 
-			// Generate chat title after receiving AI response
-			// Only do this for newly created chats
+			// Generate a chat title if it's a new chat
 			if (!chatId) {
 				try {
 					// Get all messages including the AI response
 					const allMessages = useChatStore.getState().getMessageArray();
-					const { title } = await generateChatMeta(allMessages);
+					const { title } = await generateChatMetadata({ messages: allMessages });
 					const setChatTitle = useChatStore.getState().setChatTitle;
 					setChatTitle(title);
 
@@ -188,11 +188,10 @@ export function useChatManager() {
 					await fetcher(`/api/chats/${finalChatId}`, {
 						method: "PATCH",
 						data: { title },
-					});
+					}).then(() => mutate("/api/chats"));
 				} catch (error) {
 					console.error("ERR::CHAT::TITLE:", error);
 				}
-				// TODO: mutate("/api/chats");
 			}
 
 			// TODO: Better state handling
