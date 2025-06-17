@@ -18,6 +18,10 @@ Project τ is an experimental AI chat app for code-oriented template development
 - Response Character Presets: Choose a (character) respond style you like
 - Web Search
 - Chat Sharing
+- Style Your Own Interface
+	- Theme Changer, including a T3 Chat theme lol (code and theme parsed from [shadcn/studio](https://github.com/themeselection/shadcn-studio) partially, themes from [tweakcn](https://github.com/jnsahaj/tweakcn) additionally)
+	- i18n (powered by [next-intl](https://github.com/amannn/next-intl))
+
 ### Entertainments (Don't Take Them Too Serious)
 - Made all of our loaders [spin faster thus loading things faster](https://x.com/jordienr/status/1932036673644232794)
 - Chat input follows the Liquid Glass trend (but it's a frosted glass)!
@@ -33,14 +37,18 @@ Project τ is an experimental AI chat app for code-oriented template development
 ## Getting Started
 ### Auth & Database
 For database and auth to run properly, you'll need a [Neon Database](https://neon.com/). Create a new project with the Free Plan and copy the `DATABASE_URL` value from the "Connect to your database" section.
+
 ### Google OAuth
 You'll also need to create a Google auth client at the [Google Auth Platform](https://console.cloud.google.com/auth/overview). To do that, first create a new Google Cloud Project.
 Set "Authorized JavaScript origins" to your production domain and dev domain (note that it uses HTTPS), and "Authorized redirect URIs" to `{domain}/api/auth/callback/google`. Also remember to copy the client ID and client secret.
+
 ### Upstash Redis (Optional)
 We store some of our prompts (character prompts specifically) in an Upstash Redis database, in case you don't need it, you can remove the functionality in `src\lib\chat\actions.ts`.
 If you do want to test out, the default character ID is `tai-chan`. Create a key value pair with it as the key name, or even further, change the character ID by your preference.
+
 ### AI Providers
 This project uses only a subset of OpenAI models and Google Gemini models (without OpenRouter), so remember to grab API keys respectively.
+
 ### Next Steps
 1. Create a `.env` file and prepare the following environment variables:
 
@@ -84,6 +92,9 @@ Then later, you know, T3 Chat Cloneathon started. We took the opportunity, and t
 > - Migrated from never-ending beta `auth.js` to `better-auth`
 
 Future versions would probably be very different from this since we chose to build with what we know best ~~a.k.a. the fanboy stack~~, but not the best option for an AI chatbot like this.
+
+### UNO
+(TBD)
 
 ## License
 This repository is published under the MIT license.
