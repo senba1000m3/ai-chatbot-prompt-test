@@ -74,16 +74,16 @@
 	},
 	"layout": {
 		"chat": {
-			"description": "An experimental AI chat app for code-based template development.",
+			"description": "An experimental AI chat app for code-oriented template development.",
 			"title": "Dashboard"
 		},
 		"homepage": {
-			"description": "An experimental AI chat app for code-based template development.",
+			"description": "An experimental AI chat app for code-oriented template development.",
 			"title": "Project τ",
 			"heading": "Welcome to <title>{name}</title>"
 		},
 		"signin": {
-			"description": "An experimental AI chat app for code-based template development.",
+			"description": "An experimental AI chat app for code-oriented template development.",
 			"title": "Sign in"
 		}
 	},

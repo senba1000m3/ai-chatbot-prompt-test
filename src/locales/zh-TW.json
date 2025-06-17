@@ -74,16 +74,16 @@
 	},
 	"layout": {
 		"chat": {
-			"description": "一款用於基於程式碼模板開發的實驗性 AI 聊天應用程式。",
+			"description": "一款用於程式碼導向模板開發的實驗性 AI 聊天應用程式。",
 			"title": "儀錶板"
 		},
 		"homepage": {
-			"description": "一款用於基於程式碼模板開發的實驗性 AI 聊天應用程式。",
+			"description": "一款用於程式碼導向模板開發的實驗性 AI 聊天應用程式。",
 			"title": "Project τ",
 			"heading": "歡迎來到 <title>{name}</title>"
 		},
 		"signin": {
-			"description": "一款用於基於程式碼模板開發的實驗性 AI 聊天應用程式。",
+			"description": "一款用於程式碼導向模板開發的實驗性 AI 聊天應用程式。",
 			"title": "登入"
 		}
 	},

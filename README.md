@@ -1,7 +1,7 @@
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/ritmo-v0/project-tau)
 
 # Project τ (read as Project Tau)
-Project τ is an experimental AI chat app for code-based template development, a side project branched off (but a totally different, brand new approach) from our previous platform, Project TAI (**T**eaching assistant **AI**).
+Project τ is an experimental AI chat app for code-oriented template development, a side project branched off (but a totally different, brand new approach) from our previous platform, Project TAI (**T**eaching assistant **AI**).
 
 ## Developers
 - [Ritmo](https://github.com/ritmo-v0) - Overall code structure
@@ -69,7 +69,7 @@ This project uses only a subset of OpenAI models and Google Gemini models (witho
 
 ## Developers' Murmur
 ### Ritmo
-**TL;DR**:
+**TL;DR**: We joined the T3 Chat Cloneathon to fix our procrastination (of creating stuff)
 
 It is crazy about how fast one could create a great website with all these modern libraries in year 2024. Project TAI (V2) was a complete mess with a bunch of bad customed stuff, and we were planning for a V3. But since I (the main structure decider) had to serve substitue miltary service, it was postponed until I got out of ~~that hell~~. It was 2025/05/28.
 
@@ -79,10 +79,11 @@ Then later, you know, T3 Chat Cloneathon started. We took the opportunity, and t
 > Why abandoned? B/c frameworks and libraries update fxxking fast:
 > - Next.js 13 => Next.js 15
 > - Tailwind V3 => Tailwind V4
+> - AI SDK 2.0 => AI SDK 5.0 Alpha
 > - `shadcn/ui` had new versions, mostly because of Tailwind V4 but also rewritten as React components (by the time writing, Radix UI had a new mono package)
 > - Migrated from never-ending beta `auth.js` to `better-auth`
 
-Future versions would probably be very different from this, since we chose to build with what we know best ~~a.k.a. the fanboy stack~~, but not the best option for an AI chatbot like this.
+Future versions would probably be very different from this since we chose to build with what we know best ~~a.k.a. the fanboy stack~~, but not the best option for an AI chatbot like this.
 
 ## License
 This repository is published under the MIT license.
