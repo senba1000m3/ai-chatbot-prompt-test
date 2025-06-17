@@ -27,6 +27,14 @@
 				"this_year": "今年",
 				"today": "今天"
 			},
+			"delete": {
+				"title": "刪除聊天",
+				"description": "您確定要刪除「{name}」嗎？此操作無法還原。",
+				"delete": "刪除",
+				"cancel": "取消",
+				"success": "聊天已成功刪除。",
+				"failed": "聊天刪除失敗。請稍後再試。"
+			},
 			"docs": "操作指南",
 			"settings": {
 				"account": {
@@ -48,7 +56,9 @@
 				"irreversible": "此操作是不可逆的。",
 				"link": "連結",
 				"share": "分享",
-				"close": "關閉"
+				"close": "關閉",
+				"success": "聊天分享成功。連結已複製到剪貼簿。",
+				"failed": "聊天分享失敗。請稍後再試。"
 			}
 		},
 		"type": {

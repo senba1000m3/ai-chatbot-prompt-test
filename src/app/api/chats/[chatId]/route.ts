@@ -98,3 +98,41 @@ export async function PATCH(
 		);
 	}
 }
+
+export async function DELETE(
+	_req: Request,
+	{ params }: { params: Promise<{ chatId: string }> }
+) {
+	const chatId = (await params).chatId;
+
+	try {
+		const user = await userAuthorization();
+
+		await db.delete(chats)
+			.where(and(
+				eq(chats.userId, user.id),
+				eq(chats.id, chatId)
+			));
+
+		return Response.json(
+			{
+				success: true,
+				data: undefined,
+				level: "info",
+				message: `Chat \`${chatId}\` deleted successfully.`,
+			} satisfies Result<undefined>,
+			{ status: 200 }
+		);
+	} catch (err) {
+		const error = ensureError(err);
+		console.error(`ERR::CHAT::DELETE: ${error.message}`);
+
+		return Response.json(
+			{
+				success: false,
+				message: `Failed to delete chat \`${chatId}\`, reason: ${error.message}`,
+			} satisfies Result,
+			{ status: error.status }
+		);
+	}
+}

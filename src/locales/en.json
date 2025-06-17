@@ -27,6 +27,14 @@
 				"this_year": "This Year",
 				"today": "Today"
 			},
+			"delete": {
+				"title": "Delete Chat",
+				"description": "Are you sure you want to delete \"{name}\"? This action cannot be undone.",
+				"delete": "Delete",
+				"cancel": "Cancel",
+				"success": "Chat deleted successfully.",
+				"failed": "Failed to delete chat. Please try again later."
+			},
 			"docs": "Instruction Manual",
 			"settings": {
 				"account": {
@@ -48,7 +56,9 @@
 				"irreversible": "This action is irreversible.",
 				"link": "Link",
 				"share": "Share",
-				"close": "Close"
+				"close": "Close",
+				"success": "Chat shared successfully. The link is copied to your clipboard.",
+				"failed": "Failed to share chat. Please try again later."
 			}
 		},
 		"type": {

@@ -152,7 +152,7 @@ function AccountDropdownMenuGroup() {
 			<DropdownMenuLabel>
 				<Muted>{t("title")}</Muted>
 			</DropdownMenuLabel>
-			<DropdownMenuItem>
+			<DropdownMenuItem className="cursor-not-allowed" disabled>
 				<Settings2 />
 				<span>{t("advanced_settings")}</span>
 			</DropdownMenuItem>

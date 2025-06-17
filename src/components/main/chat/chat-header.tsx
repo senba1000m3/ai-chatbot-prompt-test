@@ -31,7 +31,7 @@ export function ChatLayoutHeader({ className }: React.ComponentProps<"header">) 
 				<Separator className="md:hidden mr-2" orientation="vertical" />
 				<motion.span
 					key={chatTitle}
-					className="inline-flex"
+					className="inline-flex font-semibold"
 					variants={CONTAINER_VARIANTS}
 					initial="hidden"
 					animate="visible"

@@ -198,7 +198,7 @@ function P({
 }: React.ComponentProps<"p"> & AsChild) {
 	const Comp = asChild ? SlotPrimitive.Slot : "p";
 
-	return <Comp className={cn("leading-relaxed [&:not(:first-child)]:mt-4 break-all", className)} {...props} />;
+	return <Comp className={cn("leading-relaxed [&:not(:first-child)]:mt-4 [word-break:break-word]", className)} {...props} />;
 }
 
 function Muted({
