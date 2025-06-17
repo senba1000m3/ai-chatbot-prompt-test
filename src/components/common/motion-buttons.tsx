@@ -76,7 +76,7 @@ export function CopyButton(
 				ry="2"
 				variants={{
 					normal: { x: 0, y: 0, transition: inTransition },
-					animate: { x: -3, y: -3, transition: outTransition },
+					animate: { x: -3, y: -3, transition: outTransition },  // TODO: It doesn't go back to the original position
 				}}
 			/>
 			<motion.path

@@ -41,6 +41,14 @@
 					"theme": "Theme",
 					"title": "Preferences"
 				}
+			},
+			"share": {
+				"title": "Share Chat",
+				"description": "Anyone who has this link will be able to view this.",
+				"irreversible": "This action is irreversible.",
+				"link": "Link",
+				"share": "Share",
+				"close": "Close"
 			}
 		},
 		"type": {
@@ -85,6 +93,7 @@
 	"signin": {
 		"already": "You're already signed in.",
 		"by_provider": "Continue with {provider}",
+		"will_delete": "We will delete all data from the database once the T3 Chat cloneathon event ends.",
 		"or": "or continue as a guest"
 	},
 	"toast": {

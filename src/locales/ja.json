@@ -41,6 +41,14 @@
 					"theme": "テーマ",
 					"title": "設定"
 				}
+			},
+			"share": {
+				"title": "チャットを共有",
+				"description": "このリンクを持っている人は誰でもこのチャットを閲覧できます。",
+				"irreversible": "この操作は元に戻せません。",
+				"link": "リンク",
+				"share": "共有",
+				"close": "閉じる"
 			}
 		},
 		"type": {
@@ -85,6 +93,7 @@
 	"signin": {
 		"already": "すでにサインインしています。",
 		"by_provider": "{provider} でログイン",
+		"will_delete": "T3 Chat Cloneathon イベント終了後、データベース内のすべてのデータを削除します。",
 		"or": "またはゲストとして続行"
 	},
 	"toast": {

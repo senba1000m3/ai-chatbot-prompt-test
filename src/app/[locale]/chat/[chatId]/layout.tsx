@@ -1,11 +1,6 @@
 import { generatePreviewMetadata } from "@/lib/utils";
 import { getTranslations } from "next-intl/server";
 
-// Auth
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
-
 // Types & Interfaces
 import type { Metadata } from "next";
 import type { ChatParams } from "@/types";
@@ -38,11 +33,5 @@ export async function generateMetadata(
 
 
 export default async function ChatLayout({ children }: React.ComponentProps<"div">) {
-	const session = await auth.api.getSession({ headers: await headers() });
-	if (!session) {
-		const error = encodeURIComponent("Unauthorized");
-		redirect(`/signin?error=${error}`);
-	}
-
 	return children;
 }

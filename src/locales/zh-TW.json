@@ -41,6 +41,14 @@
 					"theme": "主題",
 					"title": "偏好"
 				}
+			},
+			"share": {
+				"title": "分享聊天",
+				"description": "擁有此連結的人將能夠查看此內容。",
+				"irreversible": "此操作是不可逆的。",
+				"link": "連結",
+				"share": "分享",
+				"close": "關閉"
 			}
 		},
 		"type": {
@@ -85,6 +93,7 @@
 	"signin": {
 		"already": "您已經登入過了。",
 		"by_provider": "透過 {provider} 登入",
+		"will_delete": "一旦 T3 Chat Cloneathon 活動結束，我們將刪除資料庫中的所有資料。",
 		"or": "或著以訪客繼續"
 	},
 	"toast": {

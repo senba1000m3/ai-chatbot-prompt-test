@@ -9,7 +9,7 @@ import { signIn, useSession } from "@/lib/auth/client";
 // Components & UI
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Anchor } from "@/components/common/typography";
+import { P } from "@/components/common/typography";
 import { WrapperLayout } from "@/components/common/layouts";
 
 
@@ -23,7 +23,7 @@ export default function SignInPage() {
 }
 
 function SignInPageSuspenseContent() {
-	const { data: session } = useSession();
+	const { data: session, isPending } = useSession();
 	const t = useTranslations();
 
 	const router = useRouter();
@@ -67,16 +67,17 @@ function SignInPageSuspenseContent() {
 						callbackURL: "/chat",
 						errorCallbackURL: "/signin",
 					})}
-					disabled={!!session}
+					disabled={isPending || !!session}
 				>
 					<span>{t("signin.by_provider", { provider: "Google" })}</span>
 				</Button>
-				<Anchor
+				{/* <Anchor
 					href="/chat"
 					className="text-muted-foreground"
 				>
 					{t("signin.or")}
-				</Anchor>
+				</Anchor> */}
+				<P>{t("signin.will_delete")}</P>
 			</header>
 		</WrapperLayout>
 	);

@@ -15,6 +15,8 @@ interface ChatStoreProps {
 	setInput: (input: string) => void;
 	isLoading: boolean;
 	setIsLoading: (isLoading: boolean) => void;
+	hasScrolledToBottom: boolean;
+	setHasScrolledToBottom: (hasScrolled: boolean) => void;
 
 	// Chat Options
 	model: string;
@@ -51,6 +53,8 @@ export const useChatStore = create<ChatStoreProps>()(
 			setInput: (input: string) => set({ input }),
 			isLoading: false,
 			setIsLoading: (isLoading: boolean) => set({ isLoading }),
+			hasScrolledToBottom: true,
+			setHasScrolledToBottom: (hasScrolledToBottom: boolean) => set({ hasScrolledToBottom }),
 
 			// Chat Options
 			model: "gpt-4o",

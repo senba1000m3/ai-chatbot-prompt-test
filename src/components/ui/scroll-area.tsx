@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils"
 function ScrollArea({
 	className,
 	children,
+	ref,
 	...props
 }: React.ComponentProps<typeof ScrollAreaPrimitive.Root>) {
 	return (
@@ -19,6 +20,7 @@ function ScrollArea({
 			<ScrollAreaPrimitive.Viewport
 				data-slot="scroll-area-viewport"
 				className="focus-visible:ring-ring/50 size-full rounded-[inherit] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:outline-1"
+				ref={ref}
 			>
 				{children}
 			</ScrollAreaPrimitive.Viewport>
@@ -49,7 +51,7 @@ function ScrollBar({
 		>
 			<ScrollAreaPrimitive.ScrollAreaThumb
 				data-slot="scroll-area-thumb"
-				className="motion-safe:transition-colors bg-muted hover:bg-primary/50 relative flex-1 rounded-full"
+				className="z-1 motion-safe:transition-colors bg-muted hover:bg-primary/50 relative flex-1 rounded-full"
 			/>
 		</ScrollAreaPrimitive.ScrollAreaScrollbar>
 	)

@@ -1,8 +1,12 @@
 "use client";
-import { use, useEffect } from "react";
+import { use, useEffect, useRef } from "react";
 import { useChatStore } from "@/lib/store/chat";
 import { useToolStore } from "@/lib/store/tool";
 import { useTranslations } from "next-intl";
+import { redirect } from "next/navigation";
+
+// Auth
+import { useSession } from "@/lib/auth/client";
 
 // SWR
 import useSWR from "swr";
@@ -22,9 +26,13 @@ import type { Chat } from "@/lib/db/schema";
 export default function ChatPage(props: {
 	params: ChatParams,
 }) {
+	const { data: session, isPending } = useSession();
 	const t = useTranslations("chat.type");
 	const params = use(props.params);
 	const chatId = params.chatId;
+
+	const setHasScrolledToBottom = useChatStore.getState().setHasScrolledToBottom;
+	const scrollAreaRef = useRef<HTMLDivElement>(null);
 
 	// @ts-expect-error fxxk fetcher type
 	const { data, error } = useSWR<{ data: Chat }>(`/api/chats/${chatId}`, fetcher);
@@ -54,8 +62,31 @@ export default function ChatPage(props: {
 		}
 	}, [chatTitle, error, t]);
 
+	if (!isPending && !session) {
+		const error = encodeURIComponent("Unauthorized");
+		redirect(`/signin?error=${error}`);
+	}
+
+	// Scroll Area
+	useEffect(() => {
+		const scrollArea = scrollAreaRef.current;
+		if (!scrollArea) return;
+
+		function handleScroll() {
+			const scrollArea = scrollAreaRef.current;
+			if (!scrollArea) return;
+
+			const isScrollable = scrollArea.scrollHeight > scrollArea.clientHeight;
+			const isBottom = scrollArea.scrollHeight - scrollArea.scrollTop <= scrollArea.clientHeight + 1;
+			setHasScrolledToBottom(!isScrollable || isBottom);
+		}
+
+		scrollArea.addEventListener("scroll", handleScroll);
+		return () => scrollArea.removeEventListener("scroll", handleScroll);
+	}, [chatId, setHasScrolledToBottom]);
+
 	return (
-		<ScrollArea className="size-full" scrollHideDelay={1000}>
+		<ScrollArea ref={scrollAreaRef} className="size-full" scrollHideDelay={1000}>
 			<WrapperLayout className="pt-4 pb-48" width={960}>
 				<ChatMessages chatId={chatId} />
 			</WrapperLayout>

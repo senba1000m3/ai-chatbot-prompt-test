@@ -158,7 +158,7 @@ function AccountDropdownMenuGroup() {
 				<DropdownMenuItem onSelect={async () => {
 					await signOut({
 						fetchOptions: {
-							onSuccess: () => router.push("/signin"),
+							onSuccess: () => router.push("/"),
 						}
 					});
 				}}>

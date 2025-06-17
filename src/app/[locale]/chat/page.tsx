@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useChatStore } from "@/lib/store/chat";
 import { useToolStore } from "@/lib/store/tool";
 import { useTranslations } from "next-intl";
+import { redirect } from "next/navigation";
 import { type Transition, AnimatePresence, motion } from "motion/react";
 
 // Auth
@@ -54,6 +55,12 @@ export default function ChatPage() {
 		if (!input.trim() && !showHeader) setShowHeader(true);
 		else if (input.trim() && showHeader) setShowHeader(false);
 	}, [input, showHeader]);
+
+	// TODO: Open to guests
+	if (!isPending && !session) {
+		const error = encodeURIComponent("Unauthorized");
+		redirect(`/signin?error=${error}`);
+	}
 
 	return (
 		<div className="size-full grid">
