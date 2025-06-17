@@ -9,17 +9,22 @@ Project τ is an experimental AI chat app for code-based template development, a
 
 ## Features
 [Jump to "Getting Started" Section](#getting-started)
-
-- The Basics: LLM switching, auth & sync, modern interface
-- Markdown & Syntax Highlighting Support (including LaTeX!)
+### The Basics
+- LLM switching, auth & sync, modern interface
+- Markdown & Syntax Highlighting support (including LaTeX!)
 - Modularized Tools (code-level): Easy to create your own tool and let LLM call them
 	- Block Tool: Shows results in an additional right panel, e.g. steps
 	- Inline Tool: Shows results in the chat, e.g. stickers
 - Response Character Presets: Choose a (character) respond style you like
 - Web Search
 - Chat Sharing
+### Entertainments (Don't Take Them Too Serious)
+- Made all of our loaders [spin faster thus loading things faster](https://x.com/jordienr/status/1932036673644232794)
+- Chat input follows the Liquid Glass trend (but it's a frosted glass)!
+- Our NanoID length defaults to 16 so we could store chats and messages more than ever (YouTube videos only use 11)
+- Source code is shittier than [the one billionth repo](https://github.com/AasishPokhrel/shit)
 
-What we **DON'T** have now:
+### What We **DON'T** Have Now
 - :x: Attachment Support
 - :x: Image Generation
 - :x: Chat Branching
@@ -56,7 +61,11 @@ This project uses only a subset of OpenAI models and Google Gemini models (witho
 	```
 2. Run `pnpm install`.
 3. Run the development server using `pnpm dev`.
-4. After logging in with Google OAuth ("Get Started" button in the hompage) and automatically navigated to the `/chat` page, try asking the AI a question.
+4. In case the default language doesn't appear to be en-US, you could always change it at the homepage or in the chat sidebar footer.
+5. After logging in with Google OAuth ("Get Started" button in the hompage) and automatically navigated to the `/chat` page, try asking the AI a question.
+
+> [!WARNING]
+> The website is not fully debugged. Though things may work under the hood, some states might not update immediately. If something behaves strangely, try refreshing the page.
 
 ## Developers' Murmur
 ### Ritmo
