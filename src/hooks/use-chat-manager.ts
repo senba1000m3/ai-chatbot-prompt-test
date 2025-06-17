@@ -7,7 +7,7 @@ import { useToolStore } from "@/lib/store/tool";
 import fetcher from "@/lib/fetcher";
 import { match } from "ts-pattern";
 import { nanoid } from "@/lib/utils";
-import { generate } from "@/lib/chat/actions";
+import { generate, generateChatMeta } from "@/lib/chat/actions";
 import { receiveStream, receiveObjectStream } from "@/lib/chat/utils";
 
 // Constants & Variables
@@ -173,6 +173,27 @@ export function useChatManager() {
 				character,
 				useWebSearch,
 			});
+
+			// Generate chat title after receiving AI response
+			// Only do this for newly created chats
+			if (!chatId) {
+				try {
+					// Get all messages including the AI response
+					const allMessages = useChatStore.getState().getMessageArray();
+					const { title } = await generateChatMeta(allMessages);
+					const setChatTitle = useChatStore.getState().setChatTitle;
+					setChatTitle(title);
+
+					// Update chat title via API
+					await fetcher(`/api/chats/${finalChatId}`, {
+						method: "PATCH",
+						data: { title },
+					});
+				} catch (error) {
+					console.error("ERR::CHAT::TITLE:", error);
+				}
+				// TODO: mutate("/api/chats");
+			}
 
 			// TODO: Better state handling
 			setIsLoading(false);
