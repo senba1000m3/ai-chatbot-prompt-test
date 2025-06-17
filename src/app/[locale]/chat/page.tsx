@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useChatStore } from "@/lib/store/chat";
 import { useToolStore } from "@/lib/store/tool";
 import { useTranslations } from "next-intl";
-import { AnimatePresence, motion } from "motion/react";
+import { type Transition, AnimatePresence, motion } from "motion/react";
 
 // Auth
 import { useSession } from "@/lib/auth/client";
@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { H2, MarkdownText } from "@/components/common/typography";
 
 // Constants & Variables
-const TRANSITION = { type: "spring", stiffness: 200, damping: 25 };
+const TRANSITION: Transition = { type: "spring", stiffness: 200, damping: 25 };
 const HEADER_VARIANTS = {
 	hidden: { opacity: 0, y: 20 },
 	visible: { opacity: 1, y: 0 },

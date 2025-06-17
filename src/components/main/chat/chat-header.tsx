@@ -1,6 +1,6 @@
 "use client";
 import { useChatStore } from "@/lib/store/chat";
-import { motion } from "motion/react";
+import { type Transition, motion } from "motion/react";
 import { cn } from "@/lib/utils";
 
 // Components & UI
@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
 // Constants & Variables
-const TRANSITION = { type: "spring", stiffness: 200, damping: 25 };
+const TRANSITION: Transition = { type: "spring", stiffness: 200, damping: 25 };
 const CONTAINER_VARIANTS = {
 	hidden: {},
 	visible: { transition: { staggerChildren: 0.015 } },

@@ -3,6 +3,7 @@ import { motion, Variants } from "motion/react";
 import { cn } from "@/lib/utils";
 
 // Types & Interfaces
+import type { Transition } from "motion/react";
 export interface MotionButtonProps {
 	childrenBefore?: React.ReactNode;
 	children?: React.ReactNode;
@@ -45,8 +46,8 @@ export function CopyButton(
 			}
 		},
 	};
-	const inTransition = { type: "spring", stiffness: 300, damping: 20 };
-	const outTransition = { type: "spring", stiffness: 400, damping: 40 };
+	const inTransition: Transition = { type: "spring", stiffness: 300, damping: 20 };
+	const outTransition: Transition = { type: "spring", stiffness: 400, damping: 40 };
 
 	// Icons
 	const CopyIcon = (
@@ -74,8 +75,8 @@ export function CopyButton(
 				rx="2"
 				ry="2"
 				variants={{
-					normal: { translateX: 0, translateY: 0, transition: inTransition },
-					animate: { translateX: -3, translateY: -3, transition: outTransition },
+					normal: { x: 0, y: 0, transition: inTransition },
+					animate: { x: -3, y: -3, transition: outTransition },
 				}}
 			/>
 			<motion.path
@@ -127,9 +128,9 @@ export function CopyButton(
 export function DeleteButton(
 	{ childrenBefore, children, svgClassName, ...props }: MotionButtonProps
 ) {
-	const inTransition = { type: "spring", stiffness: 400, damping: 40 };
-	const outTransition = { type: "spring", stiffness: 500, damping: 30 };
-	const fallTransition = {
+	const inTransition: Transition = { type: "spring", stiffness: 400, damping: 40 };
+	const outTransition: Transition = { type: "spring", stiffness: 500, damping: 30 };
+	const fallTransition: Transition = {
 		y: inTransition,
 		opacity: inTransition,
 		rotateZ: { type: "spring", stiffness: 400, damping: 10 },
@@ -301,7 +302,7 @@ export function FileTextButton(
 export function SendButton(
 	{ childrenBefore, children, svgClassName, ...props }: MotionButtonProps
 ) {
-	const transition = { type: "spring", stiffness: 200, damping: 15 };
+	const transition: Transition = { type: "spring", stiffness: 200, damping: 15 };
 
 	return (
 		<motion.button
