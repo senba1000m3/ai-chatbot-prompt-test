@@ -1,12 +1,14 @@
-import { pgTable, text, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, jsonb, boolean } from "drizzle-orm/pg-core";
 import { users } from "@/lib/auth/schema";
 
 
 
 export const chats = pgTable("chats", {
 	id: text("id").primaryKey(),
+	shortId: text("short_id").unique(),
 	userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
 	title: text("title").notNull().default("Untitled Chat"),
+	public: boolean("public").notNull().default(false),
 	createdAt: timestamp("created_at").notNull(),
 	updatedAt: timestamp("updated_at").notNull(),
 });

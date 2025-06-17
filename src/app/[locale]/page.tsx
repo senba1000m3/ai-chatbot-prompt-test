@@ -33,6 +33,7 @@ import {
 // Constants & Variables
 import type { LucideIcon } from "lucide-react";
 import Silk from "@/components/main/silk";
+import { LocaleSelect } from "@/components/common/locale-select";
 type Requirement = {
 	checked: boolean;
 	icon: LucideIcon;
@@ -52,13 +53,13 @@ const REQUIREMENTS: Record<string, Requirement[]> = {
 		{ checked: false, icon: CloudUpload, name: "Attachment Support", description: "Allow users to upload files (images and PDFs)" },
 		{ checked: false, icon: Image, name: "Image Generation Support", description: "AI-powered image generation capabilities" },
 		{ checked: true, icon: Code, name: "Syntax Highlighting", description: "Beautiful code formatting and highlighting" },
-		{ checked: false, icon: Zap, name: "Resumable Streams", description: "Continue generation after page refresh" },
+		{ checked: false, icon: Zap, name: "Resumable Streams", description: "Continue generation after page refresh", footnote: "Not actually resumable, you just have to wait\n(The stream still runs on the server and saves to the database)" },
 		{ checked: false, icon: GitBranch, name: "Chat Branching", description: "Create alternative conversation paths" },
-		{ checked: false, icon: Share, name: "Chat Sharing", description: "Share conversations with others" },
-		{ checked: false, icon: Search, name: "Web Search", description: "Integrate real-time web search" },
-		{ checked: false, icon: Key, name: "Bring Your Own Key", description: "Use your own API keys" },
-		{ checked: true, icon: Smartphone, name: "Mobile App", description: "Why not ship mobile and web?", footnote: "Not actually an app but PWA :)" },
-		{ checked: false, icon: Sparkles, name: "Anything Else", description: "Get creative - we love unique ideas :)" },
+		{ checked: true, icon: Share, name: "Chat Sharing", description: "Share conversations with others" },
+		{ checked: true, icon: Search, name: "Web Search", description: "Integrate real-time web search" },
+		{ checked: false, icon: Key, name: "Bring Your Own Key", description: "Use your own API keys", footnote: "Introducing BYOC - Bring You Our Characters!" },
+		{ checked: false, icon: Smartphone, name: "Mobile App", description: "Why not ship mobile and web?", footnote: "Tried PWA but failed miserably :(\nAt least it could be installed as an app on desktop tho" },
+		{ checked: true, icon: Sparkles, name: "Anything Else", description: "Get creative - we love unique ideas :)" },
 	],
 };
 
@@ -72,20 +73,26 @@ export default function HomePage() {
 	}, [router]);
 
 	return (
-		<div className="relative pb-8">
-			<Silk
-				className="absolute! left-0 top-0 h-svh! opacity-50 mask-b-to-transparent mask-b-from-50% -z-1"
-				scale={1.25}
-			/>
-			<WrapperLayout>
-				<HomePageHeader />
-				<WrapperLayout width={1280} asChild>
-					<main className="py-4">
-						<T3ChatCloneathonSection />
-					</main>
+		<>
+			<div className="fixed top-4 left-4 flex items-center gap-4 z-1">
+				<Globe className="size-5" />
+				<LocaleSelect />
+			</div>
+			<div className="relative pb-8">
+				<Silk
+					className="absolute! left-0 top-0 h-svh! opacity-50 mask-b-to-transparent mask-b-from-50% -z-1"
+					scale={1.25}
+				/>
+				<WrapperLayout>
+					<HomePageHeader />
+					<WrapperLayout width={1280} asChild>
+						<main className="py-4">
+							<T3ChatCloneathonSection />
+						</main>
+					</WrapperLayout>
 				</WrapperLayout>
-			</WrapperLayout>
-		</div>
+			</div>
+		</>
 	);
 }
 
@@ -150,9 +157,10 @@ function T3ChatCloneathonSection() {
 								<div className="grid gap-1 font-normal">
 									<H5 className="flex items-center gap-2" asChild><span>
 										<req.icon className="size-5" />
-										{req.name}{req?.footnote && " *"}
+										{req.name}{req?.footnote && <span className="text-destructive">{`*`}</span>}
 									</span></H5>
 									<Muted className="text-sm">{req.description}</Muted>
+									{req?.footnote && <Muted className="mt-4 whitespace-pre-wrap">* {req.footnote}</Muted>}
 								</div>
 							</Label>
 						))}

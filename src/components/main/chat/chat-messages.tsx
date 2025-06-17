@@ -90,7 +90,7 @@ function CurrentMessage({ id }: { id: string }) {
 	);
 }
 
-function MessageRenderer({ id, message, sources, ...props }: {
+export function MessageRenderer({ id, message, sources, ...props }: {
 	id: string;
 	message: ChatMessage | CoreMessage;
 	sources?: SourcePart["source"][]
