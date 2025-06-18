@@ -94,7 +94,7 @@ Then later, you know, T3 Chat Cloneathon started. We took the opportunity, and t
 Future versions would probably be very different from this since we chose to build with what we know best ~~a.k.a. the fanboy stack~~, but not the best option for an AI chatbot like this.
 
 ### UNO
-(TBD)
+I just can't figure out why fps drop when receiving streams.
 
 ## License
 This repository is published under the MIT license.

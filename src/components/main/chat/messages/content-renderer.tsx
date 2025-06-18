@@ -86,7 +86,7 @@ export function MessageContentRenderer({
 						</Button>
 					))
 					// TODO: customize this for each tool
-					.with({ type: "tool-call" }, (part, index) => (<div className="text-primary text-xs font-bold font-mono" key={index}>/// here is "{part.toolName}" tool</div>))
+					.with({ type: "tool-call" }, (part, index) => (<div className="text-primary text-xs font-bold font-mono" key={index}>{`here is "${part.toolName}" tool`}</div>))
 					// Type `tool-result` messages are only for AI
 					.with({ type: "tool-result" }, (part, index) => {
 						const isInlineTool = CHAT_TOOL_CONFIGS[part.toolName]?.type === "inline";

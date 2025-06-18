@@ -7,7 +7,7 @@ import { MarkdownText } from "@/components/common/typography";
 
 
 
-export function InlineText({ result, ...props }: { result: IntroduceTauSchema }) {
+export function InlineText({ result }: { result: IntroduceTauSchema }) {
 	return(
 		<MarkdownText>
 			{result.content}
