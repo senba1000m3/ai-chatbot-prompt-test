@@ -16,11 +16,8 @@ export function MessageRenderer({ id, message, sources, ...props }: {
 	message: ChatMessage | CoreMessage;
 	sources?: SourcePart["source"][]
 } & React.ComponentProps<typeof Message>) {
-	const hasToolResultPart =
-		Array.isArray(message.content) &&
-		message.content.some(part => part.type === "tool-result");
 
-	return !hasToolResultPart ? (
+	return (
 		<Message
 			key={id}
 			className="group [div[data-role=user]+&]:mt-2"
@@ -47,5 +44,5 @@ export function MessageRenderer({ id, message, sources, ...props }: {
 				/>
 			</MessageContentRenderer>
 		</Message>
-	): null;
+	);
 }

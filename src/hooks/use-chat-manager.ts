@@ -46,6 +46,9 @@ export function useChatManager() {
 					})
 					.exhaustive();
 
+				if (!action) {
+					return;
+				}
 
 				console.log(`TOOL::EXEC: ID: ${toolCallId}, TOOL: ${toolName.toUpperCase()}`);
 				const initToolResult = useToolStore.getState().initToolResult;

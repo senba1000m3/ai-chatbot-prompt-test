@@ -17,8 +17,11 @@ import {  MessageContent } from "@/components/ui/message";
 import { ExternalLink } from "lucide-react";
 
 // Types & Interfaces
-import type { CoreMessage } from "ai";
+import type { CoreMessage, ToolResultPart } from "ai";
 import { SourcePart } from "@/types/chat";
+
+// Constants & Variables
+import { CHAT_TOOL_CONFIGS } from "@/lib/chat/tools";
 
 
 
@@ -65,7 +68,7 @@ export function MessageContentRenderer({
 					.with({ type: "redacted-reasoning" }, () => (
 						<div key={index}>Redacted reasoning content here</div>
 					))
-					.with({ type: "tool-call", toolName: "step_block" }, (part) => (
+					.with({ type: "tool-result", toolName: "step_block" }, (part) => (
 						<Button
 							key={index}
 							variant="outline"
@@ -82,10 +85,16 @@ export function MessageContentRenderer({
 							</FileTextButton>
 						</Button>
 					))
-					// TODO: Null for now
-					.with({ type: "tool-call" }, () => null)
+					// TODO: customize this for each tool
+					.with({ type: "tool-call" }, (part, index) => (<div className="text-primary text-xs font-bold font-mono" key={index}>/// here is "{part.toolName}" tool</div>))
 					// Type `tool-result` messages are only for AI
-					.with({ type: "tool-result" }, () => null)
+					.with({ type: "tool-result" }, (part, index) => {
+						const isInlineTool = CHAT_TOOL_CONFIGS[part.toolName]?.type === "inline";
+						if (isInlineTool) {
+							return <InlineToolResultRenderer key={index} part={part} />;
+						}
+						return null;
+					})
 					.exhaustive()
 			)}
 			{sources && (
@@ -170,4 +179,13 @@ export function MessageToolbarRenderer({
 			) : null}
 		</div>
 	);
+}
+
+function InlineToolResultRenderer({ part }: { part: ToolResultPart }) {
+	const Component = CHAT_TOOL_CONFIGS[part.toolName]?.component;
+	const result = part.result;
+
+	return Component && result ? (
+		<Component result={result} />
+	) : null;
 }

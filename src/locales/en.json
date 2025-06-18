@@ -89,7 +89,8 @@
 			"title": "Welcome back, {name}!",
 			"examples": {
 				"integral": "Calculate the indefinite integral of \\( x^3 \\).",
-				"lyrics": "Find the lyrics of the song titled \"ヨミビトシラズ\" by Limonène, and translate both the title and lyrics into English and Chinese (zh-TW)."
+				"lyrics": "Find the lyrics of the song titled \"ヨミビトシラズ\" by Limonène, and translate both the title and lyrics into English and Chinese (zh-TW).",
+				"tool": "How to develop tools in Project τ? "
 			}
 		}
 	},
