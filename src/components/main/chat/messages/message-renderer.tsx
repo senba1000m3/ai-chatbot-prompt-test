@@ -16,6 +16,10 @@ export function MessageRenderer({ id, message, sources, ...props }: {
 	message: ChatMessage | CoreMessage;
 	sources?: SourcePart["source"][]
 } & React.ComponentProps<typeof Message>) {
+	const content = message.content as CoreMessage["content"];
+	const isToolCall = Array.isArray(content)
+		? content.some(part => part.type === "tool-call")
+		: false;
 
 	return (
 		<Message
@@ -33,15 +37,17 @@ export function MessageRenderer({ id, message, sources, ...props }: {
 				content={message.content as CoreMessage["content"]}
 				sources={sources}
 			>
-				<MessageToolbarRenderer
-					className="opacity-0 group-hover:opacity-100 transition-opacity"
-					role={message.role}
-					content={message.content as CoreMessage["content"]}
-					metadata={"metadata" in message
-						? message?.metadata as Record<string, any>
-						: {}
-					}
-				/>
+				{!isToolCall && (
+					<MessageToolbarRenderer
+						className="opacity-0 group-hover:opacity-100 transition-opacity"
+						role={message.role}
+						content={message.content as CoreMessage["content"]}
+						metadata={"metadata" in message
+							? message?.metadata as Record<string, any>
+							: {}
+						}
+					/>
+				)}
 			</MessageContentRenderer>
 		</Message>
 	);

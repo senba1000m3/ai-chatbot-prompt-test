@@ -31,14 +31,14 @@ export const StepBlockTool: ChatTool<
 	`,
 	tool: tool({
 		description: "A tool for generate structure answer of mathematics, physics, code, or any solution steps content that requires formulas in user's input language.",
-		parameters: parameters,
+		parameters,
 		execute: async () => {
 			return {
 				content: "A step answer was created and is now visible to the user.",
 			};
 		},
 	}),
-	schema: schema,
+	schema,
 	useStream: true,
 	action: async (args) => await generateStepsAction(args),
 	component: StepBlock,

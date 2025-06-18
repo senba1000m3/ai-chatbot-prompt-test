@@ -1,10 +1,11 @@
 import { z } from "zod";
 
 
+
 // ? Input parameters
 export const parameters = z.object({
-	needIntroduction: z.boolean().describe("Whether the introduction document for the system (project tau) is needed. Currently, this is always true as no parameters are required."),
-}) ;
+	needIntroduction: z.boolean().describe("Whether the introduction document for the system (Project Tau) is needed. Currently, this is always true as no parameters are required."),
+});
 
 export type IntroduceTauParameters = z.infer<typeof parameters>;
 
@@ -13,7 +14,7 @@ export type IntroduceTauParameters = z.infer<typeof parameters>;
 // 2. Stream receiver uses schema to parse object from streamObject
 // 3. Component uses inferred type to render the output
 export const schema = z.object({
-  content: z.string().describe("The content of the introduction document for the system (project tau)."),
+	content: z.string().describe("The content of the introduction document for the system (Project Tau)."),
 });
 
 export type IntroduceTauSchema = z.infer<typeof schema>;
@@ -294,4 +295,4 @@ export const CHAT_TOOLS = allTools.reduce((acc, tool) => {
 \`\`\`
 
 By following these guidelines and best practices, you can create powerful and user-friendly AI tools that extend the capabilities of Project Tau.
-`
+`;

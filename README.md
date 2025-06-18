@@ -15,7 +15,6 @@ Project τ is an experimental AI chat app for code-oriented template development
 - Modularized Tools (code-level): Easy to create your own tool and let LLM call them
 	- Block Tool: Shows results in an additional right panel, e.g. steps
 	- Inline Tool: Shows results in the chat, e.g. stickers
-- Response Character Presets: Choose a (character) respond style you like
 - Web Search
 - Chat Sharing
 - Style Your Own Interface
@@ -23,6 +22,7 @@ Project τ is an experimental AI chat app for code-oriented template development
 	- i18n (powered by [next-intl](https://github.com/amannn/next-intl))
 
 ### Entertainments (Don't Take Them Too Serious)
+- BYOC (Bring You Our Characters): Choose a respond character (style) you like
 - Made all of our loaders [spin faster thus loading things faster](https://x.com/jordienr/status/1932036673644232794)
 - Chat input follows the Liquid Glass trend (but it's a frosted glass)!
 - Our NanoID length defaults to 16 so we could store chats and messages more than ever (YouTube videos only use 11)
@@ -32,7 +32,7 @@ Project τ is an experimental AI chat app for code-oriented template development
 - :x: Attachment Support
 - :x: Image Generation
 - :x: Chat Branching
-- :x: BYOK
+- :x: BYOK (Bring Your Own Keys)
 
 ## Getting Started
 ### Auth & Database
@@ -94,7 +94,7 @@ Then later, you know, T3 Chat Cloneathon started. We took the opportunity, and t
 Future versions would probably be very different from this since we chose to build with what we know best ~~a.k.a. the fanboy stack~~, but not the best option for an AI chatbot like this.
 
 ### UNO
-I just can't figure out why fps drop when receiving streams.
+I just can't figure out why the FPS drops when receiving streams.
 
 ## License
 This repository is published under the MIT license.

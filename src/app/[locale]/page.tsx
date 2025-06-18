@@ -74,9 +74,9 @@ export default function HomePage() {
 
 	return (
 		<>
-			<div className="fixed top-4 left-4 flex items-center gap-4 z-1">
+			<div className="fixed top-3 left-5 flex items-center gap-4 z-1">
 				<Globe className="size-5" />
-				<LocaleSelect />
+				<LocaleSelect className="!bg-background/30 backdrop-blur-sm" />
 			</div>
 			<div className="relative pb-8">
 				<Silk

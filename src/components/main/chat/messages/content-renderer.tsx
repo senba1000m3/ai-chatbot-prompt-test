@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { CopyButton, FileTextButton } from "@/components/common/motion-buttons";
 import { MarkdownText, Muted } from "@/components/common/typography";
-import {  MessageContent } from "@/components/ui/message";
+import { MessageContent } from "@/components/ui/message";
 
 // Icons & Images
 import { ExternalLink } from "lucide-react";
@@ -34,8 +34,6 @@ export function MessageContentRenderer({
 	& { content: CoreMessage["content"]; sources?: SourcePart["source"][] }
 ) {
 	const t = useTranslations("chat.content");
-	const setIsBlockOpen = useToolStore(state => state.setIsBlockOpen);
-	const setActiveToolResultId = useToolStore(state => state.setActiveToolResultId);
 
 	if (typeof content === "string") {
 		return !content.trim()
@@ -68,32 +66,38 @@ export function MessageContentRenderer({
 					.with({ type: "redacted-reasoning" }, () => (
 						<div key={index}>Redacted reasoning content here</div>
 					))
-					.with({ type: "tool-result", toolName: "step_block" }, (part) => (
-						<Button
-							key={index}
-							variant="outline"
-							size="lg"
-							className="w-fit my-2"
-							onClick={() => {
-								setActiveToolResultId(part.toolCallId);
-								setIsBlockOpen(true);
-							}}
-							asChild
-						>
-							<FileTextButton>
-								{t("tools.open_step_blocks")}
-							</FileTextButton>
-						</Button>
-					))
 					// TODO: customize this for each tool
-					.with({ type: "tool-call" }, (part, index) => (<div className="text-primary text-xs font-bold font-mono" key={index}>{`here is "${part.toolName}" tool`}</div>))
-					// Type `tool-result` messages are only for AI
-					.with({ type: "tool-result" }, (part, index) => {
-						const isInlineTool = CHAT_TOOL_CONFIGS[part.toolName]?.type === "inline";
-						if (isInlineTool) {
-							return <InlineToolResultRenderer key={index} part={part} />;
-						}
-						return null;
+					.with({ type: "tool-call" }, (part) => (
+						<Muted key={index} className="font-mono">
+							{`"${part.toolName}" tool called`}
+						</Muted>
+					))
+					// Block Tool: Renders action button
+					// Inline Tool: Renders inline content
+					.with({ type: "tool-result" }, (part) => {
+						const isBlockTool = CHAT_TOOL_CONFIGS[part.toolName]?.type === "block";
+						const setIsBlockOpen = useToolStore.getState().setIsBlockOpen;
+						const setActiveToolResultId = useToolStore.getState().setActiveToolResultId;
+
+						return isBlockTool ? (
+							<Button
+								key={index}
+								variant="outline"
+								size="lg"
+								className="w-fit my-2"
+								onClick={() => {
+									setActiveToolResultId(part.toolCallId);
+									setIsBlockOpen(true);
+								}}
+								asChild
+							>
+								<FileTextButton>
+									{t("tools.open_step_blocks")}
+								</FileTextButton>
+							</Button>
+						) : (
+							<InlineToolResultContent key={index} part={part} />
+						);
 					})
 					.exhaustive()
 			)}
@@ -181,7 +185,7 @@ export function MessageToolbarRenderer({
 	);
 }
 
-function InlineToolResultRenderer({ part }: { part: ToolResultPart }) {
+function InlineToolResultContent({ part }: { part: ToolResultPart }) {
 	const Component = CHAT_TOOL_CONFIGS[part.toolName]?.component;
 	const result = part.result;
 

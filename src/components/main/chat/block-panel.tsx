@@ -46,7 +46,7 @@ export function BlockResizablePanel(
 						</SheetTitle>
 					</SheetHeader>
 					<div className="max-h-full px-4 overflow-y-auto">
-						<ToolResultContent toolResult={activeToolResult} />
+						<BlockToolResultContent toolResult={activeToolResult} />
 					</div>
 					<SheetFooter>
 						<SheetClose asChild>
@@ -76,14 +76,14 @@ export function BlockResizablePanel(
 				</Button>
 				<H3 className="sticky top-0 mt-0 p-4 pr-12 xl:pl-8 bg-sidebar">Steps</H3>
 				<WrapperLayout className="w-full md:px-4 xl:px-8 pb-4 overflow-y-auto" width={960}>
-					<ToolResultContent toolResult={activeToolResult} />
+					<BlockToolResultContent toolResult={activeToolResult} />
 				</WrapperLayout>
 			</ResizablePanel>
 		</>
 	) : null;
 }
 
-function ToolResultContent({ toolResult }: { toolResult: any }) {
+function BlockToolResultContent({ toolResult }: { toolResult: any }) {
 	const Component = CHAT_TOOL_CONFIGS[toolResult?.toolName]?.component;
 	const result = toolResult?.result;
 

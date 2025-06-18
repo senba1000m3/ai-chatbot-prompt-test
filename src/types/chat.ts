@@ -15,7 +15,7 @@ export interface ChatTool<
 	tool: Tool<Parameters>;
 	schema: Schema;
 	useStream: boolean;
-	action: (args: z.infer<Parameters>) => Promise<any> | any;
+	action: ((args: z.infer<Parameters>) => Promise<any> | any) | null;
 	component: React.ComponentType<any>;
 }
 

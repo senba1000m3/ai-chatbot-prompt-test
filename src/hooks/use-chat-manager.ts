@@ -3,6 +3,7 @@ import { useCallback, useTransition } from "react";
 import { useRouter } from "@/lib/i18n/navigation";
 import { useChatStore } from "@/lib/store/chat";
 import { useToolStore } from "@/lib/store/tool";
+import { ensureError } from "@/lib/response";
 import { mutate } from "swr";
 
 import fetcher from "@/lib/fetcher";
@@ -34,9 +35,11 @@ export function useChatManager() {
 	const executeTool = useCallback(
 		async (toolCallId: string, toolName: string, args: any) => {
 			try {
+				// Check if the tool is valid
 				const tool = CHAT_TOOL_CONFIGS[toolName];
 				if (!tool) throw new Error(`ERR::TOOL::EXEC: Invalid tool \`${toolName}\``);
 
+				// Preparation before tool execution
 				const { type, useStream, action } = tool;
 				match(type)
 					.with("inline", () => { return null })
@@ -46,10 +49,9 @@ export function useChatManager() {
 					})
 					.exhaustive();
 
-				if (!action) {
-					return;
-				}
+				if (!action) return;
 
+				// Tool execution
 				console.log(`TOOL::EXEC: ID: ${toolCallId}, TOOL: ${toolName.toUpperCase()}`);
 				const initToolResult = useToolStore.getState().initToolResult;
 				initToolResult(toolCallId, toolName);
@@ -68,7 +70,8 @@ export function useChatManager() {
 						})();
 					}
 				});
-			} catch (error: any) {
+			} catch (err) {
+				const error = ensureError(err);
 				console.error("ERR::TOOL::EXEC:", error.message);
 			}
 		}, []
@@ -192,7 +195,8 @@ export function useChatManager() {
 						method: "PATCH",
 						data: { title },
 					}).then(() => mutate("/api/chats"));
-				} catch (error) {
+				} catch (err) {
+					const error = ensureError(err);
 					console.error("ERR::CHAT::TITLE:", error);
 				}
 			}
