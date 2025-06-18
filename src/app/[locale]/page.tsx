@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 
 // Components & UI
 import Link from "next/link";
+import Footer from "@/components/main/footer";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -92,6 +93,7 @@ export default function HomePage() {
 					</WrapperLayout>
 				</WrapperLayout>
 			</div>
+			<Footer />
 		</>
 	);
 }
