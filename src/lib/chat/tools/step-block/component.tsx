@@ -41,7 +41,7 @@ const StepBlockItem = memo(({ step, index }: {
 			<AccordionTrigger className="px-4 overflow-hidden">
 				<div className="px-2 overflow-x-auto">
 					<MarkdownText>
-						{"\\[" + step.latex_formulas + "\\]"}
+						{`\\[ ${step.latex_formulas} \\]`}
 					</MarkdownText>
 				</div>
 			</AccordionTrigger>

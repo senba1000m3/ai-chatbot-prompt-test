@@ -5,7 +5,7 @@ import { db } from "@/lib/db/drizzle";
 
 // Components & UI
 import { MessageGroup } from "@/components/ui/message";
-import { MessageRenderer } from "@/components/main/chat/chat-messages";
+import { MessageRenderer } from "@/components/main/chat/messages/message-renderer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { WrapperLayout } from "@/components/common/layouts";
 
@@ -18,16 +18,16 @@ export default async function ChatPage(props: {
 	params: ChatParams,
 }) {
 	const params = await props.params;
-	const chatId = params.chatId;
+	const shortId = params.chatId;
 
 	const chatData = await db.query.chats.findFirst({
-		where: (chats, { eq }) => eq(chats.id, chatId)
+		where: (chats, { eq }) => eq(chats.shortId, shortId)
 	});
 
 	if (!chatData?.public) redirect("/");
 
 	const messages = await db.query.messages.findMany({
-		where: (messages, { eq }) => eq(messages.chatId, chatId)
+		where: (messages, { eq }) => eq(messages.chatId, chatData.id)
 	}).then(messages => messages.sort((a, b) => {
 		const aUpdatedAt = new Date(a.updatedAt).getTime();
 		const bUpdatedAt = new Date(b.updatedAt).getTime();
