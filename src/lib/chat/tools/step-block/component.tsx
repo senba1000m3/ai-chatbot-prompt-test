@@ -35,10 +35,11 @@ function StepBlockItem({ step, index }: {
 			className=" bg-card text-card-foreground rounded-xl border! shadow-sm overflow-clip"
 			value={String(index)}
 		>
-			<AccordionTrigger className="px-4 overflow-hidden">
-				<div className="px-2 overflow-x-auto">
+			<AccordionTrigger className="px-4 overflow-x-hidden">
+				{/* // TODO: Backslashes only needs px-2 */}
+				<div className="p-2 overflow-x-auto">
 					<MarkdownText>
-						{`\\[ ${step.latex_formulas} \\]`}
+						{`$$ ${step.latex_formulas} $$`}
 					</MarkdownText>
 				</div>
 			</AccordionTrigger>
