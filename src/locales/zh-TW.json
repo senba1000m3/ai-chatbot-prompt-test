@@ -1,5 +1,24 @@
 {
 	"chat": {
+		"character": {
+			"select": "選擇角色...",
+			"tai-chan": {
+				"name": "小 TAI",
+				"description": ""
+			},
+			"a-tai": {
+				"name": "阿泰",
+				"description": ""
+			},
+			"taiko": {
+				"name": "對子",
+				"description": ""
+			},
+			"void": {
+				"name": "太虛",
+				"description": "極簡主義。"
+			}
+		},
 		"content": {
 			"tools": {
 				"open_step_blocks": "點擊以打開步驟列表"

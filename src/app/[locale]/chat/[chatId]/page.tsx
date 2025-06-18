@@ -35,7 +35,7 @@ export default function ChatPage(props: {
 	const scrollAreaRef = useRef<HTMLDivElement>(null);
 
 	// @ts-expect-error fxxk fetcher type
-	const { data, error } = useSWR<{ data: Chat }>(`/api/chats/${chatId}`, fetcher);
+	const { data, isLoading, error } = useSWR<{ data: Chat }>(`/api/chats/${chatId}`, fetcher);
 	const chatTitle = data?.data?.title;
 
 	// Handle chat change
@@ -49,6 +49,7 @@ export default function ChatPage(props: {
 
 	// Set chat title to Zustand store and document
 	useEffect(() => {
+		if (isLoading) return;
 		const setChatTitle = useChatStore.getState().setChatTitle;
 
 		if (error) {
@@ -60,7 +61,7 @@ export default function ChatPage(props: {
 			setChatTitle(chatTitle || untitled);
 			document.title = chatTitle || untitled;
 		}
-	}, [chatTitle, error, t]);
+	}, [chatTitle, isLoading, error, t]);
 
 	if (!isPending && !session) {
 		const error = encodeURIComponent("Unauthorized");

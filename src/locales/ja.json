@@ -1,5 +1,24 @@
 {
 	"chat": {
+		"character": {
+			"select": "Select character...",
+			"tai-chan": {
+				"name": "タイちゃん",
+				"description": ""
+			},
+			"a-tai": {
+				"name": "ア・タイ",
+				"description": ""
+			},
+			"taiko": {
+				"name": "対子（たいこ）",
+				"description": ""
+			},
+			"void": {
+				"name": "虚空",
+				"description": "名が無い。ミニマリズム。"
+			}
+		},
 		"content": {
 			"tools": {
 				"open_step_blocks": "ステップを開く"

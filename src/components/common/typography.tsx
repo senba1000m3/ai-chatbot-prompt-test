@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/table";
 
 // Markdown
+import Twemoji from "react-twemoji";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
@@ -193,12 +194,22 @@ function LI({
 
 function P({
 	className,
+	children,
 	asChild = false,
 	...props
 }: React.ComponentProps<"p"> & AsChild) {
 	const Comp = asChild ? SlotPrimitive.Slot : "p";
 
-	return <Comp className={cn("leading-relaxed [&:not(:first-child)]:mt-4 [word-break:break-word]", className)} {...props} />;
+	return (
+		<Twemoji
+			options={{ className: "[--margin:_0.2em] inline size-[1.1em] mx-(--margin) align-[-0.2em] [&+.twemoji]:ml-0" }}
+			noWrapper
+		>
+			<Comp className={cn("leading-relaxed [&:not(:first-child)]:mt-4 [word-break:break-word]", className)} {...props}>
+				{children}
+			</Comp>
+		</Twemoji>
+	);
 }
 
 function Muted({

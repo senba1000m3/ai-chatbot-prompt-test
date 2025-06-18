@@ -49,15 +49,18 @@ export async function generate({
 				(useWebSearch && chatModel.webSearch) ? chatModel?.settings ?? {} : {}
 			),
 			system: `
-				You are a helpful assistant that can answer questions and provide information based on the context provided by the user. You can also use tools to assist with tasks. The user may ask you to perform actions or provide information related to the conversation.\n
-				You are currently in a chat with a user. The user may ask you to perform actions or provide information related to the conversation. You can use tools to assist with tasks, and you can also provide information based on the context provided by the user.\n\n
-				Don't use tools if the question is not solvable by the provided tools.\n\n
-				${characterPrompt
-					? `Please answer the user's question in the below character\n<character>\n${characterPrompt}\n</character>`
-					: ""
-				}\n\n
-				${CHAT_TOOL_NAMES.length > 0 ? generateBlockToolPrompt(CHAT_TOOL_NAMES) : ""}
-			`,
+			You are a helpful assistant currently in a chat with a user. Youhave the ability to answer questions and provide information based on the context provided by the user. The user may ask you to perform actions or provide information related to the conversation, and you can provide information based on the context provided by the user.\n\n
+			Don't use tools if the question is not suitable or solvable by the provided tools.\n\n
+			${characterPrompt
+				? `Please answer the user's question in the requirements written in <character>:\n<character>\n${characterPrompt}\n</character>`
+				: ""
+			}\n\n
+			You can also use tools written in <tools> to assist with tasks, but don't use them if the user's question is not suitable or solvable by the provided tools:\n
+			${CHAT_TOOL_NAMES.length > 0
+				? `<tools>\n${generateBlockToolPrompt(CHAT_TOOL_NAMES)}\n</tools>`
+				: ""
+			}
+			`.trim(),
 			messages,
 			tools: {
 				...CHAT_TOOLS,

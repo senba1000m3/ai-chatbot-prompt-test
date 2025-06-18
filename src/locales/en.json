@@ -1,5 +1,24 @@
 {
 	"chat": {
+		"character": {
+			"select": "Select character...",
+			"tai-chan": {
+				"name": "Tai-chan",
+				"description": ""
+			},
+			"a-tai": {
+				"name": "A-Tai",
+				"description": ""
+			},
+			"taiko": {
+				"name": "Taiko",
+				"description": ""
+			},
+			"void": {
+				"name": "Void",
+				"description": "Minimalism."
+			}
+		},
 		"content": {
 			"tools": {
 				"open_step_blocks": "Click to open step view"

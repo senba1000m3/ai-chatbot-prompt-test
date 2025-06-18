@@ -10,6 +10,7 @@ import { mutate } from "swr";
 // Components & UI
 import { Button } from "@/components/ui/button";
 import { ChatModelSelect } from "./model-select";
+import { ChatCharacterSelect } from "./character-select";
 import { ChatWebSearchToggle } from "./web-search-toggle";
 import { SendButton } from "@/components/common/motion-buttons";
 import { Textarea } from "@/components/ui/textarea";
@@ -81,13 +82,12 @@ export function ChatInput() {
 					onKeyDown={handleKeyDown}
 					placeholder={t("placeholder")}
 				/>
-				<div className="flex items-center justify-between">
-					<div className="flex items-center gap-2">
-						<ChatModelSelect />
-						<ChatWebSearchToggle />
-					</div>
+				<div className="flex items-center gap-2">
+					<ChatModelSelect />
+					<ChatCharacterSelect />
+					<ChatWebSearchToggle />
 					<Tooltip>
-						<TooltipTrigger asChild>
+						<TooltipTrigger className="ml-auto" asChild>
 							<div>
 								<Button
 									className="disabled:cursor-not-allowed"

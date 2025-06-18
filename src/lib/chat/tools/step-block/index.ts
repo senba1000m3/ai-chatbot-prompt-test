@@ -17,16 +17,16 @@ export const StepBlockTool: ChatTool<
 	name: "step_block",
 	type: "block",
 	guidePrompt: `
-		如果使用者問了一個新問題，請使用 create_step_block 工具將答案顯示在 blocks 內。
+		如果使用者問了一個新問題，請使用 step_block 工具將答案顯示在 blocks 內。
 		當你取得 result，請勿重述 result 內容，請勿解釋詳細解答步驟。
-		如果使用者追問問題，請勿使用 create_step_block 工具，直接回答問題即可。
+		如果使用者追問問題，請勿使用 step_block 工具，直接回答問題即可。
 
-		This is a guide for using blocks tools:  \`create_step_block\` , which render content on a blocks beside the conversation.
+		This is a guide for using blocks tools:  \`step_block\` , which render content on a blocks beside the conversation.
 
-		**When to use \`create_step_block\`:**
+		**When to use \`step_block\`:**
 		- When you need to generate a structured answer that will be displayed in blocks.
 
-		**When NOT to use \`create_step_block\`:**
+		**When NOT to use \`step_block\`:**
 		- For student 追問問題, please answer directly in the conversation.
 	`,
 	tool: tool({
