@@ -24,6 +24,10 @@ You can find more information about Project TAI from a Facebook post authored by
 - Style Your Own Interface
 	- Theme Changer, including a T3 Chat theme lol (code and theme parsed from [shadcn/studio](https://github.com/themeselection/shadcn-studio) partially, themes from [tweakcn](https://github.com/jnsahaj/tweakcn) additionally)
 	- i18n (powered by [next-intl](https://github.com/amannn/next-intl))
+- Install as a PWA (currently supports desktop only)
+
+  ![螢幕擷取畫面 2025-06-19 074919](https://github.com/user-attachments/assets/92d1759c-a849-4c37-b6c1-f8a96403e3ca)
+
 
 ### Entertainments (Don't Take Them Too Serious)
 - BYOC (Bring You Our Characters): Choose a respond character (style) you like
