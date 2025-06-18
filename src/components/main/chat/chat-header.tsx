@@ -12,7 +12,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 const TRANSITION: Transition = { type: "spring", stiffness: 200, damping: 25 };
 const CONTAINER_VARIANTS = {
 	hidden: {},
-	visible: { transition: { staggerChildren: 0.015 } },
+	visible: { transition: { staggerChildren: 0.01 } },
 };
 const TITLE_VARIANTS = {
 	hidden: { opacity: 0, translateY: "0.5em", filter: "blur(4px)" },
@@ -25,28 +25,28 @@ export function ChatLayoutHeader({ className }: React.ComponentProps<"header">) 
 	const chatTitle = useChatStore(state => state.chatTitle);
 
 	return (
-		<header className={cn("flex items-center justify-between gap-4 h-12 px-4 py-2 max-md:pl-2 border-b", className)}>
-			<div className="flex items-center gap-1 h-full">
-				<SidebarTrigger className="md:hidden" />
-				<Separator className="md:hidden mr-2" orientation="vertical" />
-				<motion.span
-					key={chatTitle}
-					className="inline-flex font-semibold"
-					variants={CONTAINER_VARIANTS}
-					initial="hidden"
-					animate="visible"
-				>
-					{chatTitle.replace(/ /g, "\u00A0").split("").map((char, index) => (
-						<motion.span
-							key={index}
-							variants={TITLE_VARIANTS}
-						>
-							{char}
-						</motion.span>
-					))}
-				</motion.span>
+		<header className={cn("grid grid-cols-[auto_auto_1fr] md:grid-cols-[auto_1fr] items-center gap-2 h-12 px-4 py-2 border-b", className)}>
+			<div className="md:hidden flex gap-2 h-full -ml-2 mr-2">
+				<SidebarTrigger />
+				<Separator orientation="vertical" />
 			</div>
-			<div>
+			<motion.span
+				key={chatTitle}
+				className="font-semibold truncate"
+				variants={CONTAINER_VARIANTS}
+				initial="hidden"
+				animate="visible"
+			>
+				{chatTitle.replace(/ /g, "\u00A0").split("").map((char, index) => (
+					<motion.span
+						key={index}
+						variants={TITLE_VARIANTS}
+					>
+						{char}
+					</motion.span>
+				))}
+			</motion.span>
+			<div className="justify-self-end flex items-center gap-2">
 				<ModeToggle />
 			</div>
 		</header>
