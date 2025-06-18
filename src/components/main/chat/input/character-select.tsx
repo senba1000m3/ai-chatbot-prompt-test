@@ -37,7 +37,11 @@ export function ChatCharacterSelect() {
 	return (
 		<Popover open={open} onOpenChange={setOpen}>
 			<PopoverTrigger asChild>
-				<Button variant="ghost" size="sm">
+				<Button
+					variant="ghost"
+					size="sm"
+					className="max-xs:text-xs"
+				>
 					<BotMessageSquare />
 					{character ? t(`${character}.name`) : t("select")}
 					<ChevronsUpDown />
@@ -48,7 +52,10 @@ export function ChatCharacterSelect() {
 				sideOffset={12}
 				collisionPadding={16}
 			>
-				<Command className="bg-transparent">
+				<Command
+					className="bg-transparent"
+					value={character}
+				>
 					<CommandList>
 						<CommandGroup>
 							{CHAT_CHARACTER_IDS.map(characterId => (

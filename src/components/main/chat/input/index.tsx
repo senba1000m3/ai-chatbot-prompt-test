@@ -74,7 +74,7 @@ export function ChatInput() {
 			</Button> */}
 			<div className="space-y-2 p-2 border border-b-0 bg-background/40 rounded-t-md backdrop-blur-lg">
 				<Textarea
-					className="max-h-64 focus-visible:ring-0 bg-transparent! border-0 shadow-none resize-none"
+					className="max-h-64 focus-visible:ring-0 bg-transparent! border-0 shadow-none resize-none [word-break:break-word]"
 					value={input}
 					onCompositionStart={() => setIsComposing(true)}
 					onCompositionEnd={() => setIsComposing(false)}

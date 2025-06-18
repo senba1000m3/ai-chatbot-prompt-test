@@ -28,8 +28,8 @@ const OPENAI_AI_MODELS: ChatModelConfig[] = [
 ];
 
 const GOOGLE_AI_MODELS: ChatModelConfig[] = [
-	{ model: "gemini-2.5-flash-preview-05-20", name: "Gemini 2.5 Flash Preview", webSearch: true },
-	{ model: "gemini-2.0-pro-exp-02-05", name: "Gemini 2.0 Pro Experimental", webSearch: true },
+	{ model: "gemini-2.5-flash-preview-05-20", name: "Gemini 2.5 Flash", webSearch: true },
+	{ model: "gemini-2.5-flash-lite-preview-06-17", name: "Gemini 2.5 Flash Lite", webSearch: true },
 	{ model: "gemini-2.0-flash", name: "Gemini 2.0 Flash", webSearch: true },
 	{ model: "gemini-2.0-flash-lite", name: "Gemini 2.0 Flash Lite", webSearch: false },
 ];

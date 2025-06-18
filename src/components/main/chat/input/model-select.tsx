@@ -38,7 +38,12 @@ export function ChatModelSelect() {
 	return (
 		<Popover open={open} onOpenChange={setOpen}>
 			<PopoverTrigger asChild>
-				<Button variant="ghost" size="sm">
+				{/* // TODO: Make text node truncatable */}
+				<Button
+					variant="ghost"
+					size="sm"
+					className="shrink inline-flex! max-xs:text-xs whitespace-normal"
+				>
 					{model ? getChatModel(model)?.name : t("select")}
 					<ChevronsUpDown />
 				</Button>
@@ -48,8 +53,11 @@ export function ChatModelSelect() {
 				sideOffset={12}
 				collisionPadding={16}
 			>
-				<Command className="bg-transparent">
-					<CommandInput placeholder={t("search")} />
+				<Command
+					className="bg-transparent"
+					value={model}
+				>
+					<CommandInput placeholder={t("search")} autoFocus={false} />
 					<CommandList>
 						<CommandEmpty>{t("command_empty")}</CommandEmpty>
 						{Object.entries(CHAT_MODELS).map(([key, value]) => (
