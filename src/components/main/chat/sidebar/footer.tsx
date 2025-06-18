@@ -25,11 +25,12 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ThemePresetSelect } from "@/components/common/theme-preset-select";
 import { ModeToggle } from "@/components/common/mode-toggle";
 
 // Images & Icons
-import { ChevronsUpDown, Globe, Loader2, LogIn, LogOut, Palette, Settings2, SunMoon } from "lucide-react";
+import { ChevronsUpDown, Globe, LogIn, LogOut, Palette, Settings2, SunMoon } from "lucide-react";
 
 // Constants & Variables
 import { ICON_IMG_URL } from "@/lib/constant";
@@ -56,9 +57,9 @@ function FooterDropdownMenuTrigger() {
 	const t = useTranslations("common");
 
 	const { data: session, isPending } = useSession();
-	const image = session?.user?.image;
-	const name = session?.user?.name;
-	const email = session?.user?.email;
+	const image = session?.user?.image || ICON_IMG_URL;
+	const name = session?.user?.name || t("guest");
+	const email = session?.user?.email || "(NA)";
 	// const role = session?.user?.role;
 
 	const [mounted, setMounted] = useState(false);
@@ -67,29 +68,26 @@ function FooterDropdownMenuTrigger() {
 	return (
 		<DropdownMenuTrigger asChild>
 			<SidebarMenuButton size="lg" className="gap-3">
-				<Avatar className="size-8">
-					<AvatarImage src={image || ICON_IMG_URL} />
-					{name && !image && !isPending && (
-						<AvatarFallback>
-							{name?.charAt(0)}
-						</AvatarFallback>
-					)}
-				</Avatar>
-				<div className="flex-1 grid [&_>_*]:truncate">
-					{!mounted || isPending ? (
-						<Loader2
-							className="size-4 animate-spin duration-200"
-							suppressHydrationWarning
-						/>
-					) : (
+				{(!mounted || isPending) ? (
+					<Skeleton className="w-full h-12" />
+				) : (
+					<>
+						<Avatar className="size-8">
+							<AvatarImage src={image} />
+							<AvatarFallback>
+								{image ? null : name?.charAt(0)}
+							</AvatarFallback>
+						</Avatar>
 						<div className="flex-1 grid [&_>_*]:truncate">
-							<span className="font-semibold">
-								{name || t("guest")}
-							</span>
-							<Muted>{email || "(NA)"}</Muted>
+							<div className="flex-1 grid [&_>_*]:truncate">
+								<span className="font-semibold">
+									{name}
+								</span>
+								<Muted>{email}</Muted>
+							</div>
 						</div>
-					)}
-				</div>
+					</>
+				)}
 				<ChevronsUpDown className="ml-auto" />
 			</SidebarMenuButton>
 		</DropdownMenuTrigger>
@@ -145,8 +143,6 @@ function AccountDropdownMenuGroup() {
 	const { data: session, isPending } = useSession();
 	const router = useRouter();
 
-	const [isLoading, setIsLoading] = useState(false);
-
 	return (
 		<DropdownMenuGroup>
 			<DropdownMenuLabel>
@@ -158,21 +154,16 @@ function AccountDropdownMenuGroup() {
 			</DropdownMenuItem>
 			{!isPending && session ? (
 				<DropdownMenuItem
-					disabled={isPending || isLoading}
+					disabled={isPending}
 					onSelect={async () => {
-						setIsLoading(true);
 						await signOut({
 							fetchOptions: {
-								onSuccess: () => {
-									router.push("/");
-									setIsLoading(false);
-								},
-								onError: () => setIsLoading(false),
-							}
+								onSuccess: () => router.push("/"),
+							},
 						});
 					}}
 				>
-					{isLoading ? <Loader2 className="animate-spin duration-200" /> : <LogOut className="text-destructive" />}
+					<LogOut className="text-destructive" />
 					<span className="text-destructive">{t("sign_out")}</span>
 				</DropdownMenuItem>
 			) : (
