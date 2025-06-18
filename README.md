@@ -94,10 +94,10 @@ Then later, you know, T3 Chat Cloneathon started. We took the opportunity, and t
 
 
 > Why abandoned? B/c frameworks and libraries update fxxking fast:
-> - Next.js 13 => Next.js 15
-> - Tailwind V3 => Tailwind V4
+> - Next.js 13 => Next.js 15 with the breaking [async request APIs](https://nextjs.org/docs/app/guides/upgrading/version-15#async-request-apis-breaking-change) that literally breaks all of my page[.js,.tsx]
+> - Tailwind V3 => Tailwind V4 with the new CSS based approach
 > - AI SDK 2.0 => AI SDK 5.0 Alpha
-> - `shadcn/ui` had new versions, mostly because of Tailwind V4 but also rewritten as React components (by the time writing, Radix UI had a new mono package)
+> - `shadcn/ui` had new versions, mostly because of Tailwind V4 but also rewritten as React components (and by the time writing, Radix UI had a new mono package)
 > - Migrated from never-ending beta `auth.js` to `better-auth`
 
 Future versions would probably be very different from this since we chose to build with what we know best ~~a.k.a. the fanboy stack~~, but not the best option for an AI chatbot like this.
