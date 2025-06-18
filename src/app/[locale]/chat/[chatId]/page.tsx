@@ -13,7 +13,7 @@ import useSWR from "swr";
 import fetcher from "@/lib/fetcher";
 
 // Components & UI
-import { ChatMessages } from "@/components/main/chat/chat-messages";
+import { ChatMessages } from "@/components/main/chat/messages";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { WrapperLayout } from "@/components/common/layouts";
 
