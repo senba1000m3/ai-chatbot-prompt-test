@@ -1,6 +1,6 @@
 "use client";
 import { useRef, useState } from "react";
-import { redirect } from "next/navigation";
+import { useRouter } from "@/lib/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { match } from "ts-pattern";
 import { cn, copyToClipboard, nanoid } from "@/lib/utils";
@@ -145,6 +145,7 @@ export function ChatShareButton({ className, chat, ...props }: React.ComponentPr
 
 export function ChatDeleteButton({ className, chat, ...props }: React.ComponentProps<"button"> & { chat: Chat }) {
 	const t = useTranslations("chat.sidebar.delete");
+	const router = useRouter();
 
 	const [isLoading, setIsLoading] = useState(false);
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -161,11 +162,11 @@ export function ChatDeleteButton({ className, chat, ...props }: React.ComponentP
 				duration: 2000,
 				onAutoClose: () => {
 					mutate("/api/chats");
-					redirect("/chat");
+					router.push("/chat");
 				},
 				onDismiss: () => {
 					mutate("/api/chats");
-					redirect("/chat");
+					router.push("/chat");
 				},
 			});
 		}).catch(() => {
