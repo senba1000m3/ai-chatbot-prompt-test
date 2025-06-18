@@ -1,7 +1,7 @@
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/ritmo-v0/project-tau)
 
 # Project τ (read as Project Tau)
-Project τ is an experimental AI chat app for code-oriented template development, a side project branched off (but a totally different, brand new approach) from our previous platform, Project TAI (**T**eaching assistant **AI**).
+Project τ is an experimental AI chat app for code-oriented template development, a side project branched off (but a totally different, brand new approach) from our previous platform, Project TAI (**T**eaching assistant **AI**). Our main focus is on a flexible, extensible system for building all kinds of generative UI tools — whether inline, block-based, or streaming.
 
 ## Developers
 - [Ritmo](https://github.com/ritmo-v0) - Overall code structure
