@@ -3,6 +3,10 @@
 # Project τ (read as Project Tau)
 Project τ is an experimental AI chat app for code-oriented template development, a side project branched off (but a totally different, brand new approach) from our previous platform, Project TAI (**T**eaching assistant **AI**). Our main focus is on a flexible, extensible system for building all kinds of generative UI tools — whether inline, block-based, or streaming.
 
+You can find more information about Project TAI from a Facebook post authored by NTHU (National Tsing Hua University) [here](https://www.facebook.com/share/p/1MUugtN2nW/).
+
+(For a translated version, check out the [shared chat](https://project-tau.ritmo.dev/chat/share/iiYx9dm) we created using Project τ itself!)
+
 ## Developers
 - [Ritmo](https://github.com/ritmo-v0) - Overall code structure
 - [UNO](https://github.com/UN-O) - AI SDK related stuff and tools
@@ -68,9 +72,10 @@ This project uses only a subset of OpenAI models and Google Gemini models (witho
 	UPSTASH_REDIS_REST_TOKEN={}
 	```
 2. Run `pnpm install`.
-3. Run the development server using `pnpm dev`.
-4. In case the default language doesn't appear to be en-US, you could always change it at the homepage or in the chat sidebar footer.
-5. After logging in with Google OAuth ("Get Started" button in the hompage) and automatically navigated to the `/chat` page, try asking the AI a question.
+3. Run `pnpm drizzle:mgr` to apply schema migrations to your Neon database for the first time (shorthand for `drizzle-kit migrate --config drizzle.config.ts`).
+4. Run the development server using `pnpm dev`.
+5. In case the default language doesn't appear to be en-US, you could always change it at the homepage or in the chat sidebar footer.
+6. After logging in with Google OAuth ("Get Started" button in the hompage) and automatically navigated to the `/chat` page, try asking the AI a question.
 
 > [!WARNING]
 > The website is not fully debugged. Though things may work under the hood, some states might not update immediately. If something behaves strangely, try refreshing the page.
