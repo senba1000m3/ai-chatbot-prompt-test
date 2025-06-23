@@ -67,6 +67,13 @@ const nextConfig: NextConfig = {
 			"micromark-extension-math": "micromark-extension-llm-math",
 		},
 	},
+	webpack: (config) => {
+		config.resolve.alias = {
+			...config.resolve.alias,
+			"micromark-extension-math": "micromark-extension-llm-math",
+		};
+		return config;
+	},
 };
 
 const withNextIntl = createNextIntlPlugin("./src/lib/i18n/request.ts");
