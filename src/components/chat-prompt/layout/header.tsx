@@ -19,12 +19,12 @@ export function Header() {
           transition={{ delay: 0.1, duration: 0.3 }}
           className="flex items-center space-x-4"
         >
-          <h1 className="text-xl font-bold text-white">OCR 測試系統</h1>
+          <h1 className="text-xl font-bold text-white">聊天 Prompt 測試系統</h1>
           <div className="flex items-center space-x-2 text-sm text-gray-400">
             <Home className="w-4 h-4" />
-            <span>我的 OCR 測試區</span>
-            <span>{">"}</span>
-            <span>中文直書作文</span>
+            <span>Prompt 測試區</span>
+            {/*<span>{">"}</span>*/}
+            {/*<span>中文直書作文</span>*/}
           </div>
         </motion.div>
         <motion.div
@@ -35,7 +35,7 @@ export function Header() {
         >
           <div className="flex items-center space-x-2 text-sm text-gray-400">
             <User className="w-4 h-4" />
-            <span>千羽 (更換暱稱)</span>
+            <span>千羽</span>
           </div>
           <div className="flex items-center space-x-2">
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>

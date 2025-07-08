@@ -40,10 +40,16 @@ export function ToolSelectionDialog({
 }: ToolSelectionDialogProps) {
   const handleOpenChange = (newOpen: boolean) => {
     onOpenChange(newOpen)
-    // 如果對話框被關閉且不是通過保存，重置臨時選擇
-    if (!newOpen) {
-      // 這裡需要父組件處理重置邏輯
-    }
+  }
+
+  const handleEscapeKeyDown = (event: KeyboardEvent) => {
+    event.preventDefault()
+    onOpenChange(false)
+  }
+
+  const handleInteractOutside = (event: Event) => {
+    event.preventDefault()
+    onOpenChange(false)
   }
 
   return (
@@ -60,7 +66,11 @@ export function ToolSelectionDialog({
           </Button>
         </motion.div>
       </DialogTrigger>
-      <DialogContent className="max-w-md bg-black border-gray-800">
+      <DialogContent
+        className="max-w-md bg-black border-gray-800"
+        onEscapeKeyDown={handleEscapeKeyDown}
+        onInteractOutside={handleInteractOutside}
+      >
         <DialogHeader>
           <DialogTitle className="text-white">Select Tools</DialogTitle>
           <DialogDescription className="text-gray-300">Choose which tools to use for testing.</DialogDescription>

@@ -111,6 +111,26 @@ export function RightPanelControls({
     }
   }
 
+  const handleSaveDialogEscape = (event: KeyboardEvent) => {
+    event.preventDefault()
+    setSaveDialogOpen(false)
+  }
+
+  const handleSaveDialogOutside = (event: Event) => {
+    event.preventDefault()
+    setSaveDialogOpen(false)
+  }
+
+  const handleSizeDialogEscape = (event: KeyboardEvent) => {
+    event.preventDefault()
+    // Dialog 會自動關閉，這裡不需要額外處理
+  }
+
+  const handleSizeDialogOutside = (event: Event) => {
+    event.preventDefault()
+    // Dialog 會自動關閉，這裡不需要額外處理
+  }
+
   return (
     <TooltipProvider>
       <div className="p-4 border-b border-gray-800 flex justify-between items-center flex-shrink-0">
@@ -127,7 +147,11 @@ export function RightPanelControls({
                 </Button>
               </motion.div>
             </DialogTrigger>
-            <DialogContent className="max-w-md bg-black border-gray-800">
+            <DialogContent
+              className="max-w-md bg-black border-gray-800"
+              onEscapeKeyDown={handleSaveDialogEscape}
+              onInteractOutside={handleSaveDialogOutside}
+            >
               <DialogHeader>
                 <DialogTitle className="text-white">建立新版本</DialogTitle>
                 <DialogDescription className="text-gray-300">請輸入新版本名稱，或留空使用預設名稱</DialogDescription>
@@ -211,7 +235,13 @@ export function RightPanelControls({
                 </Button>
               </motion.div>
             </AlertDialogTrigger>
-            <AlertDialogContent className="bg-black border-gray-800">
+            <AlertDialogContent
+              className="bg-black border-gray-800"
+              onEscapeKeyDown={(event) => {
+                event.preventDefault()
+                // AlertDialog 會自動處理 ESC 鍵
+              }}
+            >
               <AlertDialogHeader>
                 <AlertDialogTitle className="text-white">清除對話</AlertDialogTitle>
                 <AlertDialogDescription className="text-gray-300">
@@ -245,7 +275,11 @@ export function RightPanelControls({
                 </Button>
               </motion.div>
             </DialogTrigger>
-            <DialogContent className="max-w-md bg-black border-gray-800">
+            <DialogContent
+              className="max-w-md bg-black border-gray-800"
+              onEscapeKeyDown={handleSizeDialogEscape}
+              onInteractOutside={handleSizeDialogOutside}
+            >
               <DialogHeader>
                 <DialogTitle className="text-white">調整對話框高度</DialogTitle>
                 <DialogDescription className="text-gray-300">拖動滑桿來調整右側對話框的高度</DialogDescription>

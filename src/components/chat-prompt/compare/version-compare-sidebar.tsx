@@ -165,7 +165,13 @@ export function VersionCompareSidebar({
                     </Button>
                   </motion.div>
                 </AlertDialogTrigger>
-                <AlertDialogContent className="bg-black border-gray-800">
+                <AlertDialogContent
+                  className="bg-black border-gray-800"
+                  onEscapeKeyDown={(event) => {
+                    event.preventDefault()
+                    // AlertDialog 會自動處理 ESC 鍵
+                  }}
+                >
                   <AlertDialogHeader>
                     <AlertDialogTitle className="text-white">結束比較</AlertDialogTitle>
                     <AlertDialogDescription className="text-gray-300">

@@ -1,19 +1,36 @@
 "use client"
 
 import { motion } from "framer-motion"
+import { Button } from "@/components/ui/button"
+import { Smile, Frown } from "lucide-react"
+import { useState } from "react"
 
 interface Message {
   role: "user" | "assistant"
   content: string
   model?: string
+  rating?: "good" | "bad" | null
+  id?: string
 }
 
 interface MessageBubbleProps {
   message: Message
   index: number
+  onRating?: (messageId: string, rating: "good" | "bad") => void
+  showRating?: boolean
 }
 
-export function MessageBubble({ message, index }: MessageBubbleProps) {
+export function MessageBubble({ message, index, onRating, showRating = false }: MessageBubbleProps) {
+  const [currentRating, setCurrentRating] = useState<"good" | "bad" | null>(message.rating || null)
+
+  const handleRating = (rating: "good" | "bad") => {
+    const newRating = currentRating === rating ? null : rating
+    setCurrentRating(newRating)
+    if (onRating && message.id) {
+      onRating(message.id, newRating || rating)
+    }
+  }
+
   return (
     <motion.div
       key={index}
@@ -26,11 +43,54 @@ export function MessageBubble({ message, index }: MessageBubbleProps) {
         stiffness: 200,
         damping: 20,
       }}
-      className={`p-3 rounded-lg ${
-        message.role === "user" ? "bg-blue-600 text-white ml-8" : "bg-gray-800 text-white mr-8 border border-gray-700"
-      }`}
+      className={`${message.role === "user" ? "ml-8" : "mr-8"}`}
     >
-      <div className="text-sm whitespace-pre-wrap">{message.content}</div>
+      {/* 助手回覆的評分按鈕 */}
+      {message.role === "assistant" && showRating && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.3 }}
+          className="flex justify-end space-x-1 mb-1"
+        >
+          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleRating("good")}
+              className={`h-6 w-6 p-0 transition-colors ${
+                currentRating === "good"
+                  ? "text-green-400 hover:text-green-300 bg-green-900/20"
+                  : "text-gray-400 hover:text-green-400 hover:bg-green-900/20"
+              }`}
+            >
+              <Smile className="w-3 h-3" />
+            </Button>
+          </motion.div>
+          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleRating("bad")}
+              className={`h-6 w-6 p-0 transition-colors ${
+                currentRating === "bad"
+                  ? "text-red-400 hover:text-red-300 bg-red-900/20"
+                  : "text-gray-400 hover:text-red-400 hover:bg-red-900/20"
+              }`}
+            >
+              <Frown className="w-3 h-3" />
+            </Button>
+          </motion.div>
+        </motion.div>
+      )}
+
+      <div
+        className={`p-3 rounded-lg ${
+          message.role === "user" ? "bg-blue-600 text-white" : "bg-gray-800 text-white border border-gray-700"
+        }`}
+      >
+        <div className="text-sm whitespace-pre-wrap">{message.content}</div>
+      </div>
     </motion.div>
   )
 }

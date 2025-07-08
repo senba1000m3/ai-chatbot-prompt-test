@@ -40,6 +40,8 @@ interface Message {
 	role: "user" | "assistant"
 	content: string
 	model?: string
+	rating?: "good" | "bad" | null
+	id?: string
 }
 
 interface ModelResponse {
@@ -61,7 +63,7 @@ interface SavedVersion {
 	parameter3: string
 	selectedModels: string[]
 	selectedTools: string[]
-	modelResponses: ModelResponse[] // 新增：保存對話內容
+	modelResponses: ModelResponse[]
 	expanded?: boolean
 }
 
@@ -119,8 +121,181 @@ const loadFromLocalStorage = (key: string, defaultValue: any = null) => {
 	return defaultValue
 }
 
+// 生成 XML 格式的 prompt 文件
+const generatePromptXML = (systemPrompt: string, userPrompt: string, parameters: any) => {
+	// 解析 System Prompt 中的各個部分
+	const parseSystemPromptSections = (prompt: string) => {
+		const sections = ["角色設定", "自我認知", "任務流程", "格式限制", "工具使用", "回覆限制與要求"]
+
+		const parsedSections: { [key: string]: string } = {}
+
+		sections.forEach((section) => {
+			const regex = new RegExp(`<${section}>\\s*([\\s\\S]*?)(?=<|$)`, "g")
+			const match = regex.exec(prompt)
+			if (match && match[1]) {
+				parsedSections[section] = match[1].trim()
+			} else {
+				parsedSections[section] = ""
+			}
+		})
+
+		return parsedSections
+	}
+
+	const systemSections = parseSystemPromptSections(systemPrompt)
+
+	const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
+<prompt>
+  <system_prompt>
+    <character>
+      <![CDATA[${systemSections["角色設定"]}]]>
+    </character>
+    <self_awareness>
+      <![CDATA[${systemSections["自我認知"]}]]>
+    </self_awareness>
+    <task_flow>
+      <![CDATA[${systemSections["任務流程"]}]]>
+    </task_flow>
+    <format_constraints>
+      <![CDATA[${systemSections["格式限制"]}]]>
+    </format_constraints>
+    <tools>
+      <![CDATA[${systemSections["工具使用"]}]]>
+    </tools>
+    <response_requirements>
+      <![CDATA[${systemSections["回覆限制與要求"]}]]>
+    </response_requirements>
+  </system_prompt>
+  <user_prompt>
+    <![CDATA[${userPrompt}]]>
+  </user_prompt>
+  <parameters>
+    <temperature>${parameters.temperature}</temperature>
+    <batch_size>${parameters.batchSize}</batch_size>
+    <parameter2>${parameters.parameter2}</parameter2>
+    <parameter3>${parameters.parameter3}</parameter3>
+  </parameters>
+  <models>
+    ${parameters.selectedModels.map((model: string) => `<model>${model}</model>`).join("\n    ")}
+  </models>
+  <tools>
+    ${parameters.selectedTools.map((tool: string) => `<tool>${tool}</tool>`).join("\n    ")}
+  </tools>
+  <timestamp>${new Date().toISOString()}</timestamp>
+</prompt>`
+
+	return xmlContent
+}
+
+// 下載 XML 文件
+const downloadXMLFile = (content: string, filename: string) => {
+	try {
+		const blob = new Blob([content], { type: "application/xml;charset=utf-8" })
+		const url = URL.createObjectURL(blob)
+		const a = document.createElement("a")
+		a.href = url
+		a.download = `${filename}.xml`
+		a.style.display = "none"
+		document.body.appendChild(a)
+		a.click()
+		document.body.removeChild(a)
+		URL.revokeObjectURL(url)
+		console.log(`XML file downloaded: ${filename}.xml`)
+	} catch (error) {
+		console.error("Error downloading XML file:", error)
+	}
+}
+
+// 保存 XML 文件到 public/prompt-record 目錄
+const saveXMLToPublic = (content: string, filename: string) => {
+	try {
+		// 創建一個隱藏的 a 標籤來觸發文件創建
+		// 注意：瀏覽器環境中無法直接寫入 public 目錄
+		// 這裡我們改為提示用戶手動保存到指定目錄
+		console.log(`XML content for ${filename}:`, content)
+
+		// 創建一個提示，告訴用戶將文件保存到 public/prompt-record 目錄
+		const blob = new Blob([content], { type: "application/xml;charset=utf-8" })
+		const url = URL.createObjectURL(blob)
+
+		// 創建下載提示
+		const notification = document.createElement("div")
+		notification.innerHTML = `
+      <div style="
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #1f2937;
+        color: white;
+        padding: 16px;
+        border-radius: 8px;
+        border: 1px solid #374151;
+        z-index: 10000;
+        max-width: 300px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      ">
+        <div style="font-weight: bold; margin-bottom: 8px;">XML 已生成</div>
+        <div style="font-size: 14px; color: #9ca3af; margin-bottom: 12px;">
+          請將文件保存到 public/prompt-record/ 目錄
+        </div>
+        <button onclick="
+          const a = document.createElement('a');
+          a.href = '${url}';
+          a.download = '${filename}.xml';
+          a.click();
+          this.parentElement.remove();
+        " style="
+          background: #2563eb;
+          color: white;
+          border: none;
+          padding: 8px 16px;
+          border-radius: 4px;
+          cursor: pointer;
+          margin-right: 8px;
+        ">下載 XML</button>
+        <button onclick="this.parentElement.remove()" style="
+          background: #374151;
+          color: white;
+          border: none;
+          padding: 8px 16px;
+          border-radius: 4px;
+          cursor: pointer;
+        ">關閉</button>
+      </div>
+    `
+		document.body.appendChild(notification)
+
+		// 5秒後自動移除通知
+		setTimeout(() => {
+			if (notification.parentElement) {
+				notification.remove()
+			}
+			URL.revokeObjectURL(url)
+		}, 5000)
+	} catch (error) {
+		console.error("Error saving XML file:", error)
+	}
+}
+
 export default function AIPromptTester() {
-	const [systemPrompt, setSystemPrompt] = useState("")
+	const [systemPrompt, setSystemPrompt] = useState(`<!角色設定>
+
+
+<!自我認知>
+
+
+<!任務流程>
+
+
+<!格式限制>
+
+
+<!工具使用>
+
+
+<!回覆限制與要求>
+
+`)
 	const [userPrompt, setUserPrompt] = useState("")
 	const [temperature, setTemperature] = useState([0.0])
 	const [batchSize, setBatchSize] = useState("1")
@@ -165,6 +340,8 @@ export default function AIPromptTester() {
 	const [inputMessage, setInputMessage] = useState("")
 	const [fullscreenModel, setFullscreenModel] = useState<string | null>(null)
 	const [syncScroll, setSyncScroll] = useState(false)
+
+	// 修改 showVersionHistory 的預設值為 false
 	const [showVersionHistory, setShowVersionHistory] = useState(false)
 
 	// 從 localStorage 載入保存的版本
@@ -179,16 +356,13 @@ export default function AIPromptTester() {
 
 	// 從 localStorage 載入 untitled counter
 	const [untitledCounter, setUntitledCounter] = useState(() => {
-		return loadFromLocalStorage(STORAGE_KEYS.UNTITLED_COUNTER, 0)
+		return loadFromLocalStorage(STORAGE_KEYS.UNTITLED_COUNTER, 1)
 	})
 
 	const scrollRefs = useRef<(HTMLDivElement | null)[]>([])
 
-	// 從 localStorage 載入 UI 設定
-	const [chatHeight, setChatHeight] = useState(() => {
-		const uiSettings = loadFromLocalStorage(STORAGE_KEYS.UI_SETTINGS, {})
-		return uiSettings.chatHeight || 650
-	})
+	// 從 localStorage 載入 UI 設定 - 修復 Hydration 錯誤
+	const [chatHeight, setChatHeight] = useState(650) // 使用固定的默認值
 
 	const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -205,11 +379,46 @@ export default function AIPromptTester() {
 	// 添加顏色模式狀態
 	const [colorMode, setColorMode] = useState(0)
 
+	// 下載 XML 函數
+	const handleDownloadXML = () => {
+		const xmlContent = generatePromptXML(systemPrompt, userPrompt, {
+			temperature: temperature[0],
+			batchSize,
+			parameter2,
+			parameter3,
+			selectedModels,
+			selectedTools,
+		})
+
+		const filename = getCurrentFileName()
+		downloadXMLFile(xmlContent, filename)
+	}
+
 	// 組件載入時從 localStorage 恢復狀態
 	useEffect(() => {
 		const currentState = loadFromLocalStorage(STORAGE_KEYS.CURRENT_STATE, null)
 		if (currentState) {
-			setSystemPrompt(currentState.systemPrompt || "")
+			setSystemPrompt(
+				currentState.systemPrompt ||
+				`<!角色設定>
+
+
+<!自我認知>
+
+
+<!任務流程>
+
+
+<!格式限制>
+
+
+<!工具使用>
+
+
+<!回覆限制與要求>
+
+`,
+			)
 			setUserPrompt(currentState.userPrompt || "")
 			setTemperature(currentState.temperature || [0.0])
 			setBatchSize(currentState.batchSize || "1")
@@ -219,12 +428,24 @@ export default function AIPromptTester() {
 			setSelectedTools(currentState.selectedTools || ["sticker"])
 			setViewMode(currentState.viewMode || "separate")
 			setSyncScroll(currentState.syncScroll || false)
-			setShowVersionHistory(currentState.showVersionHistory || false)
+			// 不從 localStorage 恢復 showVersionHistory，保持預設為 false
+			// setShowVersionHistory(currentState.showVersionHistory || false)
 
 			// 恢復對話內容
 			if (currentState.modelResponses) {
 				setModelResponses(currentState.modelResponses)
 			}
+		}
+	}, [])
+
+	// 組件掛載後從 localStorage 載入 UI 設定
+	useEffect(() => {
+		const uiSettings = loadFromLocalStorage(STORAGE_KEYS.UI_SETTINGS, {})
+		if (uiSettings.chatHeight) {
+			setChatHeight(uiSettings.chatHeight)
+		}
+		if (uiSettings.colorMode !== undefined) {
+			setColorMode(uiSettings.colorMode)
 		}
 	}, [])
 
@@ -358,8 +579,39 @@ export default function AIPromptTester() {
 		scrollToBottom()
 	}, [modelResponses])
 
+	// 獲取當前文件名稱
+	const getCurrentFileName = () => {
+		if (currentVersionId) {
+			const version = savedVersions.find((v) => v.id === currentVersionId)
+			return version?.name || `Untitled_${untitledCounter}`
+		}
+		return `Untitled_${untitledCounter}`
+	}
+
 	const handleRunTest = async (times = 1) => {
-		if (!userPrompt.trim()) return
+		if (!userPrompt.trim()) {
+			console.log("No user prompt provided")
+			return
+		}
+
+		console.log("Starting Run Test...")
+
+		// 生成 XML 文件到 public/prompt-record 目錄
+		const xmlContent = generatePromptXML(systemPrompt, userPrompt, {
+			temperature: temperature[0],
+			batchSize,
+			parameter2,
+			parameter3,
+			selectedModels,
+			selectedTools,
+		})
+
+		const filename = getCurrentFileName()
+		console.log("Generated XML content:", xmlContent)
+		console.log("Saving XML to public/prompt-record/", filename)
+
+		// 將 XML 保存到 public/prompt-record 目錄
+		saveXMLToPublic(xmlContent, filename)
 
 		setModelResponses((prev) =>
 			prev.map((model) => ({
@@ -382,6 +634,9 @@ Temperature: ${temperature[0]}
 
 This would be the actual AI response in a real implementation.`
 
+						const messageId = `${Date.now()}-${Math.random()}`
+						const responseId = `${Date.now()}-${Math.random()}-response`
+
 						setModelResponses((prev) =>
 							prev.map((m) =>
 								m.id === model.id
@@ -389,8 +644,8 @@ This would be the actual AI response in a real implementation.`
 										...m,
 										messages: [
 											...m.messages,
-											{ role: "user", content: userPrompt },
-											{ role: "assistant", content: mockResponse, model: model.name },
+											{ role: "user", content: userPrompt, id: messageId },
+											{ role: "assistant", content: mockResponse, model: model.name, id: responseId },
 										],
 										isLoading: i < times - 1,
 									}
@@ -431,11 +686,14 @@ This would be the actual AI response in a real implementation.`
 		setInputMessage("")
 
 		setModelResponses((prev) =>
-			prev.map((model) => ({
-				...model,
-				messages: [...model.messages, { role: "user", content: message }],
-				isLoading: true,
-			})),
+			prev.map((model) => {
+				const messageId = `${Date.now()}-${Math.random()}`
+				return {
+					...model,
+					messages: [...model.messages, { role: "user", content: message, id: messageId }],
+					isLoading: true,
+				}
+			}),
 		)
 
 		setTimeout(() => {
@@ -452,13 +710,17 @@ This would be the actual AI response in a real implementation.`
 
 				setTimeout(() => {
 					const mockResponse = `Response from ${model.name}: ${message}`
+					const responseId = `${Date.now()}-${Math.random()}-response`
 
 					setModelResponses((prev) =>
 						prev.map((m) =>
 							m.id === model.id
 								? {
 									...m,
-									messages: [...m.messages, { role: "assistant", content: mockResponse, model: model.name }],
+									messages: [
+										...m.messages,
+										{ role: "assistant", content: mockResponse, model: model.name, id: responseId },
+									],
 									isLoading: false,
 								}
 								: m,
@@ -474,6 +736,15 @@ This would be the actual AI response in a real implementation.`
 					}, 100)
 				}, delay)
 			}),
+		)
+	}
+
+	const handleMessageRating = (messageId: string, rating: "good" | "bad") => {
+		setModelResponses((prev) =>
+			prev.map((model) => ({
+				...model,
+				messages: model.messages.map((msg) => (msg.id === messageId ? { ...msg, rating } : msg)),
+			})),
 		)
 	}
 
@@ -536,6 +807,19 @@ This would be the actual AI response in a real implementation.`
 			)
 			setIsEditing(false)
 			setShowVersionHistory(true)
+
+			// 生成並下載更新的 XML 文件
+			const xmlContent = generatePromptXML(systemPrompt, userPrompt, {
+				temperature: temperature[0],
+				batchSize,
+				parameter2,
+				parameter3,
+				selectedModels,
+				selectedTools,
+			})
+
+			const filename = getCurrentFileName()
+			downloadXMLFile(xmlContent, filename)
 		}
 	}
 
@@ -560,12 +844,42 @@ This would be the actual AI response in a real implementation.`
 		if (!saveVersionName) {
 			setUntitledCounter((prev) => prev + 1)
 		}
+
+		// 生成並下載 XML 文件
+		const xmlContent = generatePromptXML(systemPrompt, userPrompt, {
+			temperature: temperature[0],
+			batchSize,
+			parameter2,
+			parameter3,
+			selectedModels,
+			selectedTools,
+		})
+
+		downloadXMLFile(xmlContent, finalName)
+
 		setSaveVersionName("")
 		setSaveDialogOpen(false)
 		setShowVersionHistory(true)
 
 		// 清空所有內容回到初始狀態
-		setSystemPrompt("")
+		setSystemPrompt(`<!角色設定>
+
+
+<!自我認知>
+
+
+<!任務流程>
+
+
+<!格式限制>
+
+
+<!工具使用>
+
+
+<!回覆限制與要求>
+
+`)
 		setUserPrompt("")
 		setTemperature([0.0])
 		setBatchSize("1")
@@ -620,6 +934,29 @@ This would be the actual AI response in a real implementation.`
 		setShowVersionHistory(false)
 	}
 
+	const handleDeleteVersion = (version: SavedVersion) => {
+		console.log("Deleting version:", version.name)
+
+		// 從保存的版本中刪除
+		setSavedVersions((prev) => prev.filter((v) => v.id !== version.id))
+
+		// 如果刪除的是當前載入的版本，退出版本檢視模式
+		if (currentVersionId === version.id) {
+			exitVersionMode()
+		}
+
+		// 如果在比較模式中，也要從比較列表中移除
+		if (isInCompareView) {
+			setCompareVersions((prev) => prev.filter((v) => v.id !== version.id))
+			setInitialVersionOrder((prev) => prev.filter((v) => v.id !== version.id))
+		}
+
+		// 從比較選擇列表中移除
+		setSelectedVersionsForCompare((prev) => prev.filter((id) => id !== version.id))
+
+		console.log("Version deleted successfully")
+	}
+
 	const clearAll = () => {
 		// 只清除當前顯示的對話和設定，不影響已保存的版本
 		setModelResponses((prev) =>
@@ -628,7 +965,24 @@ This would be the actual AI response in a real implementation.`
 				messages: [],
 			})),
 		)
-		setSystemPrompt("")
+		setSystemPrompt(`<!角色設定>
+
+
+<!自我認知>
+
+
+<!任務流程>
+
+
+<!格式限制>
+
+
+<!工具使用>
+
+
+<!回覆限制與要求>
+
+`)
 		setUserPrompt("")
 		setTemperature([0.0])
 		setBatchSize("1")
@@ -644,7 +998,24 @@ This would be the actual AI response in a real implementation.`
 		setOriginalVersionData(null)
 
 		// 清空所有內容回到初始狀態
-		setSystemPrompt("")
+		setSystemPrompt(`<!角色設定>
+
+
+<!自我認知>
+
+
+<!任務流程>
+
+
+<!格式限制>
+
+
+<!工具使用>
+
+
+<!回覆限制與要求>
+
+`)
 		setUserPrompt("")
 		setTemperature([0.0])
 		setBatchSize("1")
@@ -733,6 +1104,17 @@ This would be the actual AI response in a real implementation.`
 
 	const handleVersionReorder = (newOrder: SavedVersion[]) => {
 		setCompareVersions(newOrder)
+	}
+
+	const handleUpdateCompareVersions = (updatedVersions: SavedVersion[]) => {
+		setCompareVersions(updatedVersions)
+		// 同時更新 savedVersions 中對應的版本
+		setSavedVersions((prev) =>
+			prev.map((version) => {
+				const updatedVersion = updatedVersions.find((v) => v.id === version.id)
+				return updatedVersion || version
+			}),
+		)
 	}
 
 	const handleModelDialogOpen = () => {
@@ -1005,6 +1387,7 @@ This would be the actual AI response in a real implementation.`
 															version={version}
 															onLoadVersion={handleLoadVersion}
 															onCopyVersion={handleCopyVersion}
+															onDeleteVersion={handleDeleteVersion}
 															onToggleExpanded={toggleVersionExpanded}
 														/>
 													),
@@ -1079,6 +1462,7 @@ This would be the actual AI response in a real implementation.`
 											userPrompt={userPrompt}
 											setUserPrompt={setUserPrompt}
 											isReadOnly={isReadOnly && !isEditing}
+											onDownloadXML={handleDownloadXML}
 										/>
 
 										<ParametersSection
@@ -1122,6 +1506,7 @@ This would be the actual AI response in a real implementation.`
 							onVersionReorder={handleVersionReorder}
 							onColorModeChange={handleColorModeChange}
 							initialVersionOrder={initialVersionOrder}
+							onUpdateVersions={handleUpdateCompareVersions}
 						/>
 					) : (
 						<motion.div
@@ -1166,6 +1551,7 @@ This would be the actual AI response in a real implementation.`
 													onFullscreen={setFullscreenModel}
 													chatHeight={getIndividualChatHeight()}
 													onSyncScroll={handleSyncScroll}
+													onMessageRating={handleMessageRating}
 												/>
 											))}
 										</div>
@@ -1222,6 +1608,35 @@ This would be the actual AI response in a real implementation.`
 										messagesEndRef={messagesEndRef}
 										chatHeight={chatHeight}
 										onPopupWindow={() => {
+											const conversationFlow: Array<{
+												type: "user" | "assistant"
+												content: string
+												model?: string
+											}> = []
+
+											const maxLength = Math.max(...modelResponses.map((m) => m.messages.length))
+
+											for (let i = 0; i < maxLength; i++) {
+												const userMessage = modelResponses[0]?.messages[i]
+												if (userMessage && userMessage.role === "user") {
+													conversationFlow.push({
+														type: "user",
+														content: userMessage.content,
+													})
+												}
+
+												modelResponses.forEach((model) => {
+													const assistantMessage = model.messages[i]
+													if (assistantMessage && assistantMessage.role === "assistant") {
+														conversationFlow.push({
+															type: "assistant",
+															content: assistantMessage.content,
+															model: model.name,
+														})
+													}
+												})
+											}
+
 											const htmlContent = `
                       <!DOCTYPE html>
                       <html lang="zh-TW">
@@ -1294,49 +1709,20 @@ This would be the actual AI response in a real implementation.`
                           <div class="subtitle">OCR 測試系統 - 獨立視窗</div>
                         </div>
                         <div class="messages">
-                          ${(() => {
-												const conversationFlow: Array<{
-													type: "user" | "assistant"
-													content: string
-													model?: string
-												}> = []
-
-												const maxLength = Math.max(...modelResponses.map((m) => m.messages.length))
-
-												for (let i = 0; i < maxLength; i++) {
-													const userMessage = modelResponses[0]?.messages[i]
-													if (userMessage && userMessage.role === "user") {
-														conversationFlow.push({
-															type: "user",
-															content: userMessage.content,
-														})
-													}
-
-													modelResponses.forEach((model) => {
-														const assistantMessage = model.messages[i]
-														if (assistantMessage && assistantMessage.role === "assistant") {
-															conversationFlow.push({
-																type: "assistant",
-																content: assistantMessage.content,
-																model: model.name,
-															})
-														}
-													})
-												}
-
-												return conversationFlow.length === 0
+                          ${
+												conversationFlow.length === 0
 													? '<div class="no-messages">尚無對話記錄</div>'
 													: conversationFlow
 														.map(
 															(item) => `
-                                  <div class="message ${item.type === "user" ? "user-message" : "assistant-message"}">
-                                    ${item.type === "assistant" && item.model ? `<div class="model-label">${item.model}</div>` : ""}
-                                    <div class="message-content">${item.content}</div>
-                                  </div>
-                                `,
+                            <div class="message ${item.type === "user" ? "user-message" : "assistant-message"}">
+                              ${item.type === "assistant" && item.model ? `<div class="model-label">${item.model}</div>` : ""}
+                              <div class="message-content">${item.content}</div>
+                            </div>
+                          `,
 														)
 														.join("")
-											})()}
+											}
                         </div>
                       </body>
                       </html>
@@ -1348,153 +1734,74 @@ This would be the actual AI response in a real implementation.`
 												newWindow.document.close()
 											}
 										}}
-										onFullscreen={() => setFullscreenModel("unified")}
+										onMessageRating={handleMessageRating}
 									/>
 								)}
 
-								{viewMode === "popup" && <PopupViewPlaceholder />}
+								{viewMode === "popup" && (
+									<PopupViewPlaceholder
+										modelResponses={modelResponses}
+										onPopupWindow={handlePopupWindow}
+										onFullscreen={setFullscreenModel}
+										setFullscreenModel={setFullscreenModel}
+										handleMessageRating={handleMessageRating}
+									/>
+								)}
+
+								{fullscreenModel && (
+									<div className="absolute top-0 left-0 w-full h-full bg-black z-50 flex flex-col">
+										<div className="p-4 flex justify-between items-center border-b border-gray-800">
+											<div className="text-lg font-semibold">
+												{modelResponses.find((m) => m.id === fullscreenModel)?.name || "Full Screen"}
+											</div>
+											<Button variant="secondary" size="sm" onClick={() => setFullscreenModel(null)}>
+												關閉全螢幕
+											</Button>
+										</div>
+										<div className="flex-1 p-4 overflow-y-auto">
+											{/* 單個模型的全螢幕內容 */}
+											{modelResponses
+												.find((m) => m.id === fullscreenModel)
+												?.messages.map((message, msgIndex) => (
+													<motion.div
+														key={msgIndex}
+														initial={{ opacity: 0, x: message.role === "user" ? 20 : -20 }}
+														animate={{ opacity: 1, x: 0 }}
+														transition={{ delay: msgIndex * 0.05, duration: 0.3 }}
+														className={`p-3 rounded-lg ${
+															message.role === "user"
+																? "bg-blue-600 text-white ml-8"
+																: "bg-gray-800 text-white mr-8 border border-gray-700"
+														}`}
+													>
+														<div className="text-sm whitespace-pre-wrap">{message.content}</div>
+													</motion.div>
+												))}
+										</div>
+									</div>
+								)}
 							</div>
 
-							<MessageInput
-								inputMessage={inputMessage}
-								setInputMessage={setInputMessage}
-								onSendMessage={handleSendMessage}
-								isReadOnly={false} // 改為 false，讓載入版本時也可以輸入
-							/>
+							<motion.div
+								initial={{ y: 20, opacity: 0 }}
+								animate={{ y: 0, opacity: 1 }}
+								transition={{ duration: 0.3, delay: 0.3 }}
+								className="p-4 border-t border-gray-800"
+							>
+								<Card className="bg-gray-900 text-white">
+									<MessageInput
+										inputMessage={inputMessage}
+										setInputMessage={setInputMessage}
+										onSendMessage={handleSendMessage}
+										isReadOnly={false}
+									/>
+								</Card>
+							</motion.div>
+
+							<div style={{ float: "left", clear: "both" }} ref={messagesEndRef} />
 						</motion.div>
 					)}
 				</div>
-
-				<AnimatePresence>
-					{fullscreenModel && (
-						<motion.div
-							initial={{ opacity: 0 }}
-							animate={{ opacity: 1 }}
-							exit={{ opacity: 0 }}
-							transition={{ duration: 0.2 }}
-							className="fixed top-0 left-0 right-0 bottom-0 z-[60] bg-black/80 backdrop-blur-sm"
-						>
-							<motion.div
-								initial={{ scale: 0.95, opacity: 0, y: 20 }}
-								animate={{ scale: 1, opacity: 1, y: 0 }}
-								exit={{ scale: 0.95, opacity: 0, y: 20 }}
-								transition={{
-									duration: 0.3,
-									type: "spring",
-									stiffness: 300,
-									damping: 30,
-								}}
-								className="h-full p-4 pt-20"
-							>
-								<Card className="h-full bg-gray-900 border-gray-800 flex flex-col shadow-2xl">
-									<motion.div
-										initial={{ opacity: 0, y: -10 }}
-										animate={{ opacity: 1, y: 0 }}
-										transition={{ delay: 0.1, duration: 0.2 }}
-										className="p-3 border-b border-gray-800 flex justify-between items-center bg-gray-800"
-									>
-										<h3 className="font-medium text-white">
-											{fullscreenModel === "unified"
-												? "統一對話框 - 全螢幕檢視"
-												: `${modelResponses.find((m) => m.id === fullscreenModel)?.name} - 全螢幕檢視`}
-										</h3>
-										<Button
-											variant="ghost"
-											size="sm"
-											onClick={() => setFullscreenModel(null)}
-											className="text-gray-400 hover:text-white hover:bg-gray-700 transition-colors"
-										>
-											<motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-												<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-													<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-												</svg>
-											</motion.div>
-										</Button>
-									</motion.div>
-									<motion.div
-										initial={{ opacity: 0 }}
-										animate={{ opacity: 1 }}
-										transition={{ delay: 0.2, duration: 0.3 }}
-										className="flex-1 p-3 overflow-y-auto space-y-3 custom-scrollbar"
-									>
-										{fullscreenModel === "unified"
-											? // 統一對話框的全螢幕內容
-											(() => {
-												const conversationFlow: Array<{
-													type: "user" | "assistant"
-													content: string
-													model?: string
-												}> = []
-
-												const maxLength = Math.max(...modelResponses.map((m) => m.messages.length))
-
-												for (let i = 0; i < maxLength; i++) {
-													const userMessage = modelResponses[0]?.messages[i]
-													if (userMessage && userMessage.role === "user") {
-														conversationFlow.push({
-															type: "user",
-															content: userMessage.content,
-														})
-													}
-
-													modelResponses.forEach((model) => {
-														const assistantMessage = model.messages[i]
-														if (assistantMessage && assistantMessage.role === "assistant") {
-															conversationFlow.push({
-																type: "assistant",
-																content: assistantMessage.content,
-																model: model.name,
-															})
-														}
-													})
-												}
-
-												return conversationFlow.map((item, index) => (
-													<motion.div
-														key={index}
-														initial={{ opacity: 0, x: item.type === "user" ? 20 : -20 }}
-														animate={{ opacity: 1, x: 0 }}
-														transition={{ delay: index * 0.05, duration: 0.3 }}
-													>
-														{item.type === "assistant" && (
-															<div className="text-xs text-gray-400 mb-1">{item.model}</div>
-														)}
-														<div
-															className={`p-3 rounded-lg ${
-																item.type === "user"
-																	? "bg-blue-600 text-white ml-8"
-																	: "bg-gray-800 text-white mr-8 border border-gray-700"
-															}`}
-														>
-															<div className="text-sm whitespace-pre-wrap">{item.content}</div>
-														</div>
-													</motion.div>
-												))
-											})()
-											: // 單個模型的全螢幕內容
-											modelResponses
-												.find((m) => m.id === fullscreenModel)
-												?.messages.map((message, msgIndex) => (
-												<motion.div
-													key={msgIndex}
-													initial={{ opacity: 0, x: message.role === "user" ? 20 : -20 }}
-													animate={{ opacity: 1, x: 0 }}
-													transition={{ delay: msgIndex * 0.05, duration: 0.3 }}
-													className={`p-3 rounded-lg ${
-														message.role === "user"
-															? "bg-blue-600 text-white ml-8"
-															: "bg-gray-800 text-white mr-8 border border-gray-700"
-													}`}
-												>
-													<div className="text-sm whitespace-pre-wrap">{message.content}</div>
-												</motion.div>
-											))}
-									</motion.div>
-								</Card>
-							</motion.div>
-						</motion.div>
-					)}
-				</AnimatePresence>
 			</div>
 		</TooltipProvider>
 	)
