@@ -60,9 +60,7 @@ interface RightPanelControlsProps {
   colorMode?: number
   onColorModeChange?: () => void
   isInCompareView?: boolean
-  onSaveToCurrentVersion?: () => void
-  currentVersionId?: string | null
-  hasUnsavedChanges?: boolean
+  isReadOnly?: boolean
 }
 
 export function RightPanelControls({
@@ -81,9 +79,7 @@ export function RightPanelControls({
   colorMode = 0,
   onColorModeChange,
   isInCompareView = false,
-  onSaveToCurrentVersion,
-  currentVersionId,
-  hasUnsavedChanges,
+  isReadOnly = false,
 }: RightPanelControlsProps) {
   // 檢查名稱是否重複
   const isNameDuplicate =
@@ -122,13 +118,11 @@ export function RightPanelControls({
   }
 
   const handleSizeDialogEscape = (event: KeyboardEvent) => {
-    event.preventDefault()
-    // Dialog 會自動關閉，這裡不需要額外處理
+    // 移除 event.preventDefault()，讓 Dialog 自然處理 ESC 鍵
   }
 
   const handleSizeDialogOutside = (event: Event) => {
-    event.preventDefault()
-    // Dialog 會自動關閉，這裡不需要額外處理
+    // 移除 event.preventDefault()，讓 Dialog 自然處理點擊外部
   }
 
   return (
@@ -142,8 +136,9 @@ export function RightPanelControls({
                   variant="ghost"
                   size="sm"
                   className="text-gray-300 hover:text-white hover:bg-gray-900 transition-colors"
+                  disabled={isReadOnly}
                 >
-                  New
+                  Save
                 </Button>
               </motion.div>
             </DialogTrigger>
@@ -153,7 +148,7 @@ export function RightPanelControls({
               onInteractOutside={handleSaveDialogOutside}
             >
               <DialogHeader>
-                <DialogTitle className="text-white">建立新版本</DialogTitle>
+                <DialogTitle className="text-white">儲存新版本</DialogTitle>
                 <DialogDescription className="text-gray-300">請輸入新版本名稱，或留空使用預設名稱</DialogDescription>
               </DialogHeader>
               <motion.div
@@ -203,25 +198,6 @@ export function RightPanelControls({
               </DialogFooter>
             </DialogContent>
           </Dialog>
-
-          {/* 新增的 Save 按鈕 - 只在載入版本時顯示 */}
-          {currentVersionId && onSaveToCurrentVersion && (
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onSaveToCurrentVersion}
-                className={`transition-colors ${
-                  hasUnsavedChanges
-                    ? "text-orange-300 hover:text-orange-200 hover:bg-orange-900/20"
-                    : "text-gray-300 hover:text-white hover:bg-gray-900"
-                }`}
-              >
-                Save
-                {hasUnsavedChanges && <span className="ml-1 text-xs">*</span>}
-              </Button>
-            </motion.div>
-          )}
 
           <AlertDialog>
             <AlertDialogTrigger asChild>

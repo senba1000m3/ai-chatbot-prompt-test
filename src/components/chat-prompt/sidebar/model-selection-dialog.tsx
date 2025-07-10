@@ -85,9 +85,7 @@ export function ModelSelectionDialog({
       >
         <DialogHeader>
           <DialogTitle className="text-white">Select Models</DialogTitle>
-          <DialogDescription className="text-gray-300">
-            Choose which models to use for OCR testing. (Maximum 4 models)
-          </DialogDescription>
+          <DialogDescription className="text-gray-300">Choose which models to use for testing.</DialogDescription>
         </DialogHeader>
         <div className="py-4 space-y-4">
           {Object.entries(getModelsByCategory()).map(([category, categoryModels]) => (
@@ -111,7 +109,6 @@ export function ModelSelectionDialog({
                       id={model.id}
                       checked={selectedModels.includes(model.id)}
                       onCheckedChange={() => onToggleModel(model.id)}
-                      disabled={!selectedModels.includes(model.id) && selectedModels.length >= 4}
                     />
                     <label
                       htmlFor={model.id}
