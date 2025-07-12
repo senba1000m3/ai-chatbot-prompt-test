@@ -34,6 +34,8 @@ interface SelectionSystemPromptProps {
   onOptionsChange: (options: PromptOption[]) => void
   isReadOnly?: boolean
   placeholder?: string
+  isEnabled?: boolean
+  onToggleEnabled?: (enabled: boolean) => void
 }
 
 export function SelectionSystemPrompt({
@@ -44,6 +46,8 @@ export function SelectionSystemPrompt({
   onOptionsChange,
   isReadOnly = false,
   placeholder = "請選擇選項",
+  isEnabled,
+  onToggleEnabled,
 }: SelectionSystemPromptProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [newOptionTitle, setNewOptionTitle] = useState("")
@@ -137,6 +141,28 @@ export function SelectionSystemPrompt({
 
   return (
     <div className="space-y-3">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center space-x-2">
+          <h4 className="font-medium text-white text-base">{title}</h4>
+          {onToggleEnabled && (
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => onToggleEnabled(!isEnabled)}
+              className={`w-8 h-4 rounded-full transition-colors duration-200 ${
+                isEnabled ? "bg-blue-600" : "bg-gray-600"
+              } relative`}
+              disabled={isReadOnly}
+            >
+              <motion.div
+                animate={{ x: isEnabled ? 16 : 0 }}
+                transition={{ duration: 0.2 }}
+                className="w-4 h-4 bg-white rounded-full absolute top-0 left-0"
+              />
+            </motion.button>
+          )}
+        </div>
+      </div>
       {/* 選項選擇器 */}
       <div className="relative">
         <Button

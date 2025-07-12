@@ -31,10 +31,12 @@ export function ParametersSection({
     <motion.div
       initial={{ y: 20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ delay: 0.4, duration: 0.2 }}
+      transition={{ delay: 0.4, duration: 0.3 }}
     >
+      
+
       <div className="mb-6">
-        <label className="block text-base mb-3 text-white">Temperature: {temperature[0]}</label>
+        <label className="block text-sm mb-3 text-white">Temperature: {temperature[0]}</label>
         <Slider
           value={temperature}
           onValueChange={setTemperature}
@@ -48,7 +50,7 @@ export function ParametersSection({
 
       <div className="grid grid-cols-3 gap-3 mb-6">
         <div>
-          <label className="block text-base mb-2 text-white">Batch Size</label>
+          <label className="block text-sm mb-2 text-white">Batch Size</label>
           <Select value={batchSize} onValueChange={setBatchSize} disabled={isReadOnly}>
             <SelectTrigger className="bg-gray-900 border-gray-800 text-white focus:border-blue-500 focus:ring-blue-500 transition-colors">
               <SelectValue />
@@ -61,7 +63,7 @@ export function ParametersSection({
           </Select>
         </div>
         <div>
-          <label className="block text-base mb-2 text-white">Parameter 2</label>
+          <label className="block text-sm mb-2 text-white">Parameter 2</label>
           <Select value={parameter2} onValueChange={setParameter2} disabled={isReadOnly}>
             <SelectTrigger className="bg-gray-900 border-gray-800 text-white focus:border-blue-500 focus:ring-blue-500 transition-colors">
               <SelectValue />
@@ -73,7 +75,7 @@ export function ParametersSection({
           </Select>
         </div>
         <div>
-          <label className="block text-base mb-2 text-white">Parameter 3</label>
+          <label className="block text-sm mb-2 text-white">Parameter 3</label>
           <Select value={parameter3} onValueChange={setParameter3} disabled={isReadOnly}>
             <SelectTrigger className="bg-gray-900 border-gray-800 text-white focus:border-blue-500 focus:ring-blue-500 transition-colors">
               <SelectValue />

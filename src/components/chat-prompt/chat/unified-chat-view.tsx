@@ -7,11 +7,13 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/comp
 import { ExternalLink } from "lucide-react"
 import { LoadingSpinner } from "./loading-spinner"
 import type { RefObject } from "react"
+import React from "react"
 
 interface Message {
   role: "user" | "assistant"
   content: string
   model?: string
+  responseTime?: number
 }
 
 interface ModelResponse {
@@ -40,6 +42,7 @@ export function UnifiedChatView({
     type: "user" | "assistant"
     content: string
     model?: string
+    responseTime?: number
   }> = []
 
   const maxLength = Math.max(...modelResponses.map((m) => m.messages.length))
@@ -60,6 +63,7 @@ export function UnifiedChatView({
           type: "assistant",
           content: assistantMessage.content,
           model: model.name,
+          responseTime: assistantMessage.responseTime,
         })
       }
     })
@@ -72,7 +76,7 @@ export function UnifiedChatView({
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>統一對話框 - OCR 測試系統</title>
+      <title>統一對話框 - 聊天 Prompt 測試區</title>
       <style>
         body {
           margin: 0;
@@ -135,7 +139,7 @@ export function UnifiedChatView({
     <body>
       <div class="header">
         <div class="title">統一對話框</div>
-        <div class="subtitle">OCR 測試系統 - 獨立視窗</div>
+        <div class="subtitle">聊天 Prompt 測試區 - 獨立視窗</div>
       </div>
       <div class="messages">
         ${
@@ -163,6 +167,13 @@ export function UnifiedChatView({
       newWindow.document.close()
     }
   }
+
+  // 自動滾動到底部
+  React.useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" })
+    }
+  }, [modelResponses])
 
   return (
     <TooltipProvider>
@@ -223,6 +234,13 @@ export function UnifiedChatView({
                 transition={{ delay: index * 0.05, duration: 0.3 }}
               >
                 {item.type === "assistant" && <div className="text-xs text-gray-400 mb-1">{item.model}</div>}
+                {item.type === "assistant" && item.responseTime && (
+                  <div className="flex justify-start mb-1">
+                    <div className="text-xs text-gray-500 font-mono bg-gray-800 px-2 py-1 rounded mr-8">
+                      {item.responseTime}ms
+                    </div>
+                  </div>
+                )}
                 <div
                   className={`p-3 rounded-lg ${
                     item.type === "user"

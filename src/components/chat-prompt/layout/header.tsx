@@ -19,7 +19,7 @@ export function Header() {
           transition={{ delay: 0.1, duration: 0.3 }}
           className="flex items-center space-x-4"
         >
-          <h1 className="text-xl font-bold text-white">OCR 測試系統</h1>
+          <h1 className="text-xl font-bold text-white">聊天 Prompt 測試區</h1>
           <div className="flex items-center space-x-2 text-sm text-gray-400">
             <Home className="w-4 h-4" />
             <span>Prompt 測試區</span>

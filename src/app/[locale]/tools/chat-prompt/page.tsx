@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { motion } from "framer-motion"
 
@@ -26,6 +26,7 @@ interface Message {
 	model?: string
 	rating?: "good" | "bad" | null
 	id?: string
+	responseTime?: number
 }
 
 interface ModelResponse {
@@ -273,6 +274,17 @@ export default function AIPromptTester() {
 		usedTools: systemPromptOptions.usedTools[0]?.content || "",
 		repliesLimits: "",
 		preventLeaks: "",
+	})
+
+	// System Prompt 開關狀態
+	const [systemPromptEnabled, setSystemPromptEnabled] = useState({
+		characterSettings: true,
+		selfAwareness: true,
+		workflow: true,
+		formatLimits: true,
+		usedTools: true,
+		repliesLimits: true,
+		preventLeaks: true,
 	})
 
 	const [defaultHintMessages, setDefaultHintMessages] = useState<HintMessage[]>([
@@ -597,12 +609,16 @@ export default function AIPromptTester() {
 		return version.modelAccuracy?.filter((acc) => selectedModelFilters.includes(acc.model)) || []
 	}
 
+	const scrollRefs = useRef<(HTMLDivElement | null)[]>([])
+	const messagesEndRef = useRef<HTMLDivElement>(null)
+
 	// 發送消息的核心函數，支持自定義消息內容
 	const sendMessageWithContent = async (messageContent: string, times = 1) => {
 		if (!messageContent.trim()) return
 
 		setShowHintButtons(false)
 
+		// 如果是多次發送，立即禁用輸入
 		if (times > 1) {
 			setInputDisabled(true)
 		}
@@ -623,8 +639,10 @@ export default function AIPromptTester() {
 			await Promise.all(
 				modelResponses.map(async (model, index) => {
 					const delay = 1000 + index * 300 + Math.random() * 800
+					const startTime = Date.now()
 
 					setTimeout(() => {
+						const responseTime = Date.now() - startTime
 						const mockResponse = `Response from ${model.name} (${i + 1}/${times}): ${messageContent}`
 						const responseId = `${Date.now()}-${Math.random()}-response`
 
@@ -635,13 +653,31 @@ export default function AIPromptTester() {
 										...m,
 										messages: [
 											...m.messages,
-											{ role: "assistant", content: mockResponse, model: model.name, id: responseId },
+											{
+												role: "assistant",
+												content: mockResponse,
+												model: model.name,
+												id: responseId,
+												responseTime: responseTime,
+											},
 										],
 										isLoading: i < times - 1,
 									}
 									: m,
 							),
 						)
+
+						// 滾動到底部
+						setTimeout(() => {
+							scrollRefs.current.forEach((ref) => {
+								if (ref) {
+									ref.scrollTop = ref.scrollHeight
+								}
+							})
+							if (messagesEndRef.current) {
+								messagesEndRef.current.scrollIntoView({ behavior: "smooth" })
+							}
+						}, 100)
 					}, delay)
 				}),
 			)
@@ -651,15 +687,26 @@ export default function AIPromptTester() {
 			}
 		}
 
-		setTimeout(() => {
-			setModelResponses((prev) =>
-				prev.map((model) => ({
-					...model,
-					isLoading: false,
-				})),
-			)
-			setInputDisabled(false)
-		}, 3000)
+		// 只有在多次發送完成後才重新啟用，單次發送不需要等待
+		if (times > 1) {
+			setTimeout(() => {
+				setModelResponses((prev) =>
+					prev.map((model) => ({
+						...model,
+						isLoading: false,
+					})),
+				)
+			}, 3000)
+		} else {
+			setTimeout(() => {
+				setModelResponses((prev) =>
+					prev.map((model) => ({
+						...model,
+						isLoading: false,
+					})),
+				)
+			}, 3000)
+		}
 	}
 
 	// 從輸入框發送消息
@@ -670,6 +717,18 @@ export default function AIPromptTester() {
 		setInputMessage("") // 清空輸入框
 
 		await sendMessageWithContent(message, times)
+
+		// 確保滾動到底部
+		setTimeout(() => {
+			scrollRefs.current.forEach((ref) => {
+				if (ref) {
+					ref.scrollTop = ref.scrollHeight
+				}
+			})
+			if (messagesEndRef.current) {
+				messagesEndRef.current.scrollIntoView({ behavior: "smooth" })
+			}
+		}, 200)
 	}
 
 	// 點擊 hint message 直接發送
@@ -909,7 +968,7 @@ export default function AIPromptTester() {
 		setParameter2("option1")
 		setParameter3("option1")
 		setShowHintButtons(true)
-		setInputDisabled(false)
+		setInputDisabled(false) // 確保清除時重新啟用輸入
 	}
 
 	const exitVersionMode = () => {
@@ -1100,7 +1159,7 @@ export default function AIPromptTester() {
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>${model.name} - OCR 測試系統</title>
+      <title>${model.name} - 聊天 Prompt 測試區</title>
       <style>
         body {
           margin: 0;
@@ -1158,7 +1217,7 @@ export default function AIPromptTester() {
     <body>
       <div class="header">
         <div class="model-name">${model.name}</div>
-        <div class="subtitle">OCR 測試系統 - 獨立視窗</div>
+        <div class="subtitle">聊天 Prompt 測試區 - 獨立視窗</div>
       </div>
       <div class="messages">
         ${
@@ -1195,6 +1254,14 @@ export default function AIPromptTester() {
 		setSystemPromptOptions((prev) => ({
 			...prev,
 			[type]: options,
+		}))
+	}
+
+	// System Prompt 開關處理函數
+	const handleSystemPromptToggle = (type: keyof typeof systemPromptEnabled, enabled: boolean) => {
+		setSystemPromptEnabled((prev) => ({
+			...prev,
+			[type]: enabled,
 		}))
 	}
 
@@ -1287,6 +1354,8 @@ export default function AIPromptTester() {
 							onToolDialogOpen={handleToolDialogOpen}
 							onModelDialogChange={handleModelDialogChange}
 							onToolDialogChange={handleToolDialogChange}
+							systemPromptEnabled={systemPromptEnabled}
+							onSystemPromptToggle={handleSystemPromptToggle}
 						/>
 					)}
 
@@ -1347,6 +1416,8 @@ export default function AIPromptTester() {
 								multiSendTimes={multiSendTimes}
 								setMultiSendTimes={setMultiSendTimes}
 								inputDisabled={inputDisabled}
+								scrollRefs={scrollRefs}
+								messagesEndRef={messagesEndRef}
 							/>
 						</motion.div>
 					)}

@@ -20,6 +20,7 @@ interface Message {
   model?: string
   rating?: "good" | "bad" | null
   id?: string
+  responseTime?: number
 }
 
 interface ModelResponse {
@@ -282,8 +283,10 @@ export function VersionCompareView({
     onUpdateVersions(updatedVersions)
 
     // 模擬 AI 回覆
+    const startTime = Date.now()
     setTimeout(
       () => {
+        const responseTime = Date.now() - startTime
         const finalUpdatedVersions = updatedVersions.map((version) => {
           const models = version.selectedModels || version.data?.models || []
           const selectedModel = selectedModels[version.id] || models[0] || "gpt-4o"
@@ -303,6 +306,7 @@ export function VersionCompareView({
                     content: mockResponse,
                     model: modelResponse.name,
                     id: responseId,
+                    responseTime: responseTime,
                   },
                 ],
                 isLoading: false,
@@ -873,6 +877,7 @@ export function VersionCompareView({
                             index={msgIndex}
                             onRating={(messageId, rating) => handleMessageRating(version.id, messageId, rating)}
                             showRating={message.role === "assistant"}
+                            responseTime={message.responseTime}
                           />
                         ))
                       )}
@@ -974,6 +979,7 @@ export function VersionCompareView({
                           index={msgIndex}
                           onRating={(messageId, rating) => handleMessageRating(fullscreenVersion, messageId, rating)}
                           showRating={message.role === "assistant"}
+                          responseTime={message.responseTime}
                         />
                       ))
                     )

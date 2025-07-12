@@ -31,9 +31,18 @@ interface AdditionalSystemPromptProps {
   value: string
   onChange: (value: string) => void
   isReadOnly: boolean
+  isEnabled?: boolean
+  onToggleEnabled?: (enabled: boolean) => void
 }
 
-export function AdditionalSystemPrompt({ title, value, onChange, isReadOnly }: AdditionalSystemPromptProps) {
+export function AdditionalSystemPrompt({
+  title,
+  value,
+  onChange,
+  isReadOnly,
+  isEnabled,
+  onToggleEnabled,
+}: AdditionalSystemPromptProps) {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editValue, setEditValue] = useState(value)
   const [hasChanges, setHasChanges] = useState(false)
@@ -75,6 +84,28 @@ export function AdditionalSystemPrompt({ title, value, onChange, isReadOnly }: A
 
   return (
     <TooltipProvider>
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center space-x-2">
+          <h4 className="font-medium text-white text-base">{title}</h4>
+          {onToggleEnabled && (
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => onToggleEnabled(!isEnabled)}
+              className={`w-8 h-4 rounded-full transition-colors duration-200 ${
+                isEnabled ? "bg-blue-600" : "bg-gray-600"
+              } relative`}
+              disabled={isReadOnly}
+            >
+              <motion.div
+                animate={{ x: isEnabled ? 16 : 0 }}
+                transition={{ duration: 0.2 }}
+                className="w-4 h-4 bg-white rounded-full absolute top-0 left-0"
+              />
+            </motion.button>
+          )}
+        </div>
+      </div>
       <div className="flex items-center space-x-2">
         <Tooltip>
           <TooltipTrigger asChild>

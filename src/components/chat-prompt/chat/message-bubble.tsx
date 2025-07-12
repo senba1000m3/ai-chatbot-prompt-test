@@ -18,9 +18,10 @@ interface MessageBubbleProps {
   index: number
   onRating?: (messageId: string, rating: "good" | "bad") => void
   showRating?: boolean
+  responseTime?: number
 }
 
-export function MessageBubble({ message, index, onRating, showRating = false }: MessageBubbleProps) {
+export function MessageBubble({ message, index, onRating, showRating = false, responseTime }: MessageBubbleProps) {
   const [currentRating, setCurrentRating] = useState<"good" | "bad" | null>(message.rating || null)
 
   const handleRating = (rating: "good" | "bad") => {
@@ -81,6 +82,18 @@ export function MessageBubble({ message, index, onRating, showRating = false }: 
               <Frown className="w-3 h-3" />
             </Button>
           </motion.div>
+        </motion.div>
+      )}
+
+      {/* 助手回覆的時間顯示 */}
+      {message.role === "assistant" && responseTime && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.3, duration: 0.3 }}
+          className="flex justify-end mb-1"
+        >
+          <div className="text-xs text-gray-500 font-mono bg-gray-800 px-2 py-1 rounded">{responseTime}ms</div>
         </motion.div>
       )}
 
