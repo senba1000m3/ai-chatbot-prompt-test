@@ -2,6 +2,7 @@
 
 import { HintMessageButtons } from "./hint-message-buttons"
 import { EnhancedMessageInput } from "./enhanced-message-input"
+import { usePromptStore } from "@/lib/store/prompt";
 
 interface HintMessage {
   id: string
@@ -24,13 +25,31 @@ export function ChatInputSection({
   defaultHintMessages,
   onHintMessageClick,
   showHintButtons,
-  inputMessage,
-  setInputMessage,
-  onSendMessage,
-  multiSendTimes,
-  setMultiSendTimes,
   inputDisabled,
-}: ChatInputSectionProps) {
+}: Omit<ChatInputSectionProps, "inputMessage" | "setInputMessage" | "onSendMessage" | "multiSendTimes" | "setMultiSendTimes">) {
+  const {
+    inputMessage,
+    setInputMessage,
+    multiSendTimes,
+    setMultiSendTimes,
+    modelResponses,
+    setModelResponses,
+  } = usePromptStore();
+
+  // 訊息發送，直接 append 到 zustand
+  function onSendMessage(times: number = 1) {
+    if (!inputMessage.trim()) return;
+    // append 訊息到 modelResponses
+    const newResponse = {
+      id: Date.now().toString(),
+      name: "user",
+      messages: [{ role: "user", content: inputMessage }],
+      isLoading: false,
+    };
+    setModelResponses([...modelResponses, newResponse]);
+    setInputMessage("");
+  }
+
   return (
     <div className="border-t border-gray-800 bg-black">
       {/* 預設提示按鈕 */}

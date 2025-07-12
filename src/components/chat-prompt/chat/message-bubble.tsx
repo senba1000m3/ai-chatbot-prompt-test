@@ -44,7 +44,7 @@ export function MessageBubble({ message, index, onRating, showRating = false, re
         stiffness: 200,
         damping: 20,
       }}
-      className={`${message.role === "user" ? "ml-8" : "mr-8"}`}
+      className={`${message.role === "user" ? "ml-8" : "mr-8"} mb-4`}
     >
       {/* 助手回覆的評分按鈕 */}
       {message.role === "assistant" && showRating && (

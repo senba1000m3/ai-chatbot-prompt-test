@@ -10,6 +10,7 @@ import { ModelChatCard } from "./model-chat-card"
 import { UnifiedChatView } from "./unified-chat-view"
 import { PopupViewPlaceholder } from "./popup-view-placeholder"
 import { ChatInputSection } from "./chat-input-section"
+import { usePromptStore } from "@/lib/store/prompt"
 
 type ViewMode = "popup" | "unified" | "separate"
 
@@ -35,7 +36,6 @@ interface HintMessage {
 
 interface ChatViewContainerProps {
   viewMode: ViewMode
-  modelResponses: ModelResponse[]
   fullscreenModel: string | null
   setFullscreenModel: (modelId: string | null) => void
   syncScroll: boolean
@@ -47,11 +47,6 @@ interface ChatViewContainerProps {
   defaultHintMessages: HintMessage[]
   onHintMessageClick: (content: string) => void
   showHintButtons: boolean
-  inputMessage: string
-  setInputMessage: (value: string) => void
-  onSendMessage: (times?: number) => void
-  multiSendTimes: number
-  setMultiSendTimes: (times: number) => void
   inputDisabled: boolean
   scrollRefs?: React.MutableRefObject<(HTMLDivElement | null)[]>
   messagesEndRef?: React.RefObject<HTMLDivElement>
@@ -59,7 +54,6 @@ interface ChatViewContainerProps {
 
 export function ChatViewContainer({
   viewMode,
-  modelResponses,
   fullscreenModel,
   setFullscreenModel,
   syncScroll,
@@ -71,15 +65,24 @@ export function ChatViewContainer({
   defaultHintMessages,
   onHintMessageClick,
   showHintButtons,
-  inputMessage,
-  setInputMessage,
-  onSendMessage,
-  multiSendTimes,
-  setMultiSendTimes,
   inputDisabled,
   scrollRefs,
   messagesEndRef,
-}: ChatViewContainerProps) {
+}: Omit<ChatViewContainerProps, "inputMessage" | "setInputMessage" | "multiSendTimes" | "setMultiSendTimes" | "onSendMessage" | "modelResponses">) {
+  const {
+    inputMessage,
+    setInputMessage,
+    multiSendTimes,
+    setMultiSendTimes,
+    modelResponses,
+    setModelResponses,
+    selectedModels,
+    getModelMessages,
+  } = usePromptStore()
+
+  // console.log('modelResponses', modelResponses);
+  // console.log('selectedModels', selectedModels);
+
   const localScrollRefs = useRef<(HTMLDivElement | null)[]>([])
   const localMessagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -88,7 +91,7 @@ export function ChatViewContainer({
 
   // 計算每個對話框的高度 - 為輸入框預留空間
   const getIndividualChatHeight = () => {
-    const modelCount = modelResponses.length
+    const modelCount = selectedModels.length
     const inputSectionHeight = 120 // 為輸入框預留的高度
     const availableHeight = chatHeight - inputSectionHeight
 
@@ -103,7 +106,7 @@ export function ChatViewContainer({
 
   // 獲取網格布局類名
   const getGridClassName = () => {
-    const modelCount = modelResponses.length
+    const modelCount = selectedModels.length
     if (modelCount <= 2) {
       return "grid grid-cols-2 gap-4"
     } else if (modelCount <= 4) {
@@ -268,10 +271,10 @@ export function ChatViewContainer({
             {viewMode === "separate" && !fullscreenModel && (
               <div className="h-full relative">
                 <div className={getGridClassName()} style={{ height: `${chatHeight - 120}px` }}>
-                  {modelResponses.map((model, index) => (
+                  {selectedModels.map((modelId, index) => (
                     <ModelChatCard
-                      key={model.id}
-                      model={model}
+                      key={modelId}
+                      model={{ id: modelId, messages: getModelMessages(modelId) }}
                       index={index}
                       scrollRef={(el) => (actualScrollRefs.current[index] = el)}
                       syncScroll={syncScroll}
@@ -385,11 +388,6 @@ export function ChatViewContainer({
               defaultHintMessages={defaultHintMessages}
               onHintMessageClick={onHintMessageClick}
               showHintButtons={showHintButtons}
-              inputMessage={inputMessage}
-              setInputMessage={setInputMessage}
-              onSendMessage={onSendMessage}
-              multiSendTimes={multiSendTimes}
-              setMultiSendTimes={setMultiSendTimes}
               inputDisabled={inputDisabled}
             />
           )}
@@ -400,11 +398,6 @@ export function ChatViewContainer({
               defaultHintMessages={defaultHintMessages}
               onHintMessageClick={onHintMessageClick}
               showHintButtons={showHintButtons}
-              inputMessage={inputMessage}
-              setInputMessage={setInputMessage}
-              onSendMessage={onSendMessage}
-              multiSendTimes={multiSendTimes}
-              setMultiSendTimes={setMultiSendTimes}
               inputDisabled={inputDisabled}
             />
           )}

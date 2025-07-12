@@ -1,6 +1,7 @@
 "use client"
 
 import { AnimatePresence, motion } from "framer-motion"
+import { useEffect } from "react"
 import { VersionHistoryToggle } from "./version-history-toggle"
 import { VersionCard } from "./version-card"
 import { VersionCardCompare } from "./version-card-compare"
@@ -15,6 +16,7 @@ import { SelectionSystemPrompt } from "./system-prompt-sections/selection-system
 import { DetailedSystemPrompt } from "./system-prompt-sections/detailed-system-prompt"
 import { AdditionalSystemPrompt } from "./system-prompt-sections/additional-system-prompt"
 import { DefaultHintMessage } from "./default-hint-message"
+import { usePromptStore } from "@/lib/store/prompt"
 
 interface Message {
   role: "user" | "assistant"
@@ -227,6 +229,19 @@ export function SidebarContainer({
   systemPromptEnabled,
   onSystemPromptToggle,
 }: SidebarContainerProps) {
+  const { setSelectedModels } = usePromptStore()
+
+  // 初次渲染時自動同步 tempSelectedModels 到 zustand
+  useEffect(() => {
+    setSelectedModels(tempSelectedModels);
+  }, [tempSelectedModels, setSelectedModels]);
+
+  // 在模型儲存時同步到 zustand
+  const handleModelSave = () => {
+    setSelectedModels(tempSelectedModels);
+    if (onModelSave) onModelSave()
+  }
+
   return (
     <>
       <VersionHistoryToggle
@@ -347,7 +362,7 @@ export function SidebarContainer({
                     onOpenChange={onModelDialogChange}
                     selectedModels={tempSelectedModels}
                     onToggleModel={onModelToggle}
-                    onSave={onModelSave}
+                    onSave={handleModelSave}
                     availableModels={availableModels}
                     onClick={onModelDialogOpen}
                   />

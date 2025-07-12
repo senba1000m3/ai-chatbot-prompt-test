@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
+import { usePromptStore } from "@/lib/store/prompt"
 
 interface Model {
   id: string
@@ -16,19 +17,17 @@ interface Tool {
 
 interface SelectedItemsDisplayProps {
   isReadOnly: boolean
-  selectedModels: string[]
-  selectedTools: string[]
   availableModels: Model[]
   availableTools: Tool[]
 }
 
 export function SelectedItemsDisplay({
   isReadOnly,
-  selectedModels,
-  selectedTools,
   availableModels,
   availableTools,
-}: SelectedItemsDisplayProps) {
+}: Omit<SelectedItemsDisplayProps, "selectedModels" | "selectedTools">) {
+  const { selectedModels, selectedTools } = usePromptStore()
+
   return (
     <AnimatePresence>
       {isReadOnly && (
