@@ -2,6 +2,8 @@
 
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
+import { usePromptChat } from "@/hooks/use-prompt-chat"
+import { useState } from "react"
 
 interface HintMessage {
   id: string
@@ -14,10 +16,18 @@ interface HintMessageButtonsProps {
   show: boolean
 }
 
-export function HintMessageButtons({ messages, onMessageClick, show }: HintMessageButtonsProps) {
+export function HintMessageButtons({ messages }: HintMessageButtonsProps) {
+	const [ifShowHintMessage, setIfShowHintMessage] = useState(true);
+	const { handleSubmit } = usePromptChat();
+
+	const handleSendMessage = async (msg: string) => {
+		await handleSubmit(msg);
+		setIfShowHintMessage(false);
+	};
+
   return (
     <AnimatePresence>
-      {show && messages.length > 0 && (
+      {ifShowHintMessage && messages.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -37,7 +47,7 @@ export function HintMessageButtons({ messages, onMessageClick, show }: HintMessa
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => onMessageClick(message.content)}
+                onClick={() => handleSendMessage(message.content)}
                 className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
               >
                 {message.content.length > 20 ? `${message.content.substring(0, 20)}...` : message.content}

@@ -14,6 +14,8 @@ export function usePromptChat() {
 		updateModelMessage,
 		setModelIsLoading,
 		getModelMessages,
+		totalPrompts,
+		setTotalPrompts
 	} = usePromptStore();
 
 	const sendMessage = useCallback(
@@ -25,7 +27,9 @@ export function usePromptChat() {
 				});
 
 				try {
-					// 并行处理所有模型请求
+					setTotalPrompts();
+					const currentTotalPrompts = usePromptStore.getState().totalPrompts;
+
 					const messagePromises = modelNames.map(async (modelName) => {
 						const messages = getModelMessages(modelName);
 
@@ -33,6 +37,7 @@ export function usePromptChat() {
 							const result = await generate({
 								modelName: modelName,
 								messages: messages,
+								systemPrompt: currentTotalPrompts
 							});
 
 							return {

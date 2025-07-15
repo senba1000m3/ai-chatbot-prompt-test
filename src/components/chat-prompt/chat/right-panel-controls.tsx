@@ -283,8 +283,7 @@ export function RightPanelControls({
               </motion.div>
             </DialogContent>
           </Dialog>
-
-          {/* 顏色模式切換按鈕 - 只在比較模式時顯示 */}
+			
           {isInCompareView && onColorModeChange && (
             <Tooltip>
               <TooltipTrigger asChild>

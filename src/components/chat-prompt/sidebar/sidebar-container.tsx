@@ -207,7 +207,7 @@ export function SidebarContainer({
   availableModels,
   availableTools,
   systemPrompt,
-  setSystemPrompt,
+  setSystemPrompt: _setSystemPrompt, // 將原始的 setSystemPrompt 重命名为 _setSystemPrompt
   systemPromptOptions,
   onSystemPromptOptionsChange,
   defaultHintMessages,
@@ -227,9 +227,9 @@ export function SidebarContainer({
   onModelDialogChange,
   onToolDialogChange,
   systemPromptEnabled,
-  onSystemPromptToggle,
+  onSystemPromptToggle: _onSystemPromptToggle, // 将原始的 onSystemPromptToggle 重命名为 _onSystemPromptToggle
 }: SidebarContainerProps) {
-  const { setSelectedModels } = usePromptStore()
+  const { setSelectedModels, setSystemPrompt, setIsSystemPromptOn } = usePromptStore()
 
   // 初次渲染時自動同步 tempSelectedModels 到 zustand
   useEffect(() => {
@@ -240,6 +240,27 @@ export function SidebarContainer({
   const handleModelSave = () => {
     setSelectedModels(tempSelectedModels);
     if (onModelSave) onModelSave()
+  }
+
+  // 處理 systemPrompt 的變更，直接使用 zustand 的 setSystemPrompt
+  const handleSystemPromptChange = (key: string, value: string) => {
+    // 更新本地组件状态
+    _setSystemPrompt((prev) => ({ ...prev, [key]: value }));
+
+    // 同步到 zustand store
+    setSystemPrompt({
+      ...systemPrompt,
+      [key]: value
+    });
+  }
+
+  // 處理 systemPrompt 的開關，直接使用 zustand 的 setIsSystemPromptOn
+  const handleSystemPromptToggle = (type: string, enabled: boolean) => {
+    // 更新本地组件状态
+    if (_onSystemPromptToggle) _onSystemPromptToggle(type, enabled);
+
+    // 同步到 zustand store
+    setIsSystemPromptOn(type, enabled);
   }
 
   return (
@@ -345,7 +366,7 @@ export function SidebarContainer({
               currentVersionName={currentVersionName}
               onExitReadOnly={onExitReadOnly}
               onEdit={onEdit}
-              onSaveEdit={onSaveEdit}
+              onSave={onSaveEdit}
             />
 
             <AnimatePresence>
@@ -384,66 +405,66 @@ export function SidebarContainer({
                 <SelectionSystemPrompt
                   title="角色設定"
                   value={systemPrompt.characterSettings}
-                  onChange={(value) => setSystemPrompt((prev) => ({ ...prev, characterSettings: value }))}
+                  onChange={(value) => handleSystemPromptChange("characterSettings", value)}
                   options={systemPromptOptions.characterSettings}
                   onOptionsChange={(options) => onSystemPromptOptionsChange("characterSettings", options)}
                   isReadOnly={isReadOnly && !isEditing}
                   isEnabled={systemPromptEnabled.characterSettings}
-                  onToggleEnabled={(enabled) => onSystemPromptToggle("characterSettings", enabled)}
+                  onToggleEnabled={(enabled) => handleSystemPromptToggle("characterSettings", enabled)}
                 />
 
                 <AdditionalSystemPrompt
                   title="自我認知"
                   value={systemPrompt.selfAwareness}
-                  onChange={(value) => setSystemPrompt((prev) => ({ ...prev, selfAwareness: value }))}
+                  onChange={(value) => handleSystemPromptChange("selfAwareness", value)}
                   isReadOnly={isReadOnly && !isEditing}
                   isEnabled={systemPromptEnabled.selfAwareness}
-                  onToggleEnabled={(enabled) => onSystemPromptToggle("selfAwareness", enabled)}
+                  onToggleEnabled={(enabled) => handleSystemPromptToggle("selfAwareness", enabled)}
                 />
 
                 <DetailedSystemPrompt
                   title="任務流程"
                   value={systemPrompt.workflow}
-                  onChange={(value) => setSystemPrompt((prev) => ({ ...prev, workflow: value }))}
+                  onChange={(value) => handleSystemPromptChange("workflow", value)}
                   isReadOnly={isReadOnly && !isEditing}
                   isEnabled={systemPromptEnabled.workflow}
-                  onToggleEnabled={(enabled) => onSystemPromptToggle("workflow", enabled)}
+                  onToggleEnabled={(enabled) => handleSystemPromptToggle("workflow", enabled)}
                 />
 
                 <DetailedSystemPrompt
                   title="格式限制"
                   value={systemPrompt.formatLimits}
-                  onChange={(value) => setSystemPrompt((prev) => ({ ...prev, formatLimits: value }))}
+                  onChange={(value) => handleSystemPromptChange("formatLimits", value)}
                   isReadOnly={isReadOnly && !isEditing}
                   isEnabled={systemPromptEnabled.formatLimits}
-                  onToggleEnabled={(enabled) => onSystemPromptToggle("formatLimits", enabled)}
+                  onToggleEnabled={(enabled) => handleSystemPromptToggle("formatLimits", enabled)}
                 />
 
                 <AdditionalSystemPrompt
                   title="工具使用"
                   value={systemPrompt.usedTools}
-                  onChange={(value) => setSystemPrompt((prev) => ({ ...prev, usedTools: value }))}
+                  onChange={(value) => handleSystemPromptChange("usedTools", value)}
                   isReadOnly={isReadOnly && !isEditing}
                   isEnabled={systemPromptEnabled.usedTools}
-                  onToggleEnabled={(enabled) => onSystemPromptToggle("usedTools", enabled)}
+                  onToggleEnabled={(enabled) => handleSystemPromptToggle("usedTools", enabled)}
                 />
 
                 <AdditionalSystemPrompt
                   title="回覆限制與要求"
                   value={systemPrompt.repliesLimits}
-                  onChange={(value) => setSystemPrompt((prev) => ({ ...prev, repliesLimits: value }))}
+                  onChange={(value) => handleSystemPromptChange("repliesLimits", value)}
                   isReadOnly={isReadOnly && !isEditing}
                   isEnabled={systemPromptEnabled.repliesLimits}
-                  onToggleEnabled={(enabled) => onSystemPromptToggle("repliesLimits", enabled)}
+                  onToggleEnabled={(enabled) => handleSystemPromptToggle("repliesLimits", enabled)}
                 />
 
                 <AdditionalSystemPrompt
                   title="防洩漏限制"
                   value={systemPrompt.preventLeaks}
-                  onChange={(value) => setSystemPrompt((prev) => ({ ...prev, preventLeaks: value }))}
+                  onChange={(value) => handleSystemPromptChange("preventLeaks", value)}
                   isReadOnly={isReadOnly && !isEditing}
                   isEnabled={systemPromptEnabled.preventLeaks}
-                  onToggleEnabled={(enabled) => onSystemPromptToggle("preventLeaks", enabled)}
+                  onToggleEnabled={(enabled) => handleSystemPromptToggle("preventLeaks", enabled)}
                 />
               </div>
             </CollapsibleSection>
