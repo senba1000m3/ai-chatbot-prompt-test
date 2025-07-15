@@ -877,7 +877,6 @@ export function VersionCompareView({
                             index={msgIndex}
                             onRating={(messageId, rating) => handleMessageRating(version.id, messageId, rating)}
                             showRating={message.role === "assistant"}
-                            responseTime={message.responseTime}
                           />
                         ))
                       )}

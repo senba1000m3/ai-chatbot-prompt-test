@@ -1,9 +1,10 @@
 "use server";
-import { streamText, generateObject } from "ai";
+import { generateText, generateObject } from "ai";
 import { openai } from "@ai-sdk/openai";
+import { z } from "zod";
+import { createStreamableValue } from "ai/rsc";
 import { getChatModel } from "./models";
 import { ensureError } from "@/lib/response";
-import { createStreamableValue } from "ai/rsc";
 
 // Auth
 import { userAuthorization } from "@/lib/auth/utils";
@@ -14,55 +15,36 @@ import { messages as DrizzleMessages } from "@/lib/db/schema";
 import { Redis } from "@upstash/redis";
 const redis = Redis.fromEnv();
 
-// Constants & Variables
-import { CHAT_TOOLS, CHAT_TOOL_CONFIGS, CHAT_TOOL_NAMES } from "./tools";
-
 // Types & Interfaces
 import type { CoreMessage } from "ai";
-import { ChatOptions } from "@/types/chat";
+import type { StreamableValue } from "ai/rsc";
 
-export async function generate({ modelId: modelName, messages }: { modelId: string, messages: CoreMessage[] }) {
-    console.log(`[Action] Generating chat for model: ${modelName}`);
-    console.log(`[Action] Messages:`, JSON.stringify(messages, null, 2));
+export async function generate({ modelName, messages = [] }: { modelName: string, messages: CoreMessage[] }) {
 
-    const stream = createStreamableValue();
+	const chatModel = getChatModel(modelName);
+	console.log("Selected model:", modelName, chatModel);
+	if (!chatModel) {
+		const errorMessage = `Model not found: ${modelName}`;
+		return;
+	}
+	else{
+		console.log(chatModel);
+	}
 
-    (async () => {
-        const startTime = Date.now();
-        try {
-            const chatModel = getChatModel(modelName);
+	// 开始计时 - 直接测量 AI 请求/响应时间
+	const startTime = Date.now();
 
-            if (!chatModel) {
-                throw new Error(`Model not found in prompt-action: ${modelName}`);
-            }
+	const { text } = await generateText({
+		model: chatModel.provider(chatModel.model),
+		messages,
+		// ...(chatModel.tools && { tools: chatModel.tools }),
+		// ...(chatModel.settings && { settings: chatModel.settings }),
+	});
 
-            console.log(`[Action] Got chat model for: ${modelName}`);
-            const { textStream } = await streamText({
-                model: chatModel,
-                messages,
-            });
+	const endTime = Date.now();
+	const spendTime = endTime - startTime;
 
-            for await (const delta of textStream) {
-                stream.update(delta);
-            }
-
-            const endTime = Date.now();
-            const spendTime = endTime - startTime;
-
-            // After the stream is done, update with the final metadata including spendTime.
-            stream.done({ spendTime });
-
-        } catch (err) {
-            const error = ensureError(err);
-            console.error(`ERR::CHAT::GENERATE::${modelName}:`, error.message);
-            stream.update(`Error: ${error.message}`);
-            stream.done({ error: error.message });
-        }
-    })();
-
-    return {
-        textStream: stream.value,
-    };
+	return { text, spendTime };
 }
 
 export async function generateChatMetadata({ messages }: {
@@ -98,7 +80,6 @@ export async function generateChatMetadata({ messages }: {
 		return { title: "My Smart Chat", tags: [] };
 	} catch (err) {
 		const error = ensureError(err);
-		console.error("ERR::CHAT::METADATA:", error.message);
 		return { title: "My Smart Chat", tags: [] };
 	}
 }

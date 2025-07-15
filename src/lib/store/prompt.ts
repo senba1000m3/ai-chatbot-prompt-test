@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { nanoid } from "@/lib/utils";
-import type { ModelResponse } from "@/types/chat";
 
 // Types & Interfaces
 import type { CoreMessage } from "ai";
@@ -11,8 +10,23 @@ export interface ModelMessage extends CoreMessage {
 	spendTime?: number;
 }
 
+export interface SavedVersion {
+	id: string;
+	name: string;
+	savedAt: Date;
+	expanded?: boolean;
+	systemPrompt: string;
+	userPrompt: string;
+	temperature: number;
+	batchSize: string;
+	parameter2: string;
+	parameter3: string;
+	selectedModels: string[];
+	selectedTools: string[];
+}
+
 interface PromptStoreProps {
-	// Chat related
+	/* Unused */
 	chatId: string;
 	setChatId: (chatId: string) => void;
 	chatTitle: string;
@@ -21,21 +35,14 @@ interface PromptStoreProps {
 	setInput: (input: string) => void;
 	isLoading: boolean;
 	setIsLoading: (isLoading: boolean) => void;
-	hasScrolledToBottom: boolean;
-	setHasScrolledToBottom: (hasScrolled: boolean) => void;
-
-	// Chat Options
 	model: string;
 	setModel: (model: string) => void;
 	character: string;
 	setCharacter: (character: string) => void;
 	useWebSearch: boolean;
-	setUseWebSearch: (webSearch: boolean) => void;
-
+	setUseWebSearch: (useWebSearch: boolean) => void;
 	handleChatChange: (newChatId: string) => void;
-
-	// Message related
-	sources: Record<string, SourcePart["source"][]>;
+	sources: Record<string, string[]>;
 	appendSource: (source: SourcePart) => void;
 	messages: Record<string, CoreMessage>;
 	messageOrderArray: string[];
@@ -43,6 +50,11 @@ interface PromptStoreProps {
 	getMessageArray: () => CoreMessage[];
 	messageExists: (id: string) => boolean;
 	clearMessages: () => void;
+	/* ----- */
+
+	// Used
+	hasScrolledToBottom: boolean;
+	setHasScrolledToBottom: (hasScrolled: boolean) => void;
 
 	// Prompt Used
 	systemPrompt: Record<string, string>;
@@ -71,10 +83,17 @@ interface PromptStoreProps {
 	appendModelMessage: (modelId: string, message: ModelMessage) => string;
 	updateModelMessage: (modelId: string, messageId: string, update: Partial<ModelMessage>) => void;
 	getModelMessages: (modelId: string) => ModelMessage[];
-	clearModelMessages: (modelId: string) => void;
-	// 新增每個模型的加載狀態
+	clearModelMessages: () => void;
 	modelIsLoading: Record<string, boolean>;
 	setModelIsLoading: (modelId: string, isLoading: boolean) => void;
+
+	// SavedVersion 管理
+	savedVersions: SavedVersion[];
+	setSavedVersions: (versions: SavedVersion[]) => void;
+	addSavedVersion: (version: SavedVersion) => void;
+	updateSavedVersion: (id: string, version: Partial<SavedVersion>) => void;
+	deleteSavedVersion: (id: string) => void;
+	toggleVersionExpanded: (id: string) => void;
 };
 
 export const usePromptStore = create<PromptStoreProps>()(
@@ -225,6 +244,7 @@ export const usePromptStore = create<PromptStoreProps>()(
 			modelMessageOrder: {},
 			appendModelMessage: (modelId: string, message: ModelMessage) => {
 				const messageId = message.id || nanoid();
+				// console.log(`[ModelMessage] Model: ${modelId}, Message:`, message);
 				set(state => {
 					const modelMsgs = state.modelMessages[modelId] || {};
 					const modelOrder = state.modelMessageOrder[modelId] || [];
@@ -287,17 +307,11 @@ export const usePromptStore = create<PromptStoreProps>()(
 				const msgs = state.modelMessages[modelId] || {};
 				return order.map(id => msgs[id]).filter(Boolean);
 			},
-			clearModelMessages: (modelId: string) => {
-				set(state => ({
-					modelMessages: {
-						...state.modelMessages,
-						[modelId]: {},
-					},
-					modelMessageOrder: {
-						...state.modelMessageOrder,
-						[modelId]: [],
-					},
-				}));
+			clearModelMessages: () => {
+				set({
+					modelMessages: {},
+					modelMessageOrder: {}
+				});
 			},
 			modelIsLoading: {},
 			setModelIsLoading: (modelId: string, isLoading: boolean) => {
@@ -308,16 +322,42 @@ export const usePromptStore = create<PromptStoreProps>()(
 					},
 				}));
 			},
+
+			// 滚动状态
+			hasScrolledToBottom: true,
+			setHasScrolledToBottom: (hasScrolledToBottom: boolean) => set({ hasScrolledToBottom }),
+
+			// SavedVersion 管理
+			savedVersions: [],
+			setSavedVersions: (versions) => set({ savedVersions: versions }),
+			addSavedVersion: (version) => set((state) => ({
+				savedVersions: [version, ...state.savedVersions]
+			})),
+			updateSavedVersion: (id, updatedVersion) => set((state) => ({
+				savedVersions: state.savedVersions.map((version) =>
+					version.id === id ? { ...version, ...updatedVersion } : version
+				)
+			})),
+			deleteSavedVersion: (id) => set((state) => ({
+				savedVersions: state.savedVersions.filter((version) => version.id !== id)
+			})),
+			toggleVersionExpanded: (id) => set((state) => ({
+				savedVersions: state.savedVersions.map((version) =>
+					version.id === id ? { ...version, expanded: !version.expanded } : version
+				)
+			})),
 		}),
 		{
 			name: "tau-chat",
 			partialize: state => ({
-				model: state.model,
-				character: state.character,
-				useWebSearch: state.useWebSearch,
+				selectedModels: state.selectedModels,
+				selectedTools: state.selectedTools,
+				systemPrompt: state.systemPrompt,
+				isSystemPromptOn: state.isSystemPromptOn,
+				userPrompt: state.userPrompt,
+				savedVersions: state.savedVersions,
 			}),
 		}
-
 	)
 );
 

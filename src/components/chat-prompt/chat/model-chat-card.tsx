@@ -101,7 +101,13 @@ export function ModelChatCard({
             <div className="text-gray-500 text-center mt-8">尚無訊息</div>
           ) : (
             model.messages.map((msg, i) => (
-              <MessageBubble key={msg.id || i} message={msg} onMessageRating={onMessageRating} />
+              <MessageBubble
+                key={msg.id || i}
+                message={msg}
+                index={i}
+                onRating={onMessageRating}
+                showRating={false}
+              />
             ))
           )}
         </div>

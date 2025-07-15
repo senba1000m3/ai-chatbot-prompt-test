@@ -256,7 +256,7 @@ export function SidebarContainer({
             animate={{ width: 320, opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="border-r border-gray-800 bg-black flex flex-col overflow-hidden"
+            className="border-r border-gray-800 bg-black flex flex-col overflow-hidden h-screen"
           >
             <VersionHistoryHeader
               isCompareMode={isCompareMode}
@@ -335,7 +335,7 @@ export function SidebarContainer({
         initial={{ x: -20, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.3, delay: 0.1 }}
-        className="w-96 border-r border-gray-800 flex flex-col bg-black"
+        className="w-96 border-r border-gray-800 flex flex-col bg-black h-screen"
       >
         <div className="flex-1 p-6 overflow-y-auto custom-scrollbar">
           <div className="space-y-8">

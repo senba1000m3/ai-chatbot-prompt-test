@@ -26,6 +26,7 @@ import { Input } from "@/components/ui/input"
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
 import { ExternalLink, AlignJustify, Grid2X2, Palette, PaintBucket, Eye } from "lucide-react"
 import { Slider } from "@/components/ui/slider"
+import { usePromptStore } from "@/lib/store/prompt"
 
 type ViewMode = "popup" | "unified" | "separate"
 
@@ -81,9 +82,9 @@ export function RightPanelControls({
   isInCompareView = false,
   isReadOnly = false,
 }: RightPanelControlsProps) {
-  // 檢查名稱是否重複
-  const isNameDuplicate =
-    saveVersionName.trim() !== "" && savedVersions.some((version) => version.name === saveVersionName.trim())
+  const { clearModelMessages } = usePromptStore()
+
+  const isNameDuplicate = saveVersionName.trim() !== "" && savedVersions.some((version) => version.name === saveVersionName.trim())
 
   const getColorModeIcon = () => {
     switch (colorMode) {
@@ -226,7 +227,7 @@ export function RightPanelControls({
               </AlertDialogHeader>
               <AlertDialogFooter className="flex justify-center space-x-4">
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <AlertDialogAction onClick={onClearConfirm} className="bg-red-600 hover:bg-red-700">
+                  <AlertDialogAction onClick={clearModelMessages} className="bg-red-600 hover:bg-red-700">
                     確認
                   </AlertDialogAction>
                 </motion.div>

@@ -16,83 +16,90 @@ export function usePromptChat() {
 		getModelMessages,
 	} = usePromptStore();
 
+	const sendMessage = useCallback(
+		async ({ modelNames, input }: { modelNames: string[], input?: string }) => {
+			startChatTransition(async () => {
+
+				modelNames.forEach(modelName => {
+					setModelIsLoading(modelName, true);
+				});
+
+				try {
+					// 并行处理所有模型请求
+					const messagePromises = modelNames.map(async (modelName) => {
+						const messages = getModelMessages(modelName);
+
+						try {
+							const result = await generate({
+								modelName: modelName,
+								messages: messages,
+							});
+
+							return {
+								modelName,
+								success: true,
+								result: result?.text,
+								spendTime: result?.spendTime
+							};
+						} catch (err) {
+							const error = ensureError(err);
+							return { modelName, success: false, error: error.message };
+						}
+					});
+
+					const results = await Promise.all(messagePromises);
+
+					results.forEach(({ modelName, success, result, error, spendTime }) => {
+						// console.log(modelName+spendTime);
+						if (success) {
+							appendModelMessage(modelName, {
+								id: nanoid(),
+								role: "assistant",
+								content: result,
+								spendTime: spendTime
+							});
+						} else {
+							appendModelMessage(modelName, {
+								role: "assistant",
+								content: `Error: ${error || "Unknown error"}`,
+							});
+						}
+					});
+				}
+				finally {
+					modelNames.forEach(modelName => {
+						setModelIsLoading(modelName, false);
+					});
+				}
+			});
+		}, [appendModelMessage, updateModelMessage, setModelIsLoading, getModelMessages, generate]
+	);
+
 	const handleSubmit = useCallback(
 		async (input: string) => {
-			console.log("[usePromptChat] handleSubmit triggered.");
 			if (!input.trim()) {
-				console.log("[usePromptChat] Input is empty, aborting.");
 				return;
 			}
 
 			const currentSelectedModels = usePromptStore.getState().selectedModels;
-			console.log("[usePromptChat] Current selected models from store:", currentSelectedModels);
 
 			if (currentSelectedModels.length === 0) {
-				console.warn("[usePromptChat] No models selected, aborting chat generation.");
-				// Optionally, provide user feedback here
 				return;
 			}
 
-			// Append user message to all selected models
-			currentSelectedModels.forEach(modelId => {
-				appendModelMessage(modelId, {
+			currentSelectedModels.forEach(modelName => {
+				appendModelMessage(modelName, {
 					role: "user",
 					content: input,
 				});
 			});
 
-			// For each selected model, start a chat generation
-			currentSelectedModels.forEach(modelId => {
-				startChatTransition(async () => {
-					setModelIsLoading(modelId, true);
-					const messages = getModelMessages(modelId);
-					console.log(`[usePromptChat] Messages for ${modelId}:`, JSON.stringify(messages, null, 2));
-
-					try {
-						const result = await generate({
-							modelId: modelId,
-							messages: messages,
-						});
-
-						let fullResponse = "";
-						const assistantMessageId = nanoid();
-						appendModelMessage(modelId, {
-							id: assistantMessageId,
-							role: "assistant",
-							content: "",
-						});
-
-						const reader = result.textStream.getReader();
-						const decoder = new TextDecoder();
-
-						while (true) {
-							const { value, done } = await reader.read();
-							if (done) {
-								// The stream is done. The final value is the metadata.
-								const finalData = JSON.parse(decoder.decode(value, { stream: false }) || "{}");
-								if (finalData.spendTime) {
-									updateModelMessage(modelId, assistantMessageId, { spendTime: finalData.spendTime });
-								}
-								break;
-							}
-							const delta = decoder.decode(value, { stream: true });
-							fullResponse += delta ?? "";
-							updateModelMessage(modelId, assistantMessageId, { content: fullResponse });
-						}
-					} catch (err) {
-						const error = ensureError(err);
-						console.error(`ERR::CHAT::${modelId}:`, error.message);
-						appendModelMessage(modelId, {
-							role: "assistant",
-							content: `Error: ${error.message}`,
-						});
-					} finally {
-						setModelIsLoading(modelId, false);
-					}
-				});
+			await sendMessage({
+				modelNames: currentSelectedModels,
+				input: input
 			});
 		},
-		[appendModelMessage, updateModelMessage, setModelIsLoading, getModelMessages]
+		[appendModelMessage, sendMessage]
 	);
 
 	return {

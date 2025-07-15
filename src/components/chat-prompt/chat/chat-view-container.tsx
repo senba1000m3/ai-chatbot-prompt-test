@@ -263,9 +263,9 @@ export function ChatViewContainer({
   }
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
+    <div className="flex-1 flex flex-col overflow-hidden h-full">
       <TooltipProvider>
-        <div className="flex-1 overflow-hidden flex flex-col">
+        <div className="flex-1 overflow-hidden flex flex-col h-full">
           {/* 聊天區域 */}
           <div className="flex-1 p-4 overflow-hidden">
             {viewMode === "separate" && !fullscreenModel && (
@@ -350,7 +350,7 @@ export function ChatViewContainer({
             {viewMode === "popup" && <PopupViewPlaceholder />}
 
             {fullscreenModel && (
-              <div className="absolute top-0 left-0 w-full h-full bg-black z-50 flex flex-col">
+              <div className="absolute top-0 left-0 w-full h-[80%] bg-black z-50 flex flex-col">
                 <div className="p-4 flex justify-between items-center border-b border-gray-800">
                   <div className="text-lg font-semibold">
                     {modelResponses.find((m) => m.id === fullscreenModel)?.name || "Full Screen"}
@@ -382,25 +382,16 @@ export function ChatViewContainer({
             )}
           </div>
 
-          {/* 滿版輸入框區域 - 所有模式共用 */}
-          {!fullscreenModel && (
+          {/* 输入框部分，确保它始终在可见区域内 */}
+          <div className="relative bottom-22 left-0 right-0 z-10 bg-black">
             <ChatInputSection
               defaultHintMessages={defaultHintMessages}
               onHintMessageClick={onHintMessageClick}
               showHintButtons={showHintButtons}
               inputDisabled={inputDisabled}
             />
-          )}
+          </div>
 
-          {/* 全螢幕模式的輸入框 */}
-          {fullscreenModel && (
-            <ChatInputSection
-              defaultHintMessages={defaultHintMessages}
-              onHintMessageClick={onHintMessageClick}
-              showHintButtons={showHintButtons}
-              inputDisabled={inputDisabled}
-            />
-          )}
         </div>
       </TooltipProvider>
 

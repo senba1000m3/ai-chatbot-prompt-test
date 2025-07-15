@@ -11,6 +11,7 @@ interface Message {
   model?: string
   rating?: "good" | "bad" | null
   id?: string
+  spendTime?: number
 }
 
 interface MessageBubbleProps {
@@ -21,7 +22,7 @@ interface MessageBubbleProps {
   responseTime?: number
 }
 
-export function MessageBubble({ message, index, onRating, showRating = false, responseTime }: MessageBubbleProps) {
+export function MessageBubble({ message, index, onRating, showRating = false }: MessageBubbleProps) {
   const [currentRating, setCurrentRating] = useState<"good" | "bad" | null>(message.rating || null)
 
   const handleRating = (rating: "good" | "bad") => {
@@ -46,7 +47,6 @@ export function MessageBubble({ message, index, onRating, showRating = false, re
       }}
       className={`${message.role === "user" ? "ml-8" : "mr-8"} mb-4`}
     >
-      {/* 助手回覆的評分按鈕 */}
       {message.role === "assistant" && showRating && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -85,15 +85,14 @@ export function MessageBubble({ message, index, onRating, showRating = false, re
         </motion.div>
       )}
 
-      {/* 助手回覆的時間顯示 */}
-      {message.role === "assistant" && responseTime && (
+      {message.role === "assistant" && message.spendTime && (
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.3, duration: 0.3 }}
           className="flex justify-end mb-1"
         >
-          <div className="text-xs text-gray-500 font-mono bg-gray-800 px-2 py-1 rounded">{responseTime}ms</div>
+          <div className="text-xs text-gray-500 font-mono bg-gray-800 px-2 py-1 rounded">{message.spendTime}ms</div>
         </motion.div>
       )}
 
