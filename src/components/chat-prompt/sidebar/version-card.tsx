@@ -17,55 +17,13 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { AnimatePresence } from "framer-motion"
-
-interface ModelAccuracy {
-  model: string
-  accuracy: number
-}
-
-interface HintMessage {
-  id: string
-  content: string
-}
-
-interface SystemPromptData {
-  characterSettings: string
-  selfAwareness: string
-  workflow: string
-  formatLimits: string
-  usedTools: string
-  repliesLimits: string
-  preventLeaks: string
-}
-
-interface SavedVersion {
-  id: string
-  name: string
-  expanded: boolean
-  savedAt: Date
-  modelAccuracy: ModelAccuracy[]
-  data: {
-    systemPrompt: SystemPromptData
-    userPrompt: HintMessage[]
-    parameters: {
-      temperature: number
-      batchSize: string
-      parameter2: string
-      parameter3: string
-    }
-    models: string[]
-    tools: string[]
-  }
-}
+import { usePromptStore, type SavedVersion, type ModelAccuracy } from "@/lib/store/prompt"
 
 interface VersionCardProps {
   version: SavedVersion
-  onLoadVersion: (version: SavedVersion) => void
-  onCopyVersion: (version: SavedVersion) => void
-  onDeleteVersion: (version: SavedVersion) => void
   onDownloadVersion: (version: SavedVersion) => void
-  onToggleExpanded: (versionId: string) => void
   filteredModelAccuracy?: ModelAccuracy[]
+	setIsReadOnly: (value: boolean) => void
 }
 
 // 定義可用的模型和工具
@@ -88,15 +46,8 @@ const availableTools = [
   { id: "plot", name: "Plot" },
 ]
 
-export function VersionCard({
-  version,
-  onLoadVersion,
-  onCopyVersion,
-  onDeleteVersion,
-  onDownloadVersion,
-  onToggleExpanded,
-  filteredModelAccuracy,
-}: VersionCardProps) {
+export function VersionCard({version, onDownloadVersion, filteredModelAccuracy, setIsReadOnly}: VersionCardProps) {
+  const { loadVersion, copyVersion, deleteVersion, toggleVersionExpanded } = usePromptStore()
   const [isDeleting, setIsDeleting] = useState(false)
 
   // 使用篩選後的準確率，如果沒有則使用原始準確率
@@ -138,7 +89,6 @@ export function VersionCard({
     return `${label}: ${value.length > 20 ? value.substring(0, 20) + "..." : value}`
   }
 
-  // 安全獲取版本數據，提供默認值
   const safeVersionData = {
     systemPrompt: {
       characterSettings: version.data?.systemPrompt?.characterSettings || "",
@@ -181,8 +131,8 @@ export function VersionCard({
 
   const handleDelete = () => {
     setIsDeleting(true)
-    onDeleteVersion(version)
-    setIsDeleting(false)
+    deleteVersion(version.id)
+    // After deletion, the component will unmount, so no need to setIsDeleting(false)
   }
 
   return (
@@ -200,7 +150,7 @@ export function VersionCard({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => onToggleExpanded(version.id)}
+            onClick={() => toggleVersionExpanded(version.id)}
             className="p-1 h-6 w-6 hover:bg-gray-800"
           >
             <motion.div
@@ -230,7 +180,10 @@ export function VersionCard({
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>取消</AlertDialogCancel>
-                <AlertDialogAction onClick={() => onLoadVersion(version)}>載入</AlertDialogAction>
+                <AlertDialogAction onClick={() => {
+					loadVersion(version);
+					setIsReadOnly(true);
+				}}>載入</AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
@@ -249,7 +202,7 @@ export function VersionCard({
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>取消</AlertDialogCancel>
-                <AlertDialogAction onClick={() => onCopyVersion(version)}>複製</AlertDialogAction>
+                <AlertDialogAction onClick={() => copyVersion(version)}>複製</AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>

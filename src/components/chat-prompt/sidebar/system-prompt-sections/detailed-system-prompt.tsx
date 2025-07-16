@@ -33,7 +33,7 @@ export function DetailedSystemPrompt({
               className={`w-8 h-4 rounded-full transition-colors duration-200 ${
                 isEnabled ? "bg-blue-600" : "bg-gray-600"
               } relative`}
-              disabled={isReadOnly}
+              // disabled={isReadOnly}
             >
               <motion.div
                 animate={{ x: isEnabled ? 16 : 0 }}
@@ -49,7 +49,7 @@ export function DetailedSystemPrompt({
         onChange={(e) => onChange(e.target.value)}
         placeholder={`輸入${title}內容...`}
         className="min-h-24 bg-gray-900 border-gray-800 text-white resize-both focus:border-blue-500 focus:ring-blue-500 transition-colors"
-        disabled={isReadOnly}
+        disabled={isReadOnly || !isEnabled}
       />
     </div>
   )

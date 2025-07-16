@@ -122,23 +122,6 @@ export function SelectionSystemPrompt({
     onChange(newValue)
   }
 
-  if (isReadOnly) {
-    return (
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <Badge variant="outline" className="text-xs text-blue-400 border-blue-500">
-            {displayTitle}
-          </Badge>
-        </div>
-        <Textarea
-          value={value}
-          readOnly
-          className="min-h-[80px] bg-gray-800 border-gray-700 text-gray-300 resize-none"
-        />
-      </div>
-    )
-  }
-
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between mb-3">
@@ -152,7 +135,7 @@ export function SelectionSystemPrompt({
               className={`w-8 h-4 rounded-full transition-colors duration-200 ${
                 isEnabled ? "bg-blue-600" : "bg-gray-600"
               } relative`}
-              disabled={isReadOnly}
+              // disabled={isReadOnly}
             >
               <motion.div
                 animate={{ x: isEnabled ? 16 : 0 }}
@@ -163,108 +146,130 @@ export function SelectionSystemPrompt({
           )}
         </div>
       </div>
-      {/* 選項選擇器 */}
-      <div className="relative">
-        <Button
-          variant="outline"
-          onClick={() => setIsOpen(!isOpen)}
-          className="w-full justify-between bg-gray-800 border-gray-700 text-white hover:bg-gray-700"
-        >
-          <span className="truncate">{displayTitle}</span>
-          {isOpen ? <ChevronDown className="h-4 w-4 shrink-0" /> : <ChevronRight className="h-4 w-4 shrink-0" />}
-        </Button>
 
-        <AnimatePresence>
-          {isOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="absolute z-10 w-full mt-1 bg-gray-800 border border-gray-700 rounded-md shadow-lg max-h-60 overflow-y-auto"
+      {isReadOnly ? (
+        <div className={`space-y-2 transition-opacity ${!isEnabled ? "opacity-50" : "opacity-100"}`}>
+          <div className="flex items-center justify-between">
+            <Badge variant="outline" className="text-xs text-blue-400 border-blue-500">
+              {displayTitle}
+            </Badge>
+          </div>
+          <Textarea
+            value={value}
+            readOnly
+            className="min-h-[50px] max-h-[200px] bg-gray-800 border-gray-700 text-gray-300 resize-none"
+          />
+        </div>
+      ) : (
+        <>
+          <div className="relative">
+            <Button
+              variant="outline"
+              onClick={() => setIsOpen(!isOpen)}
+              disabled={!isEnabled}
+              className="w-full justify-between bg-gray-800 border-gray-700 text-white hover:bg-gray-700"
             >
-              {options.map((option) => (
-                <div
-                  key={option.id}
-                  className={`group flex items-center justify-between px-3 py-2 hover:bg-gray-700 transition-colors ${
-                    option.content === value ? "bg-blue-600" : ""
-                  }`}
-                >
-                  <button onClick={() => handleSelectOption(option)} className="flex-1 text-left min-w-0">
-                    <div className="font-medium text-sm text-white">{option.title}</div>
-                    <div className="text-xs text-gray-400 mt-1 line-clamp-2">{option.content}</div>
-                  </button>
+              <span className="truncate">{displayTitle}</span>
+              {isOpen ? <ChevronDown className="h-4 w-4 shrink-0" /> : <ChevronRight className="h-4 w-4 shrink-0" />}
+            </Button>
 
-                  {!option.isDefault && (
-                    <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity ml-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 w-6 p-0 hover:bg-gray-600"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleEditOption(option)
-                        }}
-                      >
-                        <Edit2 className="h-3 w-3 text-gray-400" />
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
+            <AnimatePresence>
+              {isOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="absolute z-10 w-full mt-1 bg-gray-800 border border-gray-700 rounded-md shadow-lg max-h-60 overflow-y-auto"
+                >
+                  {options.map(option => (
+                    <div
+                      key={option.id}
+                      className={`group flex items-center justify-between px-3 py-2 hover:bg-gray-700 transition-colors ${
+                        option.content === value ? "bg-blue-600" : ""
+                      }`}
+                    >
+                      <button onClick={() => handleSelectOption(option)} className="flex-1 text-left min-w-0">
+                        <div className="font-medium text-sm text-white">{option.title}</div>
+                        <div className="text-xs text-gray-400 mt-1 line-clamp-2">{option.content}</div>
+                      </button>
+
+                      {!option.isDefault && (
+                        <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity ml-2">
                           <Button
                             variant="ghost"
                             size="sm"
                             className="h-6 w-6 p-0 hover:bg-gray-600"
-                            onClick={(e) => e.stopPropagation()}
+                            onClick={e => {
+                              e.stopPropagation()
+                              handleEditOption(option)
+                            }}
                           >
-                            <Trash2 className="h-3 w-3 text-red-400" />
+                            <Edit2 className="h-3 w-3 text-gray-400" />
                           </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent className="bg-gray-900 border-gray-700">
-                          <AlertDialogHeader>
-                            <AlertDialogTitle className="text-white">刪除選項</AlertDialogTitle>
-                            <AlertDialogDescription className="text-gray-300">
-                              確定要刪除選項「{option.title}」嗎？此操作無法復原。
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700">
-                              取消
-                            </AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDeleteOption(option)}
-                              className="bg-red-600 hover:bg-red-700"
-                            >
-                              刪除
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0 hover:bg-gray-600"
+                                onClick={e => e.stopPropagation()}
+                              >
+                                <Trash2 className="h-3 w-3 text-red-400" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="bg-gray-900 border-gray-700">
+                              <AlertDialogHeader>
+                                <AlertDialogTitle className="text-white">刪除選項</AlertDialogTitle>
+                                <AlertDialogDescription className="text-gray-300">
+                                  確定要刪除選項「{option.title}」嗎？此操作無法復原。
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700">
+                                  取消
+                                </AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDeleteOption(option)}
+                                  className="bg-red-600 hover:bg-red-700"
+                                >
+                                  刪除
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              ))}
+                  ))}
 
-              {/* 新增選項按鈕 */}
-              <div className="border-t border-gray-700">
-                <button
-                  onClick={() => {
-                    setIsEditing(true)
-                    setIsOpen(false)
-                  }}
-                  className="w-full px-3 py-2 text-left text-sm text-blue-400 hover:bg-gray-700 transition-colors flex items-center"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  新增選項
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+                  {/* 新增選項按鈕 */}
+                  <div className="border-t border-gray-700">
+                    <button
+                      onClick={() => {
+                        setIsEditing(true)
+                        setIsOpen(false)
+                      }}
+                      className="w-full px-3 py-2 text-left text-sm text-blue-400 hover:bg-gray-700 transition-colors flex items-center"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      新增選項
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
-      {/* 文字預覽 - 只顯示一行預覽 */}
-      <div className="text-xs text-gray-400 bg-gray-800 p-2 rounded border border-gray-700 truncate">
-        {value || `請輸入${title}...`}
-      </div>
+          {/* 文字預覽 - 只顯示一行預覽 */}
+          <div
+            className={`text-xs text-gray-400 bg-gray-800 p-2 rounded border border-gray-700 truncate ${
+              !isEnabled ? "text-gray-500 bg-gray-800/50" : ""
+            }`}
+          >
+            {value || `請輸入${title}...`}
+          </div>
+        </>
+      )}
 
       {/* 新增選項對話框 */}
       {isEditing && (

@@ -186,60 +186,6 @@ const calculateModelAccuracy = (modelResponse: ModelResponse): number => {
 	return Math.round((goodRatings / assistantMessages.length) * 100)
 }
 
-// 下載 JSON 文件
-const downloadJSONFile = (data: SavedVersion, filename: string) => {
-	try {
-		const jsonData = {
-			id: Number.parseInt(data.id),
-			name: data.name,
-			expanded: data.expanded,
-			savedTime: data.savedAt.toISOString(),
-			modelAccuracy: data.modelAccuracy,
-			data: {
-				systemPrompt: {
-					characterSettings: data.data.systemPrompt.characterSettings,
-					selfAwareness: data.data.systemPrompt.selfAwareness,
-					workflow: data.data.systemPrompt.workflow,
-					formatLimits: data.data.systemPrompt.formatLimits,
-					usedTools: data.data.systemPrompt.usedTools,
-					repliesLimits: data.data.systemPrompt.repliesLimits,
-					preventLeaks: data.data.systemPrompt.preventLeaks,
-				},
-				userPrompt: data.data.userPrompt.reduce(
-					(acc, msg, index) => {
-						acc[`userPromptList${index + 1}`] = msg.content
-						return acc
-					},
-					{} as Record<string, string>,
-				),
-				parameters: {
-					temperature: data.data.parameters.temperature,
-					batchSize: Number.parseInt(data.data.parameters.batchSize),
-					parameter2: data.data.parameters.parameter2,
-					parameter3: data.data.parameters.parameter3,
-				},
-				models: data.data.models,
-				tools: data.data.tools,
-			},
-		}
-
-		const jsonString = JSON.stringify(jsonData, null, 2)
-		const blob = new Blob([jsonString], { type: "application/json;charset=utf-8" })
-		const url = URL.createObjectURL(blob)
-		const a = document.createElement("a")
-		a.href = url
-		a.download = `${filename}.json`
-		a.style.display = "none"
-		document.body.appendChild(a)
-		a.click()
-		document.body.removeChild(a)
-		URL.revokeObjectURL(url)
-		console.log(`JSON file downloaded: ${filename}.json`)
-	} catch (error) {
-		console.error("Error downloading JSON file:", error)
-	}
-}
-
 // 預設的系統提示選項
 const getDefaultSystemPromptOptions = () => ({
 	characterSettings: [
@@ -939,10 +885,6 @@ export default function AIPromptTester() {
 		console.log("Version deleted successfully")
 	}
 
-	const handleDownloadVersion = (version: SavedVersion) => {
-		downloadJSONFile(version, version.name)
-	}
-
 	const clearAll = () => {
 		setModelResponses((prev) =>
 			prev.map((model) => ({
@@ -1311,7 +1253,6 @@ export default function AIPromptTester() {
 							onLoadVersion={handleLoadVersion}
 							onCopyVersion={handleCopyVersion}
 							onDeleteVersion={handleDeleteVersion}
-							onDownloadVersion={handleDownloadVersion}
 							onToggleExpanded={toggleVersionExpanded}
 							onToggleVersionSelect={handleToggleVersionSelect}
 							getFilteredModelAccuracy={getFilteredModelAccuracy}
@@ -1426,4 +1367,5 @@ export default function AIPromptTester() {
 		</TooltipProvider>
 	)
 }
+
 

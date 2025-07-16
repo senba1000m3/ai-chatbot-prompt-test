@@ -27,23 +27,9 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/comp
 import { ExternalLink, AlignJustify, Grid2X2, Palette, PaintBucket, Eye } from "lucide-react"
 import { Slider } from "@/components/ui/slider"
 import { usePromptStore } from "@/lib/store/prompt"
+import { useState } from "react"
 
 type ViewMode = "popup" | "unified" | "separate"
-
-interface SavedVersion {
-  id: string
-  name: string
-  savedAt: Date
-  systemPrompt: string
-  userPrompt: string
-  temperature: number
-  batchSize: string
-  parameter2: string
-  parameter3: string
-  selectedModels: string[]
-  selectedTools: string[]
-  expanded?: boolean
-}
 
 interface RightPanelControlsProps {
   saveDialogOpen: boolean
@@ -57,7 +43,6 @@ interface RightPanelControlsProps {
   onViewModeChange: (mode: ViewMode) => void
   chatHeight: number
   setChatHeight: (height: number) => void
-  savedVersions: SavedVersion[]
   colorMode?: number
   onColorModeChange?: () => void
   isInCompareView?: boolean
@@ -65,26 +50,50 @@ interface RightPanelControlsProps {
 }
 
 export function RightPanelControls({
-  saveDialogOpen,
-  setSaveDialogOpen,
-  saveVersionName,
-  setSaveVersionName,
-  untitledCounter,
-  onSaveConfirm,
-  onClearConfirm,
   viewMode,
   onViewModeChange,
   chatHeight,
   setChatHeight,
-  savedVersions,
   colorMode = 0,
   onColorModeChange,
   isInCompareView = false,
   isReadOnly = false,
 }: RightPanelControlsProps) {
-  const { clearModelMessages } = usePromptStore()
+  const {
+    clearModelMessages,
+    systemPrompt,
+    userPrompt,
+    selectedModels,
+    selectedTools,
+	untitledCounter,
+	addSavedVersion,
+	savedVersions,
+	parameters
+  } = usePromptStore()
 
-  const isNameDuplicate = saveVersionName.trim() !== "" && savedVersions.some((version) => version.name === saveVersionName.trim())
+  const [saveVersionName, setSaveVersionName] = useState("");
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+
+  const handleSaveConfirm = () => {
+    const finalName = saveVersionName.trim() || `Untitled ${untitledCounter}`
+    addSavedVersion({
+      name: finalName,
+      modelAccuracy: [],
+      data: {
+        systemPrompt,
+        userPrompt,
+		parameters,
+        models: selectedModels,
+        tools: selectedTools,
+      },
+    })
+
+	setSaveDialogOpen(false);
+	setSaveVersionName("");
+  }
+
+  const isNameDuplicate =
+    saveVersionName.trim() !== "" && savedVersions.some((version) => version.name === saveVersionName.trim())
 
   const getColorModeIcon = () => {
     switch (colorMode) {
@@ -180,7 +189,7 @@ export function RightPanelControls({
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Button
                     type="submit"
-                    onClick={onSaveConfirm}
+                    onClick={handleSaveConfirm}
                     className="bg-blue-600 hover:bg-blue-700"
                     disabled={isNameDuplicate}
                   >
@@ -283,7 +292,7 @@ export function RightPanelControls({
               </motion.div>
             </DialogContent>
           </Dialog>
-			
+
           {isInCompareView && onColorModeChange && (
             <Tooltip>
               <TooltipTrigger asChild>

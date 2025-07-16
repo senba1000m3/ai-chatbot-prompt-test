@@ -14,24 +14,69 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Edit, X, Save } from "lucide-react"
+import { usePromptStore } from "@/lib/store/prompt"
 
 interface ReadOnlyIndicatorProps {
   isReadOnly: boolean
+	  setIsReadOnly: (value: boolean) => void
   isEditing: boolean
-  currentVersionName: string
-  onExitReadOnly: () => void
-  onEdit: () => void
-  onSaveEdit: () => void
+	  setIsEditing: (value: boolean) => void
 }
 
 export function ReadOnlyIndicator({
   isReadOnly,
+	setIsReadOnly,
   isEditing,
-  currentVersionName,
-  onExitReadOnly,
-  onEdit,
-  onSaveEdit,
+	setIsEditing,
 }: ReadOnlyIndicatorProps) {
+
+	const { setSystemPrompt, setUserPrompt } = usePromptStore();
+
+	const exitVersionMode = () => {
+		setIsReadOnly(false)
+		setIsEditing(false)
+
+		// setSystemPrompt({
+		// 	characterSettings: systemPromptOptions.characterSettings[0]?.content || "",
+		// 	selfAwareness: "",
+		// 	workflow: "",
+		// 	formatLimits: "",
+		// 	usedTools: systemPromptOptions.usedTools[0]?.content || "",
+		// 	repliesLimits: "",
+		// 	preventLeaks: "",
+		// })
+		// setUserPrompt([
+		// 	{ id: "1", content: "請幫我分析這個問題" },
+		// 	{ id: "2", content: "能否提供更詳細的說明？" },
+		// ])
+		// setTemperature([0.0])
+		// setBatchSize("1")
+		// setParameter2("option1")
+		// setParameter3("option1")
+		// setSelectedModels(["gpt-4o", "gemini-2.0-flash"])
+		// setSelectedTools(["sticker"])
+		// setModelResponses([
+		// 	{
+		// 		id: "gpt-4o",
+		// 		name: "GPT-4o",
+		// 		messages: [],
+		// 		isLoading: false,
+		// 	},
+		// 	{
+		// 		id: "gemini-2.0-flash",
+		// 		name: "Gemini 2.0 Flash",
+		// 		messages: [],
+		// 		isLoading: false,
+		// 	},
+		// ])
+		// setInputMessage("")
+		// setShowHintButtons(true)
+		// setInputDisabled(false)
+		//
+		// setShowVersionHistory(true)
+	}
+
+	const currentVersionName = "123";
   return (
     <AnimatePresence>
       {isReadOnly && (
@@ -52,7 +97,7 @@ export function ReadOnlyIndicator({
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={onEdit}
+                  onClick={() => {setIsEditing(true)}}
                   className="h-7 border-blue-600 text-blue-300 hover:bg-blue-800 bg-transparent"
                 >
                   <Edit className="w-3 h-3 mr-1" />
@@ -88,7 +133,7 @@ export function ReadOnlyIndicator({
                   </AlertDialogHeader>
                   <AlertDialogFooter className="flex justify-center space-x-4">
                     <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                      <AlertDialogAction onClick={onSaveEdit} className="bg-green-600 hover:bg-green-700">
+                      <AlertDialogAction onClick={() =>{}} className="bg-green-600 hover:bg-green-700">
                         確認
                       </AlertDialogAction>
                     </motion.div>
@@ -124,7 +169,7 @@ export function ReadOnlyIndicator({
                 </AlertDialogHeader>
                 <AlertDialogFooter className="flex justify-center space-x-4">
                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <AlertDialogAction onClick={onExitReadOnly} className="bg-blue-600 hover:bg-blue-700">
+                    <AlertDialogAction onClick={exitVersionMode} className="bg-blue-600 hover:bg-blue-700">
                       確認
                     </AlertDialogAction>
                   </motion.div>

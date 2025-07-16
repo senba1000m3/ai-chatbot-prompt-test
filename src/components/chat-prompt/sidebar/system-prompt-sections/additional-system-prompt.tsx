@@ -40,7 +40,7 @@ export function AdditionalSystemPrompt({
   value,
   onChange,
   isReadOnly,
-  isEnabled,
+  isEnabled = true,
   onToggleEnabled,
 }: AdditionalSystemPromptProps) {
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -95,7 +95,7 @@ export function AdditionalSystemPrompt({
               className={`w-8 h-4 rounded-full transition-colors duration-200 ${
                 isEnabled ? "bg-blue-600" : "bg-gray-600"
               } relative`}
-              disabled={isReadOnly}
+              // disabled={isReadOnly}
             >
               <motion.div
                 animate={{ x: isEnabled ? 16 : 0 }}
@@ -109,7 +109,11 @@ export function AdditionalSystemPrompt({
       <div className="flex items-center space-x-2">
         <Tooltip>
           <TooltipTrigger asChild>
-            <div className="flex-1 text-sm text-gray-300 cursor-help truncate pr-2 max-w-[calc(100%-2rem)]">
+            <div
+              className={`flex-1 text-sm text-gray-300 cursor-help truncate pr-2 max-w-[calc(100%-2rem)] ${
+                !isEnabled ? "text-gray-500" : ""
+              }`}
+            >
               {truncatedText}
             </div>
           </TooltipTrigger>
@@ -125,7 +129,7 @@ export function AdditionalSystemPrompt({
                 variant="ghost"
                 size="sm"
                 onClick={handleDialogOpen}
-                disabled={isReadOnly}
+                disabled={isReadOnly || !isEnabled}
                 className="h-6 w-6 p-0 text-gray-400 hover:text-white hover:bg-gray-800 flex-shrink-0"
               >
                 <Edit className="w-3 h-3" />

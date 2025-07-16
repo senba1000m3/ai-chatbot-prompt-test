@@ -1,7 +1,7 @@
 "use client"
 
 import { AnimatePresence, motion } from "framer-motion"
-import { useEffect } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { VersionHistoryToggle } from "./version-history-toggle"
 import { VersionCard } from "./version-card"
 import { VersionCardCompare } from "./version-card-compare"
@@ -16,7 +16,7 @@ import { SelectionSystemPrompt } from "./system-prompt-sections/selection-system
 import { DetailedSystemPrompt } from "./system-prompt-sections/detailed-system-prompt"
 import { AdditionalSystemPrompt } from "./system-prompt-sections/additional-system-prompt"
 import { DefaultHintMessage } from "./default-hint-message"
-import { usePromptStore } from "@/lib/store/prompt"
+import { usePromptStore, type SavedVersion, type HintMessage, type SystemPromptData, type ModelAccuracy } from "@/lib/store/prompt"
 
 interface Message {
   role: "user" | "assistant"
@@ -26,51 +26,11 @@ interface Message {
   id?: string
 }
 
-interface HintMessage {
-  id: string
-  content: string
-}
-
 interface PromptOption {
-  id: string
-  title: string
-  content: string
-  isDefault?: boolean
-}
-
-interface SystemPromptData {
-  characterSettings: string
-  selfAwareness: string
-  workflow: string
-  formatLimits: string
-  usedTools: string
-  repliesLimits: string
-  preventLeaks: string
-}
-
-interface ModelAccuracy {
-  model: string
-  accuracy: number
-}
-
-interface SavedVersion {
-  id: string
-  name: string
-  expanded: boolean
-  savedAt: Date
-  modelAccuracy: ModelAccuracy[]
-  data: {
-    systemPrompt: SystemPromptData
-    userPrompt: HintMessage[]
-    parameters: {
-      temperature: number
-      batchSize: string
-      parameter2: string
-      parameter3: string
-    }
-    models: string[]
-    tools: string[]
-  }
+  id: string;
+  title: string;
+  content: string;
+  isDefault?: boolean;
 }
 
 interface SidebarContainerProps {
@@ -82,7 +42,6 @@ interface SidebarContainerProps {
   onConfirmCompare: () => void
   onCancelCompare: () => void
   onSelectAll: () => void
-  filteredAndSortedVersions: SavedVersion[]
   searchQuery: string
   onSearchChange: (query: string) => void
   selectedModelFilters: string[]
@@ -98,14 +57,8 @@ interface SidebarContainerProps {
     characterSettings: string[]
     tools: string[]
   }
-  onLoadVersion: (version: SavedVersion) => void
-  onCopyVersion: (version: SavedVersion) => void
-  onDeleteVersion: (version: SavedVersion) => void
-  onDownloadVersion: (version: SavedVersion) => void
-  onToggleExpanded: (versionId: string) => void
   onToggleVersionSelect: (versionId: string) => void
   getFilteredModelAccuracy: (version: SavedVersion) => ModelAccuracy[]
-  savedVersions: SavedVersion[]
   isReadOnly: boolean
   isEditing: boolean
   currentVersionName: string
@@ -124,8 +77,6 @@ interface SidebarContainerProps {
   onToolSave: () => void
   availableModels: Array<{ id: string; name: string; category: string }>
   availableTools: Array<{ id: string; name: string }>
-  systemPrompt: SystemPromptData
-  setSystemPrompt: (prompt: SystemPromptData) => void
   systemPromptOptions: {
     characterSettings: PromptOption[]
     usedTools: PromptOption[]
@@ -168,7 +119,6 @@ export function SidebarContainer({
   onConfirmCompare,
   onCancelCompare,
   onSelectAll,
-  filteredAndSortedVersions,
   searchQuery,
   onSearchChange,
   selectedModelFilters,
@@ -180,20 +130,8 @@ export function SidebarContainer({
   sortBy,
   onSortChange,
   filterOptions,
-  onLoadVersion,
-  onCopyVersion,
-  onDeleteVersion,
-  onDownloadVersion,
-  onToggleExpanded,
   onToggleVersionSelect,
   getFilteredModelAccuracy,
-  savedVersions,
-  isReadOnly,
-  isEditing,
-  currentVersionName,
-  onExitReadOnly,
-  onEdit,
-  onSaveEdit,
   modelDialogOpen,
   setModelDialogOpen,
   toolDialogOpen,
@@ -206,8 +144,6 @@ export function SidebarContainer({
   onToolSave,
   availableModels,
   availableTools,
-  systemPrompt,
-  setSystemPrompt: _setSystemPrompt, // 將原始的 setSystemPrompt 重命名为 _setSystemPrompt
   systemPromptOptions,
   onSystemPromptOptionsChange,
   defaultHintMessages,
@@ -227,39 +163,127 @@ export function SidebarContainer({
   onModelDialogChange,
   onToolDialogChange,
   systemPromptEnabled,
-  onSystemPromptToggle: _onSystemPromptToggle, // 将原始的 onSystemPromptToggle 重命名为 _onSystemPromptToggle
 }: SidebarContainerProps) {
-  const { setSelectedModels, setSystemPrompt, setIsSystemPromptOn } = usePromptStore()
+  const {
+    setSelectedModels: setStoreSelectedModels,
+    savedVersions,
+    toggleVersionExpanded,
+    setSystemPrompt,
+    systemPrompt,
+	setIsSystemPromptOn,
+	isSystemPromptOn,
+	userPrompt,
+	setUserPrompt,
+  } = usePromptStore()
+
+	const [isReadOnly, setIsReadOnly] = useState(false);
+  	const [isEditing, setIsEditing] = useState(false);
+
+	const handleDownloadVersion = (version: SavedVersion) => {
+		const versionToDownload: SavedVersion = {
+		  id: version.id,
+		  name: version.name,
+		  expanded: version.expanded,
+		  savedAt: version.savedAt,
+		  modelAccuracy: version.modelAccuracy || [],
+		  data: {
+			systemPrompt: {
+			  characterSettings: version.data.systemPrompt.characterSettings || "",
+			  selfAwareness: version.data.systemPrompt.selfAwareness || "",
+			  workflow: version.data.systemPrompt.workflow || "",
+			  formatLimits: version.data.systemPrompt.formatLimits || "",
+			  usedTools: version.data.systemPrompt.usedTools || "",
+			  repliesLimits: version.data.systemPrompt.repliesLimits || "",
+			  preventLeaks: version.data.systemPrompt.preventLeaks || "",
+			},
+			userPrompt: version.data.userPrompt || [],
+			parameters: {
+			  temperature: version.data.parameters.temperature ?? 0,
+			  batchSize: version.data.parameters.batchSize || "",
+			  parameter2: version.data.parameters.parameter2 || "",
+			  parameter3: version.data.parameters.parameter3 || "",
+			},
+			models: version.data.models || [],
+			tools: version.data.tools || [],
+		  },
+		};
+
+		const jsonString = JSON.stringify(versionToDownload, null, 2);
+		const blob = new Blob([jsonString], { type: "application/json" });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement("a");
+		a.href = url;
+		a.download = `${version.name}.json`;
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+		URL.revokeObjectURL(url);
+	}
+
+  const filteredAndSortedVersions = useMemo(() => {
+    return savedVersions
+      .filter(version => {
+        const searchMatch =
+          searchQuery.trim() === "" || version.name.toLowerCase().includes(searchQuery.toLowerCase())
+
+        const modelMatch =
+          selectedModelFilters.length === 0 ||
+          version.data.models.some(model => selectedModelFilters.includes(model))
+
+        const characterMatch =
+          selectedCharacterSettingsFilters.length === 0 ||
+          selectedCharacterSettingsFilters.includes(version.data.systemPrompt.characterSettings)
+
+        const toolMatch =
+          selectedToolsFilters.length === 0 || version.data.tools.some(tool => selectedToolsFilters.includes(tool))
+
+        return searchMatch && modelMatch && characterMatch && toolMatch
+      })
+      .sort((a, b) => {
+        switch (sortBy) {
+          case "name-asc":
+            return a.name.localeCompare(b.name)
+          case "name-desc":
+            return b.name.localeCompare(a.name)
+          case "date-desc":
+            return new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime()
+          case "date-asc":
+          default:
+            return new Date(a.savedAt).getTime() - new Date(b.savedAt).getTime()
+        }
+      })
+  }, [
+    savedVersions,
+    searchQuery,
+    selectedModelFilters,
+    selectedCharacterSettingsFilters,
+    selectedToolsFilters,
+    sortBy,
+  ])
 
   // 初次渲染時自動同步 tempSelectedModels 到 zustand
   useEffect(() => {
-    setSelectedModels(tempSelectedModels);
-  }, [tempSelectedModels, setSelectedModels]);
+    setStoreSelectedModels(tempSelectedModels)
+  }, [tempSelectedModels, setStoreSelectedModels])
 
   // 在模型儲存時同步到 zustand
   const handleModelSave = () => {
-    setSelectedModels(tempSelectedModels);
+    setStoreSelectedModels(tempSelectedModels)
     if (onModelSave) onModelSave()
   }
 
   // 處理 systemPrompt 的變更，直接使用 zustand 的 setSystemPrompt
   const handleSystemPromptChange = (key: string, value: string) => {
-    // 更新本地组件状态
-    _setSystemPrompt((prev) => ({ ...prev, [key]: value }));
-
-    // 同步到 zustand store
-    setSystemPrompt({
-      ...systemPrompt,
-      [key]: value
-    });
+    console.log(key, value);
+	setSystemPrompt(prev => ({
+      ...prev,
+      [key]: value,
+    }))
   }
 
   // 處理 systemPrompt 的開關，直接使用 zustand 的 setIsSystemPromptOn
   const handleSystemPromptToggle = (type: string, enabled: boolean) => {
-    // 更新本地组件状态
-    if (_onSystemPromptToggle) _onSystemPromptToggle(type, enabled);
 
-    // 同步到 zustand store
     setIsSystemPromptOn(type, enabled);
   }
 
@@ -310,18 +334,15 @@ export function SidebarContainer({
                       version={version}
                       isSelected={selectedVersionsForCompare.includes(version.id)}
                       onToggleSelect={onToggleVersionSelect}
-                      onToggleExpanded={onToggleExpanded}
+                      onToggleExpanded={toggleVersionExpanded}
                     />
                   ) : (
                     <VersionCard
                       key={version.id}
                       version={version}
-                      onLoadVersion={onLoadVersion}
-                      onCopyVersion={onCopyVersion}
-                      onDeleteVersion={onDeleteVersion}
-                      onDownloadVersion={onDownloadVersion}
-                      onToggleExpanded={onToggleExpanded}
+                      onDownloadVersion={handleDownloadVersion}
                       filteredModelAccuracy={getFilteredModelAccuracy(version)}
+					  setIsReadOnly={setIsReadOnly}
                     />
                   ),
                 )}
@@ -343,7 +364,7 @@ export function SidebarContainer({
                   animate={{ opacity: 1 }}
                   className="text-center text-gray-400 py-8"
                 >
-                  <p>尚無儲存的版本</p>
+                  <p>尚未儲存的版本</p>
                   <p className="text-xs mt-2 text-gray-500">建立第一個版本來開始使用</p>
                 </motion.div>
               )}
@@ -362,11 +383,9 @@ export function SidebarContainer({
           <div className="space-y-8">
             <ReadOnlyIndicator
               isReadOnly={isReadOnly}
+			  setIsReadOnly={setIsReadOnly}
               isEditing={isEditing}
-              currentVersionName={currentVersionName}
-              onExitReadOnly={onExitReadOnly}
-              onEdit={onEdit}
-              onSave={onSaveEdit}
+			  setIsEditing={setIsEditing}
             />
 
             <AnimatePresence>
@@ -409,7 +428,7 @@ export function SidebarContainer({
                   options={systemPromptOptions.characterSettings}
                   onOptionsChange={(options) => onSystemPromptOptionsChange("characterSettings", options)}
                   isReadOnly={isReadOnly && !isEditing}
-                  isEnabled={systemPromptEnabled.characterSettings}
+                  isEnabled={isSystemPromptOn.characterSettings}
                   onToggleEnabled={(enabled) => handleSystemPromptToggle("characterSettings", enabled)}
                 />
 
@@ -418,7 +437,7 @@ export function SidebarContainer({
                   value={systemPrompt.selfAwareness}
                   onChange={(value) => handleSystemPromptChange("selfAwareness", value)}
                   isReadOnly={isReadOnly && !isEditing}
-                  isEnabled={systemPromptEnabled.selfAwareness}
+                  isEnabled={isSystemPromptOn.selfAwareness}
                   onToggleEnabled={(enabled) => handleSystemPromptToggle("selfAwareness", enabled)}
                 />
 
@@ -427,7 +446,7 @@ export function SidebarContainer({
                   value={systemPrompt.workflow}
                   onChange={(value) => handleSystemPromptChange("workflow", value)}
                   isReadOnly={isReadOnly && !isEditing}
-                  isEnabled={systemPromptEnabled.workflow}
+                  isEnabled={isSystemPromptOn.workflow}
                   onToggleEnabled={(enabled) => handleSystemPromptToggle("workflow", enabled)}
                 />
 
@@ -436,7 +455,7 @@ export function SidebarContainer({
                   value={systemPrompt.formatLimits}
                   onChange={(value) => handleSystemPromptChange("formatLimits", value)}
                   isReadOnly={isReadOnly && !isEditing}
-                  isEnabled={systemPromptEnabled.formatLimits}
+                  isEnabled={isSystemPromptOn.formatLimits}
                   onToggleEnabled={(enabled) => handleSystemPromptToggle("formatLimits", enabled)}
                 />
 
@@ -445,7 +464,7 @@ export function SidebarContainer({
                   value={systemPrompt.usedTools}
                   onChange={(value) => handleSystemPromptChange("usedTools", value)}
                   isReadOnly={isReadOnly && !isEditing}
-                  isEnabled={systemPromptEnabled.usedTools}
+                  isEnabled={isSystemPromptOn.usedTools}
                   onToggleEnabled={(enabled) => handleSystemPromptToggle("usedTools", enabled)}
                 />
 
@@ -454,7 +473,7 @@ export function SidebarContainer({
                   value={systemPrompt.repliesLimits}
                   onChange={(value) => handleSystemPromptChange("repliesLimits", value)}
                   isReadOnly={isReadOnly && !isEditing}
-                  isEnabled={systemPromptEnabled.repliesLimits}
+                  isEnabled={isSystemPromptOn.repliesLimits}
                   onToggleEnabled={(enabled) => handleSystemPromptToggle("repliesLimits", enabled)}
                 />
 
@@ -463,7 +482,7 @@ export function SidebarContainer({
                   value={systemPrompt.preventLeaks}
                   onChange={(value) => handleSystemPromptChange("preventLeaks", value)}
                   isReadOnly={isReadOnly && !isEditing}
-                  isEnabled={systemPromptEnabled.preventLeaks}
+                  isEnabled={isSystemPromptOn.preventLeaks}
                   onToggleEnabled={(enabled) => handleSystemPromptToggle("preventLeaks", enabled)}
                 />
               </div>
@@ -471,8 +490,8 @@ export function SidebarContainer({
 
             <CollapsibleSection title="Default Hint Message" defaultOpen={true}>
               <DefaultHintMessage
-                messages={defaultHintMessages}
-                onChange={setDefaultHintMessages}
+                messages={userPrompt}
+                onChange={setUserPrompt}
                 isReadOnly={isReadOnly && !isEditing}
               />
             </CollapsibleSection>
