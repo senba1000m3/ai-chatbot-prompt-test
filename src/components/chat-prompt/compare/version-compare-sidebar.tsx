@@ -19,23 +19,8 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
 import { X, ChevronRight, GripVertical } from "lucide-react"
-import { useState, useMemo } from "react"
-
-interface SavedVersion {
-  id: string
-  name: string
-  savedAt: Date
-  systemPrompt: string
-  userPrompt: string
-  temperature: number
-  batchSize: string
-  parameter2: string
-  parameter3: string
-  selectedModels: string[]
-  selectedTools: string[]
-  expanded?: boolean
-  data: any // Add data property
-}
+import { useState, useMemo, useEffect } from "react"
+import { usePromptStore, type SavedVersion } from "@/lib/store/prompt"
 
 interface Model {
   id: string
@@ -49,15 +34,12 @@ interface Tool {
 }
 
 interface VersionCompareSidebarProps {
-  compareVersions: SavedVersion[]
   availableModels: Model[]
   availableTools: Tool[]
-  onExitCompare: () => void
   onVersionReorder: (newOrder: SavedVersion[]) => void
   colorMode: number
 }
 
-// 版本顏色配置
 const versionColors = [
   { border: "border-blue-500", bg: "bg-blue-900/20", badge: "bg-blue-600" },
   { border: "border-green-500", bg: "bg-green-900/20", badge: "bg-green-600" },
@@ -67,11 +49,8 @@ const versionColors = [
 ]
 
 export function VersionCompareSidebar({
-  compareVersions,
   availableModels,
   availableTools,
-  onExitCompare,
-  onVersionReorder,
   colorMode,
 }: VersionCompareSidebarProps) {
   const [isExpanded, setIsExpanded] = useState(false)
@@ -79,7 +58,29 @@ export function VersionCompareSidebar({
   const [draggedItem, setDraggedItem] = useState<SavedVersion | null>(null)
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
 
-  // 為每個版本分配固定的顏色索引，基於版本ID而不是當前位置
+	const { compareVersions, setCompareVersions, setIsInCompareView, setIsCompareMode, clearCompareSelectedVersions, setShowVersionHistory,
+		compareVersionsOrder, setInitialVersionOrder, onVersionReorder, clearCompareModelMessages } = usePromptStore();
+
+	const sortedVersions = useMemo(() => {
+		if (compareVersionsOrder.length === 0 || compareVersions.length === 0) {
+			return compareVersions
+		}
+		const versionMap = new Map(compareVersions.map((v) => [v.id, v]))
+		return compareVersionsOrder
+			.map((id) => versionMap.get(id))
+			.filter((v): v is SavedVersion => !!v)
+	}, [compareVersions, compareVersionsOrder])
+
+	const handleExitCompare = () => {
+		setIsInCompareView(false);
+		setIsCompareMode(false);
+		clearCompareSelectedVersions();
+		clearCompareModelMessages();
+		setCompareVersions([]);
+		setInitialVersionOrder([]);
+		setShowVersionHistory(true);
+	}
+
   const versionColorMap = useMemo(() => {
     const colorMap: { [versionId: string]: number } = {}
     const sortedVersions = [...compareVersions].sort((a, b) => a.id.localeCompare(b.id))
@@ -122,14 +123,11 @@ export function VersionCompareSidebar({
     e.preventDefault()
     if (!draggedItem) return
 
-    const dragIndex = compareVersions.findIndex((v) => v.id === draggedItem.id)
-    if (dragIndex === dropIndex) return
+    const newOrder = [...sortedVersions]
+    const dragIndex = newOrder.findIndex((v) => v.id === draggedItem.id)
+    if (dragIndex === -1) return
 
-    const newVersions = [...compareVersions]
-    newVersions.splice(dragIndex, 1)
-    newVersions.splice(dropIndex, 0, draggedItem)
-
-    onVersionReorder(newVersions)
+    onVersionReorder(dragIndex, dropIndex);
     setDraggedItem(null)
     setDragOverIndex(null)
   }
@@ -137,30 +135,6 @@ export function VersionCompareSidebar({
   const handleDragEnd = () => {
     setDraggedItem(null)
     setDragOverIndex(null)
-  }
-
-  // 安全獲取版本數據的函數
-  const getSafeVersionData = (version: SavedVersion) => {
-    return {
-      systemPrompt: version.data?.systemPrompt
-        ? {
-            characterSettings: version.data.systemPrompt.characterSettings || "",
-            selfAwareness: version.data.systemPrompt.selfAwareness || "",
-            workflow: version.data.systemPrompt.workflow || "",
-            formatLimits: version.data.systemPrompt.formatLimits || "",
-            usedTools: version.data.systemPrompt.usedTools || "",
-            repliesLimits: version.data.systemPrompt.repliesLimits || "",
-            preventLeaks: version.data.systemPrompt.preventLeaks || "",
-          }
-        : null,
-      userPrompt: version.data?.userPrompt || [],
-      parameters: {
-        temperature: version.data?.parameters?.temperature ?? 0,
-        batchSize: version.data?.parameters?.batchSize || "1",
-      },
-      models: version.data?.models || [],
-      tools: version.data?.tools || [],
-    }
   }
 
   return (
@@ -194,7 +168,6 @@ export function VersionCompareSidebar({
                   className="bg-black border-gray-800"
                   onEscapeKeyDown={(event) => {
                     event.preventDefault()
-                    // AlertDialog 會自動處理 ESC 鍵
                   }}
                 >
                   <AlertDialogHeader>
@@ -205,7 +178,7 @@ export function VersionCompareSidebar({
                   </AlertDialogHeader>
                   <AlertDialogFooter className="flex justify-center space-x-4">
                     <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                      <AlertDialogAction onClick={onExitCompare} className="bg-red-600 hover:bg-red-700">
+                      <AlertDialogAction onClick={handleExitCompare} className="bg-red-600 hover:bg-red-700">
                         確認結束
                       </AlertDialogAction>
                     </motion.div>
@@ -237,9 +210,8 @@ export function VersionCompareSidebar({
         {/* 收起狀態的版本指示器 */}
         {!isExpanded && (
           <div className="flex-1 p-2 space-y-2">
-            {compareVersions.map((version, index) => {
+            {sortedVersions.map((version, index) => {
               const colorConfig = versionColors[versionColorMap[version.id]]
-              const safeData = getSafeVersionData(version)
 
               return (
                 <Tooltip key={version.id}>
@@ -261,7 +233,7 @@ export function VersionCompareSidebar({
                   </TooltipTrigger>
                   <TooltipContent
                     side="right"
-                    className="z-[999999] bg-gray-800 border-gray-700 text-white max-w-lg fixed"
+                    className="z-[999999] bg-gray-800 border-gray-700 text-white min-w-lg fixed"
                     sideOffset={15}
                     style={{
                       zIndex: 999999,
@@ -272,39 +244,38 @@ export function VersionCompareSidebar({
                       <div className="font-medium">{version.name}</div>
                       <div className="text-xs text-gray-300">{version.savedAt.toLocaleString()}</div>
 
-                      {/* System Prompt sections */}
                       <div>
                         <div className="text-xs text-gray-400 mb-1">System Prompt:</div>
                         <div className="text-xs text-gray-300 space-y-1">
-                          {safeData.systemPrompt ? (
+                          {version.data?.systemPrompt ? (
                             <>
                               <div>
                                 <span className="text-gray-400">角色設定:</span>{" "}
-                                {safeData.systemPrompt.characterSettings || "無"}
+                                {version.data.systemPrompt.characterSettings || "無"}
                               </div>
                               <div>
                                 <span className="text-gray-400">自我認知:</span>{" "}
-                                {safeData.systemPrompt.selfAwareness || "無"}
+                                {version.data.systemPrompt.selfAwareness || "無"}
                               </div>
                               <div>
                                 <span className="text-gray-400">任務流程:</span>{" "}
-                                {safeData.systemPrompt.workflow || "無"}
+                                {version.data.systemPrompt.workflow || "無"}
                               </div>
                               <div>
                                 <span className="text-gray-400">格式限制:</span>{" "}
-                                {safeData.systemPrompt.formatLimits || "無"}
+                                {version.data.systemPrompt.formatLimits || "無"}
                               </div>
                               <div>
                                 <span className="text-gray-400">工具使用:</span>{" "}
-                                {safeData.systemPrompt.usedTools || "無"}
+                                {version.data.systemPrompt.usedTools || "無"}
                               </div>
                               <div>
                                 <span className="text-gray-400">回覆限制:</span>{" "}
-                                {safeData.systemPrompt.repliesLimits || "無"}
+                                {version.data.systemPrompt.repliesLimits || "無"}
                               </div>
                               <div>
                                 <span className="text-gray-400">防洩漏:</span>{" "}
-                                {safeData.systemPrompt.preventLeaks || "無"}
+                                {version.data.systemPrompt.preventLeaks || "無"}
                               </div>
                             </>
                           ) : (
@@ -317,8 +288,8 @@ export function VersionCompareSidebar({
                       <div>
                         <div className="text-xs text-gray-400 mb-1">Default Hint Messages:</div>
                         <div className="text-xs text-gray-300 max-h-20 overflow-y-auto bg-gray-900 p-2 rounded border border-gray-700">
-                          {safeData.userPrompt.length > 0 ? (
-                            safeData.userPrompt.map((msg, idx) => (
+                          {version.data.userPrompt.length > 0 ? (
+							  version.data.userPrompt.map((msg, idx) => (
                               <div key={msg.id || idx}>
                                 {idx + 1}. {msg.content || "無內容"}
                               </div>
@@ -332,17 +303,17 @@ export function VersionCompareSidebar({
                       <div className="grid grid-cols-2 gap-2 text-xs">
                         <div>
                           <span className="text-gray-400">Temperature:</span>
-                          <span className="text-white ml-1">{safeData.parameters.temperature}</span>
+                          <span className="text-white ml-1">{version.data.parameters.temperature}</span>
                         </div>
                         <div>
                           <span className="text-gray-400">Batch Size:</span>
-                          <span className="text-white ml-1">{safeData.parameters.batchSize}</span>
+                          <span className="text-white ml-1">{version.data.parameters.batchSize}</span>
                         </div>
                       </div>
 
                       <div className="text-xs">
                         <span className="text-gray-400">Models:</span>
-                        <span className="text-white ml-1">{safeData.models.join(", ") || "無"}</span>
+                        <span className="text-white ml-1">{version.data.models.join(", ") || "無"}</span>
                       </div>
                     </div>
                   </TooltipContent>
@@ -375,12 +346,11 @@ export function VersionCompareSidebar({
               </div>
 
               <AnimatePresence>
-                {compareVersions.map((version, index) => {
+                {sortedVersions.map((version, index) => {
                   const colorConfig = versionColors[versionColorMap[version.id]]
                   const isVersionExpanded = expandedVersions.has(version.id)
                   const isDragOver = dragOverIndex === index
                   const isDragging = draggedItem?.id === version.id
-                  const safeData = getSafeVersionData(version)
 
                   return (
                     <motion.div
@@ -446,35 +416,35 @@ export function VersionCompareSidebar({
                               <div>
                                 <div className="text-xs text-gray-400 mb-1">System Prompt:</div>
                                 <div className="text-xs text-gray-300 space-y-1">
-                                  {safeData.systemPrompt ? (
+                                  {version.data?.systemPrompt ? (
                                     <>
                                       <div>
                                         <span className="text-gray-400">角色設定:</span>{" "}
-                                        {safeData.systemPrompt.characterSettings || "無"}
+                                        {version.data.systemPrompt.characterSettings || "無"}
                                       </div>
                                       <div>
                                         <span className="text-gray-400">自我認知:</span>{" "}
-                                        {safeData.systemPrompt.selfAwareness || "無"}
+                                        {version.data.systemPrompt.selfAwareness || "無"}
                                       </div>
                                       <div>
                                         <span className="text-gray-400">任務流程:</span>{" "}
-                                        {safeData.systemPrompt.workflow || "無"}
+                                        {version.data.systemPrompt.workflow || "無"}
                                       </div>
                                       <div>
                                         <span className="text-gray-400">格式限制:</span>{" "}
-                                        {safeData.systemPrompt.formatLimits || "無"}
+                                        {version.data.systemPrompt.formatLimits || "無"}
                                       </div>
                                       <div>
                                         <span className="text-gray-400">工具使用:</span>{" "}
-                                        {safeData.systemPrompt.usedTools || "無"}
+                                        {version.data.systemPrompt.usedTools || "無"}
                                       </div>
                                       <div>
                                         <span className="text-gray-400">回覆限制:</span>{" "}
-                                        {safeData.systemPrompt.repliesLimits || "無"}
+                                        {version.data.systemPrompt.repliesLimits || "無"}
                                       </div>
                                       <div>
                                         <span className="text-gray-400">防洩漏:</span>{" "}
-                                        {safeData.systemPrompt.preventLeaks || "無"}
+                                        {version.data.systemPrompt.preventLeaks || "無"}
                                       </div>
                                     </>
                                   ) : (
@@ -487,8 +457,8 @@ export function VersionCompareSidebar({
                               <div>
                                 <div className="text-xs text-gray-400 mb-1">Default Hint Messages:</div>
                                 <div className="text-xs text-gray-300 max-h-20 overflow-y-auto bg-gray-900 p-2 rounded border border-gray-700">
-                                  {safeData.userPrompt.length > 0 ? (
-                                    safeData.userPrompt.map((msg, idx) => (
+                                  {version.data.userPrompt.length > 0 ? (
+                                    version.data.userPrompt.map((msg, idx) => (
                                       <div key={msg.id || idx}>
                                         {idx + 1}. {msg.content || "無內容"}
                                       </div>
@@ -502,17 +472,17 @@ export function VersionCompareSidebar({
                               <div className="grid grid-cols-2 gap-2 text-xs">
                                 <div>
                                   <span className="text-gray-400">Temperature:</span>
-                                  <span className="text-white ml-1">{safeData.parameters.temperature}</span>
+                                  <span className="text-white ml-1">{version.data.parameters.temperature}</span>
                                 </div>
                                 <div>
                                   <span className="text-gray-400">Batch Size:</span>
-                                  <span className="text-white ml-1">{safeData.parameters.batchSize}</span>
+                                  <span className="text-white ml-1">{version.data.parameters.batchSize}</span>
                                 </div>
                               </div>
 
                               <div className="text-xs">
                                 <span className="text-gray-400">Models:</span>
-                                <span className="text-white ml-1">{safeData.models.join(", ") || "無"}</span>
+                                <span className="text-white ml-1">{version.data.models.join(", ") || "無"}</span>
                               </div>
                             </motion.div>
                           )}

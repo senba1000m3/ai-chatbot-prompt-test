@@ -45,7 +45,6 @@ interface RightPanelControlsProps {
   setChatHeight: (height: number) => void
   colorMode?: number
   onColorModeChange?: () => void
-  isInCompareView?: boolean
   isReadOnly?: boolean
 }
 
@@ -56,7 +55,6 @@ export function RightPanelControls({
   setChatHeight,
   colorMode = 0,
   onColorModeChange,
-  isInCompareView = false,
   isReadOnly = false,
 }: RightPanelControlsProps) {
   const {
@@ -68,7 +66,8 @@ export function RightPanelControls({
 	untitledCounter,
 	addSavedVersion,
 	savedVersions,
-	parameters
+	parameters,
+	isInCompareView
   } = usePromptStore()
 
   const [saveVersionName, setSaveVersionName] = useState("");

@@ -8,6 +8,7 @@ import type { SourcePart } from "@/types/chat";
 
 export interface ModelMessage extends CoreMessage {
 	spendTime?: number;
+	rating?: "good" | "bad" | null
 }
 
 export interface HintMessage {
@@ -92,8 +93,6 @@ interface PromptStoreProps {
 	setIsSystemPromptOn: (key: string, value: boolean) => void;
 	userPrompt: HintMessage[];
 	setUserPrompt: (userPrompt: HintMessage[]) => void;
-	totalPrompts: string;
-	setTotalPrompts: () => void;
 
 	parameters: ParametersType;
 	setParameters: (params: Partial<ParametersType>) => void;
@@ -131,6 +130,27 @@ interface PromptStoreProps {
 	untitledCounter: number;
 	addUntitledCounter: () => void;
 	resetUntitledCounter: () => void;
+
+	// 版本比較
+	showVersionHistory: boolean;
+	setShowVersionHistory: (showVersionHistory: boolean) => void;
+	compareSelectedVersions: string[];
+	setCompareSelectedVersions: (versionsID: string) => void;
+	clearCompareSelectedVersions: () => void;
+	isCompareMode: boolean;
+	setIsCompareMode: (isCompareMode: boolean) => void;
+	isInCompareView: boolean;
+	setIsInCompareView: (isInCompareView: boolean) => void;
+	compareVersions: SavedVersion[];
+	setCompareVersions: (versions: SavedVersion[]) => void;
+	compareVersionsOrder: string[];
+	setInitialVersionOrder: (versionsOrder: string[]) => void;
+	onVersionReorder: (oldIndex: number, newIndex: number) => void;
+	compareModelMessages: Record<string, Record<string, Record<string, ModelMessage>>>;
+	appendCompareModelMessage: (versionId: string, modelId: string, message: ModelMessage) => string;
+	clearCompareModelMessages: () => void;
+	compareSelectedModel: string;
+	setCompareSelectedModel: (models: string) => void;
 };
 
 export const usePromptStore = create<PromptStoreProps>()(
@@ -282,21 +302,6 @@ export const usePromptStore = create<PromptStoreProps>()(
 			setUserPrompt: (userPrompt: HintMessage[]) => {
 				set({ userPrompt })
 			},
-			totalPrompts: "",
-			setTotalPrompts: () => {
-				const { systemPrompt, isSystemPromptOn } = get();
-				const currentPrompts: string[] = [];
-
-				Object.entries(systemPrompt).forEach(([key, prompt]) => {
-					if (isSystemPromptOn[key]) {
-						currentPrompts.push("\n【"+key+"】");
-						currentPrompts.push(prompt);
-					}
-				});
-
-				set({ totalPrompts: currentPrompts.join("\n").trim() });
-				console.log(currentPrompts.join("\n"));
-			},
 			parameters: {
 				temperature: 0,
 				batchSize: "1",
@@ -360,6 +365,7 @@ export const usePromptStore = create<PromptStoreProps>()(
 				});
 				return messageId;
 			},
+			clearCompareModelMessages: () => {set({compareModelMessages: {},});},
 			updateModelMessage: (modelId: string, messageId: string, update: Partial<ModelMessage>) => {
 				set(state => {
 					const modelMsgs = state.modelMessages[modelId] || {};
@@ -402,8 +408,6 @@ export const usePromptStore = create<PromptStoreProps>()(
 					},
 				}));
 			},
-
-
 
 			// SavedVersion 管理
 			savedVersions: [],
@@ -482,9 +486,88 @@ export const usePromptStore = create<PromptStoreProps>()(
 					untitledCounter: state.untitledCounter + 1,
 				})),
 			resetUntitledCounter: () => set({ untitledCounter: 1 }),
+
+			// 版本比較
+			showVersionHistory: false,
+			setShowVersionHistory: (showVersionHistory: boolean) => set({ showVersionHistory }),
+			compareSelectedVersions: [],
+			setCompareSelectedVersions: (versionsID: string) => {
+				set((state) => {
+					const prev = state.compareSelectedVersions;
+					if (prev.includes(versionsID)) {
+						return { compareSelectedVersions: prev.filter((id) => id !== versionsID) };
+					}
+					else {
+						return { compareSelectedVersions: [...prev, versionsID] };
+					}
+				});
+			},
+			clearCompareSelectedVersions: () => set({ compareSelectedVersions: [] }),
+			isCompareMode: false,
+			setIsCompareMode: (isCompareMode: boolean) => set({ isCompareMode }),
+			isInCompareView: false,
+			setIsInCompareView: (isInCompareView: boolean) => set({ isInCompareView }),
+			compareVersions: [],
+			setCompareVersions: (versions: SavedVersion[]) => set({ compareVersions: versions }),
+			compareVersionsOrder: [],
+			setInitialVersionOrder: (versionsOrder: string[]) => set({ compareVersionsOrder: versionsOrder }),
+			onVersionReorder: (oldIndex: number, newIndex: number) => {
+				set(state => {
+					const newOrder = [...state.compareVersionsOrder];
+					const [movedItem] = newOrder.splice(oldIndex, 1);
+					newOrder.splice(newIndex, 0, movedItem);
+					console.log(newOrder);
+					return { compareVersionsOrder: newOrder };
+				});
+			},
+			compareModelMessages: {},
+			appendCompareModelMessage: (versionId: string, modelId: string, message: ModelMessage) => {
+				const messageId = message.id || nanoid();
+				set(state => {
+					const versionMessages = state.compareModelMessages[versionId] || {};
+					const modelMessages = versionMessages[modelId] || {};
+					const modelOrder = Object.keys(modelMessages);
+
+					if (modelOrder.includes(messageId)) {
+						// If message already exists, maybe just update it
+						const updatedMsgs = {
+							...modelMessages,
+							[messageId]: { ...modelMessages[messageId], ...message },
+						};
+						return {
+							compareModelMessages: {
+								...state.compareModelMessages,
+								[versionId]: {
+									...versionMessages,
+									[modelId]: updatedMsgs,
+								},
+							},
+						};
+					}
+
+					// console.log(`[CompareModelMessage] Version: ${versionId}, Model: ${modelId}, Message:`, message);
+					return {
+						compareModelMessages: {
+							...state.compareModelMessages,
+							[versionId]: {
+								...versionMessages,
+								[modelId]: {
+									...modelMessages,
+									[messageId]: { ...message, id: messageId },
+								},
+							},
+						},
+					};
+				});
+				return messageId;
+			},
+			compareSelectedModel: "gpt-4o",
+			setCompareSelectedModel: (model: string) => {
+				set({ compareSelectedModel: model });
+			},
 		}),
 		{
-			name: "tau-chat",
+			name: "chat-prompt-test",
 			partialize: state => ({
 				selectedModels: state.selectedModels,
 				selectedTools: state.selectedTools,
@@ -510,4 +593,8 @@ export const usePromptStore = create<PromptStoreProps>()(
 		}
 	)
 );
+
+
+
+
 

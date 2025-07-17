@@ -32,7 +32,6 @@ export async function generate({ modelName, messages = [], systemPrompt }: { mod
 
 	const startTime = Date.now();
 
-	// 创建包含系统提示的消息数组
 	const messagesWithSystem = systemPrompt
 		? [{ role: "system", content: systemPrompt }, ...messages]
 		: messages;

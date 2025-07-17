@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ChevronRight } from "lucide-react"
 import { Badge } from "@/components/ui/badge" // 新增 Badge 導入
-import type { SavedVersion } from "@/lib/store/prompt" // 導入共享的類型
+import { usePromptStore, type SavedVersion } from "@/lib/store/prompt" // 導入共享的類型
 
 // 定義可用的模型和工具 (與 version-card.tsx 相同)
 const availableModels = [
@@ -29,13 +29,12 @@ const availableTools = [
 
 interface VersionCardCompareProps {
   version: SavedVersion
-  isSelected: boolean
-  onToggleSelect: (versionId: string) => void
   onToggleExpanded: (versionId: string) => void
 }
 
-export function VersionCardCompare({ version, isSelected, onToggleSelect, onToggleExpanded }: VersionCardCompareProps) {
-  // 使用與 version-card.tsx 相同的安全數據訪問邏輯
+export function VersionCardCompare({ version, onToggleExpanded }: VersionCardCompareProps) {
+  const { savedVersions, compareSelectedVersions, setCompareSelectedVersions } = usePromptStore()
+
   const safeVersionData = {
     systemPrompt: {
       characterSettings: version.data?.systemPrompt?.characterSettings || "",
@@ -57,19 +56,16 @@ export function VersionCardCompare({ version, isSelected, onToggleSelect, onTogg
     tools: version.data?.tools || [],
   }
 
-  // 獲取模型名稱
   const getModelName = (modelId: string) => {
     const model = availableModels.find((m) => m.id === modelId)
     return model?.name || modelId
   }
 
-  // 獲取工具名稱
   const getToolName = (toolId: string) => {
     const tool = availableTools.find((t) => t.id === toolId)
     return tool?.name || toolId
   }
 
-  // 獲取系統提示項目的顯示值
   const getSystemPromptDisplay = (value: string | undefined, label: string) => {
     if (!value || value.trim() === "") {
       return `${label}: 未設定`
@@ -77,7 +73,6 @@ export function VersionCardCompare({ version, isSelected, onToggleSelect, onTogg
     return `${label}: ${value.length > 20 ? value.substring(0, 20) + "..." : value}`
   }
 
-  // 系統提示的所有項目
   const systemPromptItems = [
     { key: "characterSettings", label: "角色設定", value: safeVersionData.systemPrompt.characterSettings },
     { key: "selfAwareness", label: "自我認知", value: safeVersionData.systemPrompt.selfAwareness },
@@ -88,7 +83,6 @@ export function VersionCardCompare({ version, isSelected, onToggleSelect, onTogg
     { key: "preventLeaks", label: "防洩漏", value: safeVersionData.systemPrompt.preventLeaks },
   ]
 
-  // 參數項目
   const parameterItems = [
     { key: "temperature", label: "Temperature", value: safeVersionData.parameters.temperature.toString() },
     { key: "batchSize", label: "Batch Size", value: safeVersionData.parameters.batchSize },
@@ -104,13 +98,13 @@ export function VersionCardCompare({ version, isSelected, onToggleSelect, onTogg
       transition={{ duration: 0.3 }}
       whileHover={{ scale: 1.02 }}
     >
-      <Card className={`bg-gray-900 border-gray-800 ${isSelected ? "ring-2 ring-blue-500" : ""}`}>
+      <Card className={`bg-gray-900 border-gray-800 ${compareSelectedVersions.includes(version.id) ? "ring-2 ring-blue-500" : ""}`}>
         <div className="p-3">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center space-x-3">
               <Checkbox
-                checked={isSelected}
-                onCheckedChange={() => onToggleSelect(version.id)}
+                checked={compareSelectedVersions.includes(version.id)}
+                onCheckedChange={() => setCompareSelectedVersions(version.id)}
                 className="border-gray-600"
               />
               <div>

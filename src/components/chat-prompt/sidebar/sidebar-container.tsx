@@ -34,8 +34,6 @@ interface PromptOption {
 }
 
 interface SidebarContainerProps {
-  showVersionHistory: boolean
-  setShowVersionHistory: (show: boolean) => void
   isCompareMode: boolean
   selectedVersionsForCompare: string[]
   onToggleCompareMode: () => void
@@ -111,9 +109,6 @@ interface SidebarContainerProps {
 }
 
 export function SidebarContainer({
-  showVersionHistory,
-  setShowVersionHistory,
-  isCompareMode,
   selectedVersionsForCompare,
   onToggleCompareMode,
   onConfirmCompare,
@@ -165,15 +160,7 @@ export function SidebarContainer({
   systemPromptEnabled,
 }: SidebarContainerProps) {
   const {
-    setSelectedModels: setStoreSelectedModels,
-    savedVersions,
-    toggleVersionExpanded,
-    setSystemPrompt,
-    systemPrompt,
-	setIsSystemPromptOn,
-	isSystemPromptOn,
-	userPrompt,
-	setUserPrompt,
+    setSelectedModels: setStoreSelectedModels, savedVersions, toggleVersionExpanded, setSystemPrompt, systemPrompt, setIsSystemPromptOn, isSystemPromptOn, userPrompt, setUserPrompt, isCompareMode, showVersionHistory
   } = usePromptStore()
 
 	const [isReadOnly, setIsReadOnly] = useState(false);
@@ -289,10 +276,7 @@ export function SidebarContainer({
 
   return (
     <>
-      <VersionHistoryToggle
-        showVersionHistory={showVersionHistory}
-        onToggle={() => setShowVersionHistory(!showVersionHistory)}
-      />
+      <VersionHistoryToggle/>
 
       <AnimatePresence>
         {showVersionHistory && (
@@ -304,13 +288,6 @@ export function SidebarContainer({
             className="border-r border-gray-800 bg-black flex flex-col overflow-hidden h-screen"
           >
             <VersionHistoryHeader
-              isCompareMode={isCompareMode}
-              selectedVersions={selectedVersionsForCompare}
-              onToggleCompareMode={onToggleCompareMode}
-              onConfirmCompare={onConfirmCompare}
-              onCancelCompare={onCancelCompare}
-              onSelectAll={onSelectAll}
-              totalVersions={filteredAndSortedVersions.length}
               searchQuery={searchQuery}
               onSearchChange={onSearchChange}
               selectedModels={selectedModelFilters}
@@ -328,12 +305,10 @@ export function SidebarContainer({
             <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar">
               <AnimatePresence>
                 {filteredAndSortedVersions.map((version, index) =>
-                  isCompareMode ? (
+					isCompareMode ? (
                     <VersionCardCompare
                       key={version.id}
                       version={version}
-                      isSelected={selectedVersionsForCompare.includes(version.id)}
-                      onToggleSelect={onToggleVersionSelect}
                       onToggleExpanded={toggleVersionExpanded}
                     />
                   ) : (
@@ -512,8 +487,6 @@ export function SidebarContainer({
 
             <SelectedItemsDisplay
               isReadOnly={isReadOnly && !isEditing}
-              selectedModels={selectedModels}
-              selectedTools={selectedTools}
               availableModels={availableModels}
               availableTools={availableTools}
             />

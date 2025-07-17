@@ -4,13 +4,11 @@ import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
 import { ChevronRight } from "lucide-react"
+import { usePromptStore } from "@/lib/store/prompt"
 
-interface VersionHistoryToggleProps {
-  showVersionHistory: boolean
-  onToggle: () => void
-}
+export function VersionHistoryToggle({ }) {
+  const { showVersionHistory, setShowVersionHistory } = usePromptStore();
 
-export function VersionHistoryToggle({ showVersionHistory, onToggle }: VersionHistoryToggleProps) {
   return (
     <TooltipProvider>
       <div className="flex">
@@ -20,7 +18,7 @@ export function VersionHistoryToggle({ showVersionHistory, onToggle }: VersionHi
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={onToggle}
+                onClick={() => {setShowVersionHistory(!showVersionHistory)}}
                 className="h-full rounded-none border-r border-gray-800 px-2 text-gray-400 hover:text-white hover:bg-gray-900"
               >
                 <motion.div animate={{ rotate: showVersionHistory ? 180 : 0 }} transition={{ duration: 0.3 }}>

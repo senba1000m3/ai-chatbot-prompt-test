@@ -17,6 +17,7 @@ import { VersionCompareView } from "@/components/chat-prompt/compare/version-com
 
 // Chat Components
 import { RightPanelControls } from "@/components/chat-prompt/chat/right-panel-controls"
+import { usePromptStore, type SavedVersion, type SystemPromptData, type ModelAccuracy, type HintMessage } from "@/lib/store/prompt"
 
 type ViewMode = "popup" | "unified" | "separate"
 
@@ -36,51 +37,11 @@ interface ModelResponse {
 	isLoading: boolean
 }
 
-interface HintMessage {
-	id: string
-	content: string
-}
-
 interface PromptOption {
 	id: string
 	title: string
 	content: string
 	isDefault?: boolean
-}
-
-interface SystemPromptData {
-	characterSettings: string
-	selfAwareness: string
-	workflow: string
-	formatLimits: string
-	usedTools: string
-	repliesLimits: string
-	preventLeaks: string
-}
-
-interface ModelAccuracy {
-	model: string
-	accuracy: number
-}
-
-interface SavedVersion {
-	id: string
-	name: string
-	expanded: boolean
-	savedAt: Date
-	modelAccuracy: ModelAccuracy[]
-	data: {
-		systemPrompt: SystemPromptData
-		userPrompt: HintMessage[]
-		parameters: {
-			temperature: number
-			batchSize: string
-			parameter2: string
-			parameter3: string
-		}
-		models: string[]
-		tools: string[]
-	}
 }
 
 // 擴展的模型列表，包含所有可用模型
@@ -207,7 +168,8 @@ const getDefaultSystemPromptOptions = () => ({
 })
 
 export default function AIPromptTester() {
-	// 系統提示相關狀態
+	const { isInCompareView } = usePromptStore();
+
 	const [systemPromptOptions, setSystemPromptOptions] = useState(() =>
 		loadFromLocalStorage(STORAGE_KEYS.SYSTEM_PROMPT_OPTIONS, getDefaultSystemPromptOptions()),
 	)
@@ -301,7 +263,6 @@ export default function AIPromptTester() {
 	// 添加比較模式相關狀態
 	const [isCompareMode, setIsCompareMode] = useState(false)
 	const [selectedVersionsForCompare, setSelectedVersionsForCompare] = useState<string[]>([])
-	const [isInCompareView, setIsInCompareView] = useState(false)
 	const [compareVersions, setCompareVersions] = useState<SavedVersion[]>([])
 	const [initialVersionOrder, setInitialVersionOrder] = useState<SavedVersion[]>([])
 
@@ -431,7 +392,6 @@ export default function AIPromptTester() {
 		showVersionHistory,
 	])
 
-	// 保存聊天記錄到 Cookie
 	useEffect(() => {
 		try {
 			const jsonString = JSON.stringify(modelResponses)
@@ -445,7 +405,6 @@ export default function AIPromptTester() {
 		}
 	}, [modelResponses])
 
-	// 保存 UI 設定到 localStorage
 	useEffect(() => {
 		const uiSettings = {
 			chatHeight,
@@ -454,7 +413,6 @@ export default function AIPromptTester() {
 		saveToLocalStorage(STORAGE_KEYS.UI_SETTINGS, uiSettings)
 	}, [chatHeight, colorMode])
 
-	// 當選擇的模型改變時，更新 modelResponses
 	useEffect(() => {
 		setModelResponses((prevResponses) => {
 			const newResponses: ModelResponse[] = []
@@ -970,56 +928,56 @@ export default function AIPromptTester() {
 		return ""
 	}
 
-	// 比較模式相關函數
-	const handleToggleCompareMode = () => {
-		setIsCompareMode(!isCompareMode)
-		setSelectedVersionsForCompare([])
-
-		if (!isCompareMode) {
-			setSavedVersions((prev) => prev.map((version) => ({ ...version, expanded: false })))
-		}
-	}
-
-	const handleToggleVersionSelect = (versionId: string) => {
-		setSelectedVersionsForCompare((prev) => {
-			if (prev.includes(versionId)) {
-				return prev.filter((id) => id !== versionId)
-			} else {
-				return [...prev, versionId]
-			}
-		})
-	}
-
-	const handleSelectAll = () => {
-		const isAllSelected = selectedVersionsForCompare.length === savedVersions.length
-		if (isAllSelected) {
-			setSelectedVersionsForCompare([])
-		} else {
-			setSelectedVersionsForCompare(savedVersions.map((v) => v.id))
-		}
-	}
-
-	const handleConfirmCompare = () => {
-		const versionsToCompare = savedVersions.filter((v) => selectedVersionsForCompare.includes(v.id))
-		setCompareVersions(versionsToCompare)
-		setInitialVersionOrder([...versionsToCompare])
-		setIsInCompareView(true)
-		setShowVersionHistory(false)
-	}
-
-	const handleCancelCompare = () => {
-		setIsCompareMode(false)
-		setSelectedVersionsForCompare([])
-	}
-
-	const handleExitCompare = () => {
-		setIsInCompareView(false)
-		setIsCompareMode(false)
-		setSelectedVersionsForCompare([])
-		setCompareVersions([])
-		setInitialVersionOrder([])
-		setShowVersionHistory(true)
-	}
+	// // 比較模式相關函數
+	// const handleToggleCompareMode = () => {
+	// 	setIsCompareMode(!isCompareMode)
+	// 	setSelectedVersionsForCompare([])
+	//
+	// 	if (!isCompareMode) {
+	// 		setSavedVersions((prev) => prev.map((version) => ({ ...version, expanded: false })))
+	// 	}
+	// }
+	//
+	// const handleToggleVersionSelect = (versionId: string) => {
+	// 	setSelectedVersionsForCompare((prev) => {
+	// 		if (prev.includes(versionId)) {
+	// 			return prev.filter((id) => id !== versionId)
+	// 		} else {
+	// 			return [...prev, versionId]
+	// 		}
+	// 	})
+	// }
+	//
+	// const handleSelectAll = () => {
+	// 	const isAllSelected = selectedVersionsForCompare.length === savedVersions.length
+	// 	if (isAllSelected) {
+	// 		setSelectedVersionsForCompare([])
+	// 	} else {
+	// 		setSelectedVersionsForCompare(savedVersions.map((v) => v.id))
+	// 	}
+	// }
+	//
+	// const handleConfirmCompare = () => {
+	// 	const versionsToCompare = savedVersions.filter((v) => selectedVersionsForCompare.includes(v.id))
+	// 	setCompareVersions(versionsToCompare)
+	// 	setInitialVersionOrder([...versionsToCompare])
+	// 	setIsInCompareView(true)
+	// 	setShowVersionHistory(false)
+	// }
+	//
+	// const handleCancelCompare = () => {
+	// 	setIsCompareMode(false)
+	// 	setSelectedVersionsForCompare([])
+	// }
+	//
+	// const handleExitCompare = () => {
+	// 	setIsInCompareView(false)
+	// 	setIsCompareMode(false)
+	// 	setSelectedVersionsForCompare([])
+	// 	setCompareVersions([])
+	// 	setInitialVersionOrder([])
+	// 	setShowVersionHistory(true)
+	// }
 
 	const handleVersionReorder = (newOrder: SavedVersion[]) => {
 		setCompareVersions(newOrder)
@@ -1221,10 +1179,8 @@ export default function AIPromptTester() {
 					{/* 比較模式時顯示比較側邊欄 */}
 					{isInCompareView ? (
 						<VersionCompareSidebar
-							compareVersions={compareVersions}
 							availableModels={availableModels}
 							availableTools={availableTools}
-							onExitCompare={handleExitCompare}
 							onVersionReorder={handleVersionReorder}
 							colorMode={colorMode}
 						/>
@@ -1234,10 +1190,6 @@ export default function AIPromptTester() {
 							setShowVersionHistory={setShowVersionHistory}
 							isCompareMode={isCompareMode}
 							selectedVersionsForCompare={selectedVersionsForCompare}
-							onToggleCompareMode={handleToggleCompareMode}
-							onConfirmCompare={handleConfirmCompare}
-							onCancelCompare={handleCancelCompare}
-							onSelectAll={handleSelectAll}
 							filteredAndSortedVersions={filteredAndSortedVersions}
 							searchQuery={searchQuery}
 							onSearchChange={setSearchQuery}
@@ -1254,7 +1206,6 @@ export default function AIPromptTester() {
 							onCopyVersion={handleCopyVersion}
 							onDeleteVersion={handleDeleteVersion}
 							onToggleExpanded={toggleVersionExpanded}
-							onToggleVersionSelect={handleToggleVersionSelect}
 							getFilteredModelAccuracy={getFilteredModelAccuracy}
 							savedVersions={savedVersions}
 							isReadOnly={isReadOnly}

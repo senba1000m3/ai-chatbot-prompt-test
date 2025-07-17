@@ -6,6 +6,20 @@ import { generate } from "@/lib/chat/prompt-action";
 import { nanoid } from "@/lib/utils";
 import { readStreamableValue } from "ai/rsc";
 
+const mergeSystemPrompts = () => {
+	const { systemPrompt, isSystemPromptOn } = usePromptStore.getState();
+	const currentPrompts: string[] = [];
+
+	Object.entries(systemPrompt).forEach(([key, prompt]) => {
+		if (isSystemPromptOn[key]) {
+			currentPrompts.push("\n【" + key + "】");
+			currentPrompts.push(prompt);
+		}
+	});
+
+	return currentPrompts.join("\n").trim();
+};
+
 export function usePromptChat() {
 	const [, startChatTransition] = useTransition();
 	const {
@@ -14,8 +28,6 @@ export function usePromptChat() {
 		updateModelMessage,
 		setModelIsLoading,
 		getModelMessages,
-		totalPrompts,
-		setTotalPrompts
 	} = usePromptStore();
 
 	const sendMessage = useCallback(
@@ -27,8 +39,7 @@ export function usePromptChat() {
 				});
 
 				try {
-					setTotalPrompts();
-					const currentTotalPrompts = usePromptStore.getState().totalPrompts;
+					const totalPrompts = mergeSystemPrompts();
 
 					const messagePromises = modelNames.map(async (modelName) => {
 						const messages = getModelMessages(modelName);
@@ -37,7 +48,7 @@ export function usePromptChat() {
 							const result = await generate({
 								modelName: modelName,
 								messages: messages,
-								systemPrompt: currentTotalPrompts
+								systemPrompt: totalPrompts
 							});
 
 							return {
@@ -77,7 +88,7 @@ export function usePromptChat() {
 					});
 				}
 			});
-		}, [appendModelMessage, updateModelMessage, setModelIsLoading, getModelMessages, generate]
+		}, [appendModelMessage, updateModelMessage, setModelIsLoading, getModelMessages]
 	);
 
 	const handleSubmit = useCallback(
@@ -111,4 +122,5 @@ export function usePromptChat() {
 		handleSubmit,
 	};
 }
+
 
