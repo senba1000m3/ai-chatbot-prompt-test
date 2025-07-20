@@ -56,37 +56,7 @@ export interface SavedVersion {
 type NewSavedVersion = Omit<SavedVersion, "id" | "savedAt" | "expanded">;
 
 interface PromptStoreProps {
-	/* Unused */
-	chatId: string;
-	setChatId: (chatId: string) => void;
-	chatTitle: string;
-	setChatTitle: (chatTitle: string) => void;
-	input: string;
-	setInput: (input: string) => void;
-	isLoading: boolean;
-	setIsLoading: (isLoading: boolean) => void;
-	model: string;
-	setModel: (model: string) => void;
-	character: string;
-	setCharacter: (character: string) => void;
-	useWebSearch: boolean;
-	setUseWebSearch: (useWebSearch: boolean) => void;
-	handleChatChange: (newChatId: string) => void;
-	sources: Record<string, string[]>;
-	appendSource: (source: SourcePart) => void;
-	messages: Record<string, CoreMessage>;
-	messageOrderArray: string[];
-	appendMessage: (message: CoreMessage) => void;
-	getMessageArray: () => CoreMessage[];
-	messageExists: (id: string) => boolean;
-	clearMessages: () => void;
-	/* ----- */
-
-	/* Used */
-	hasScrolledToBottom: boolean;
-	setHasScrolledToBottom: (hasScrolled: boolean) => void;
-
-	// Prompt Used
+	// Prompt 相關
 	systemPrompt: SystemPromptData;
 	setSystemPrompt: (updater: (prev: SystemPromptData) => SystemPromptData) => void;
 	isSystemPromptOn: Record<string, boolean>;
@@ -126,6 +96,7 @@ interface PromptStoreProps {
 	loadVersion: (version: SavedVersion) => void;
 	copyVersion: (version: SavedVersion) => void;
 	clearAllVersions: () => void;
+	updateVersionAccuracy: (versionId: string, modelId: string, accuracy: number) => void;
 
 	untitledCounter: number;
 	addUntitledCounter: () => void;
@@ -148,6 +119,8 @@ interface PromptStoreProps {
 	onVersionReorder: (oldIndex: number, newIndex: number) => void;
 	compareModelMessages: Record<string, Record<string, Record<string, ModelMessage>>>;
 	appendCompareModelMessage: (versionId: string, modelId: string, message: ModelMessage) => string;
+	updateMessageRating: (messageId: string, modelId: string, rating: "good" | "bad" | null, versionId?: string) => void;
+	getCompareModelMessages: () => void;
 	clearCompareModelMessages: () => void;
 	compareSelectedModel: string;
 	setCompareSelectedModel: (models: string) => void;
@@ -156,114 +129,6 @@ interface PromptStoreProps {
 export const usePromptStore = create<PromptStoreProps>()(
 	persist(
 		(set, get) => ({
-			// Chat related
-			chatId: "",
-			setChatId: (chatId: string) => set({ chatId }),
-			chatTitle: "",
-			setChatTitle: (chatTitle: string) => set({ chatTitle }),
-			input: "",
-			setInput: (input: string) => set({ input }),
-			isLoading: false,
-			setIsLoading: (isLoading: boolean) => set({ isLoading }),
-			hasScrolledToBottom: true,
-			setHasScrolledToBottom: (hasScrolledToBottom: boolean) => set({ hasScrolledToBottom }),
-
-			// Chat Options
-			model: "gpt-4o",
-			setModel: (model: string) => set({ model }),
-			character: "tai-chan",
-			setCharacter: (character: string) => set({ character }),
-			useWebSearch: true,
-			setUseWebSearch: (useWebSearch: boolean) => set({ useWebSearch }),
-
-			handleChatChange: (newChatId: string) => {
-				const {
-					chatId,
-					setChatId,
-					setChatTitle,
-					setIsLoading,
-					clearMessages,
-				} = get();
-
-				if (newChatId === chatId) return;
-
-				if (!newChatId) setChatTitle("");
-
-				// Don't clear messages if route change started from `/chat`
-				if (chatId) clearMessages();
-
-				// Set new chatId, but let page handle chatTitle
-				setChatId(newChatId);
-
-				// TODO: Handle state reset
-				if (!(!chatId && newChatId)) setIsLoading(false);
-			},
-
-			// Message related
-			sources: {},
-			appendSource: (source: SourcePart) => {
-				set(state => {
-					const { messages, messageOrderArray, sources } = state;
-					const lastMessageId = messageOrderArray[messageOrderArray.length - 1];
-					const lastMessage = messages[lastMessageId];
-
-					if (!lastMessageId || lastMessage.role !== "assistant") return state;
-
-					return {
-						sources: {
-							...sources,
-							[lastMessageId]: [...(sources[lastMessageId] ?? []), source.source],
-						},
-					};
-				});
-			},
-			// ? This is why we don't use useChat()
-			// ? Time complexity is O(1) instead of O(n)
-			messages: {} as Record<string, CoreMessage>,
-			messageOrderArray: [],
-			appendMessage: (message: CoreMessage) => {
-				set(state => {
-					const { messages, messageOrderArray } = state;
-
-					// Update the previous message if both are from the assistant
-					// b/c the new one is just the old one but with more chunks
-					if (message.role === "assistant") {
-						const lastMessageId = messageOrderArray[messageOrderArray.length - 1];
-						const lastMessage = messages[lastMessageId];
-
-						if (lastMessage && lastMessage.role === "assistant") {
-							return {
-								messages: {
-									...messages,
-									[lastMessageId]: message,
-								},
-							};
-						}
-					}
-
-					// Create a new message if it's not
-					const id = nanoid();
-					return {
-						messages: {
-							...messages,
-							[id]: message,
-						},
-						messageOrderArray: [...messageOrderArray, id],
-					};
-				});
-			},
-			getMessageArray: () => {
-				const { messages, messageOrderArray } = get();
-				return messageOrderArray.map(id => messages[id]);
-			},
-			messageExists: (id: string) => {
-				const { messageOrderArray } = get();
-				return messageOrderArray.includes(id);
-			},
-			clearMessages: () => {
-				set({ messages: {}, messageOrderArray: [] });
-			},
-
 			systemPrompt: {
 				characterSettings: "",
 				selfAwareness: "",
@@ -275,7 +140,6 @@ export const usePromptStore = create<PromptStoreProps>()(
 			},
 			setSystemPrompt: (updater) => {
 				set(state => ({ systemPrompt: updater(state.systemPrompt) }));
-				get().setTotalPrompts();
 			},
 			isSystemPromptOn: {
 				characterSettings: true,
@@ -287,13 +151,11 @@ export const usePromptStore = create<PromptStoreProps>()(
 				preventLeaks: true
 			},
 			setIsSystemPromptOn: (key: string, value: boolean) => {
-				const { setTotalPrompts } = get();
 				set(state => {
 					const newIsSystemPromptOn = { ...state.isSystemPromptOn };
 					newIsSystemPromptOn[key] = value;
 					return { isSystemPromptOn: newIsSystemPromptOn };
 				});
-				setTotalPrompts();
 			},
 			userPrompt: [
 				{ id: "1", content: "請幫我分析這個問題" },
@@ -478,6 +340,28 @@ export const usePromptStore = create<PromptStoreProps>()(
 				set({ savedVersions: [] });
 				get().resetUntitledCounter();
 			},
+			updateVersionAccuracy: (versionId: string, modelId: string, accuracy: number) => {
+				set((state) => {
+					const updateAccuracy = (version: SavedVersion) => {
+						if (version.id === versionId) {
+							const modelAccuracy = version.modelAccuracy.map((ma) =>
+								ma.model === modelId ? { ...ma, accuracy } : ma
+							);
+							// Check if the model exists in modelAccuracy, if not, add it.
+							if (!modelAccuracy.some(ma => ma.model === modelId)) {
+								modelAccuracy.push({ model: modelId, accuracy });
+							}
+							return { ...version, modelAccuracy };
+						}
+						return version;
+					};
+
+					return {
+						savedVersions: state.savedVersions.map(updateAccuracy),
+						compareVersions: state.compareVersions.map(updateAccuracy),
+					};
+				});
+			},
 
 			// Untitled Counter
 			untitledCounter: 1,
@@ -516,7 +400,7 @@ export const usePromptStore = create<PromptStoreProps>()(
 					const newOrder = [...state.compareVersionsOrder];
 					const [movedItem] = newOrder.splice(oldIndex, 1);
 					newOrder.splice(newIndex, 0, movedItem);
-					console.log(newOrder);
+					// console.log(newOrder);
 					return { compareVersionsOrder: newOrder };
 				});
 			},
@@ -561,6 +445,38 @@ export const usePromptStore = create<PromptStoreProps>()(
 				});
 				return messageId;
 			},
+			updateMessageRating: (messageId: string, modelId: string, rating: "good" | "bad" | null, versionId?: string) => {
+				set(state => {
+					if (versionId) {
+						const versionMessages = state.compareModelMessages[versionId] || {};
+						const modelMessages = versionMessages[modelId] || {};
+						if (!modelMessages[messageId]) return state;
+
+						const updatedMessage = { ...modelMessages[messageId], rating };
+
+						return {
+							compareModelMessages: {
+								...state.compareModelMessages,
+								[versionId]: {
+									...versionMessages,
+									[modelId]: {
+										...modelMessages,
+										[messageId]: updatedMessage,
+									},
+								},
+							},
+						};
+					}
+				});
+
+				// if (versionId) {
+				// 	const messages = get().getCompareModelMessages(versionId, modelId);
+				// 	console.log(`[After Update] Messages for version ${versionId}, model ${modelId}:`, messages);
+				// }
+			},
+			getCompareModelMessages: () => {
+				console.log(get().compareModelMessages);
+			},
 			compareSelectedModel: "gpt-4o",
 			setCompareSelectedModel: (model: string) => {
 				set({ compareSelectedModel: model });
@@ -593,8 +509,4 @@ export const usePromptStore = create<PromptStoreProps>()(
 		}
 	)
 );
-
-
-
-
 

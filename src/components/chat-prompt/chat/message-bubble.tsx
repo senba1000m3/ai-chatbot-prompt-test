@@ -4,38 +4,33 @@ import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Smile, Frown } from "lucide-react"
 import { useState } from "react"
-
-interface Message {
-  role: "user" | "assistant"
-  content: string
-  model?: string
-  rating?: "good" | "bad" | null
-  id?: string
-  spendTime?: number
-}
+import { usePromptStore, type ModelMessage } from "@/lib/store/prompt"
 
 interface MessageBubbleProps {
-  message: Message
+  message: ModelMessage
   index: number
-  onRating?: (messageId: string, rating: "good" | "bad") => void
+  modelId: string
+  versionId?: string
   showRating?: boolean
-  responseTime?: number
 }
 
-export function MessageBubble({ message, index, onRating, showRating = false }: MessageBubbleProps) {
+export function MessageBubble({ message, index, modelId, versionId, showRating = false }: MessageBubbleProps) {
+  const { updateMessageRating, getCompareModelMessages } = usePromptStore()
   const [currentRating, setCurrentRating] = useState<"good" | "bad" | null>(message.rating || null)
 
   const handleRating = (rating: "good" | "bad") => {
     const newRating = currentRating === rating ? null : rating
     setCurrentRating(newRating)
-    if (onRating && message.id) {
-      onRating(message.id, newRating || rating)
+    if (message.id) {
+      updateMessageRating(message.id, modelId, newRating, versionId)
     }
+
+	getCompareModelMessages();
   }
 
   return (
     <motion.div
-      key={index}
+      key={message.id || index}
       initial={{ opacity: 0, x: message.role === "user" ? 20 : -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{

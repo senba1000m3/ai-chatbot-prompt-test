@@ -62,15 +62,6 @@ const getModelsByCategory = () => {
 
 const modelsByCategory = getModelsByCategory()
 
-// 計算模型準確率的函數
-const calculateModelAccuracy = (modelResponse: { messages: ModelMessage[] }): number => {
-  const assistantMessages = modelResponse.messages.filter((msg) => msg.role === "assistant" && msg.rating)
-  if (assistantMessages.length === 0) return Math.floor(Math.random() * 20) + 80 // 隨機生成 80-99
-
-  const goodRatings = assistantMessages.filter((msg) => msg.rating === "good").length
-  return Math.round((goodRatings / assistantMessages.length) * 100)
-}
-
 export function VersionCompareView({
   chatHeight,
   colorMode,
@@ -84,7 +75,8 @@ export function VersionCompareView({
     onVersionReorder,
 	compareModelMessages,
 	compareSelectedModel,
-	setCompareSelectedModel
+	setCompareSelectedModel,
+	updateVersionAccuracy
   } = usePromptStore()
 	const { handleSubmit } = useComparePromptChat();
 
@@ -104,7 +96,7 @@ export function VersionCompareView({
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
   const [fullscreenVersion, setFullscreenVersion] = useState<string | null>(null)
   const [columnWidth, setColumnWidth] = useState(() => {
-    return sortedVersions.length === 2 ? 100 : 85
+    return sortedVersions.length === 2 ? 125 : 85
   })
 
   // 聊天輸入相關狀態
@@ -165,138 +157,104 @@ export function VersionCompareView({
   }
 
   const handleMessageRating = (versionId: string, modelId: string, messageId: string, rating: "good" | "bad") => {
-  //   const messages = compareModelMessages[versionId]?.[modelId] || []
-  //   const messageIndex = messages.findIndex((msg) => msg.id === messageId)
-  //
-  //   if (messageIndex === -1) return
-  //
-  //   const updatedMessage = { ...messages[messageIndex], rating }
-  //   updateCompareMessage(versionId, modelId, messageIndex, updatedMessage)
-  //
-  //   const updatedVersions = sortedVersions.map((version) => {
-  //     if (version.id === versionId) {
-  //       // 重新計算該版本該模型的準確率
-  //       const modelMessages = [...messages]
-  //       modelMessages[messageIndex] = updatedMessage
-  //       const newAccuracy = calculateModelAccuracy({ messages: modelMessages })
-  //
-  //       const updatedModelAccuracy = [...(version.modelAccuracy || [])]
-  //       const existingAccuracyIndex = updatedModelAccuracy.findIndex((acc) => acc.model === modelId)
-  //
-  //       if (existingAccuracyIndex >= 0) {
-  //         updatedModelAccuracy[existingAccuracyIndex] = {
-  //           ...updatedModelAccuracy[existingAccuracyIndex],
-  //           accuracy: newAccuracy,
-  //         }
-  //       } else {
-  //         updatedModelAccuracy.push({ model: modelId, accuracy: newAccuracy })
-  //       }
-  //
-  //       return {
-  //         ...version,
-  //         modelAccuracy: updatedModelAccuracy,
-  //       }
-  //     }
-  //     return version
-  //   })
-  //   onUpdateVersions(updatedVersions)
+
   }
   //
   const handlePopupWindow = (versionName: string, modelId: string, messages: ModelMessage[]) => {
-  //   const htmlContent = `
-  //   <!DOCTYPE html>
-  //   <html lang="zh-TW">
-  //   <head>
-  //     <meta charset="UTF-8">
-  //     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  //     <title>${versionName} - ${modelId}</title>
-  //     <style>
-  //       body {
-  //         margin: 0;
-  //         padding: 20px;
-  //         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  //         background: #000;
-  //         color: #fff;
-  //         line-height: 1.6;
-  //       }
-  //       .header {
-  //         border-bottom: 1px solid #374151;
-  //         padding-bottom: 16px;
-  //         margin-bottom: 24px;
-  //       }
-  //       .version-name {
-  //         font-size: 24px;
-  //         font-weight: bold;
-  //         margin-bottom: 8px;
-  //       }
-  //       .subtitle {
-  //         color: #9CA3AF;
-  //         font-size: 14px;
-  //       }
-  //       .messages {
-  //         max-width: 800px;
-  //         margin: 0 auto;
-  //       }
-  //       .message {
-  //         margin-bottom: 16px;
-  //         padding: 12px 16px;
-  //         border-radius: 8px;
-  //         max-width: 80%;
-  //       }
-  //       .user-message {
-  //         background: #2563EB;
-  //         margin-left: auto;
-  //         text-align: right;
-  //       }
-  //       .assistant-message {
-  //         background: #374151;
-  //         border: 1px solid #4B5563;
-  //         margin-right: auto;
-  //       }
-  //       .message-content {
-  //         white-space: pre-wrap;
-  //         font-size: 14px;
-  //       }
-  //       .no-messages {
-  //         text-align: center;
-  //         color: #9CA3AF;
-  //         padding: 40px;
-  //       }
-  //     </style>
-  //   </head>
-  //   <body>
-  //     <div class="header">
-  //       <div class="version-name">${versionName} - ${modelId}</div>
-  //       <div class="subtitle">版本比較 - 獨立視窗</div>
-  //     </div>
-  //     <div class="messages">
-  //       ${
-  //         messages.length === 0
-  //           ? '<div class="no-messages">尚無對話記錄</div>'
-  //           : messages
-  //               .map(
-  //                 (message) => `
-  //           <div class="message ${message.role === "user" ? "user-message" : "assistant-message"}">
-  //             <div class="message-content">${message}</div>
-  //           </div>
-  //         `,
-  //               )
-  //               .join("")
-  //       }
-  //     </div>
-  //   </body>
-  //   </html>
-  // `
-  //
-  //   const newWindow = window.open("", "_blank")
-  //   if (newWindow) {
-  //     newWindow.document.write(htmlContent)
-  //     newWindow.document.close()
-  //   }
+    const htmlContent = `
+    <!DOCTYPE html>
+    <html lang="zh-TW">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>${versionName} - ${modelId}</title>
+      <style>
+        body {
+          margin: 0;
+          padding: 20px;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          background: #000;
+          color: #fff;
+          line-height: 1.6;
+        }
+        .header {
+          border-bottom: 1px solid #374151;
+          padding-bottom: 16px;
+          margin-bottom: 24px;
+        }
+        .version-name {
+          font-size: 24px;
+          font-weight: bold;
+          margin-bottom: 8px;
+        }
+        .subtitle {
+          color: #9CA3AF;
+          font-size: 14px;
+        }
+        .messages {
+          max-width: 800px;
+          margin: 0 auto;
+        }
+        .message {
+          margin-bottom: 16px;
+          padding: 12px 16px;
+          border-radius: 8px;
+          max-width: 80%;
+        }
+        .user-message {
+          background: #2563EB;
+          margin-left: auto;
+          text-align: right;
+        }
+        .assistant-message {
+          background: #374151;
+          border: 1px solid #4B5563;
+          margin-right: auto;
+        }
+        .message-content {
+          white-space: pre-wrap;
+          font-size: 14px;
+        }
+        .no-messages {
+          text-align: center;
+          color: #9CA3AF;
+          padding: 40px;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <div class="version-name">${versionName} - ${modelId}</div>
+        <div class="subtitle">版本比較 - 獨立視窗</div>
+      </div>
+      <div class="messages">
+        ${
+          messages.length === 0
+            ? '<div class="no-messages">尚無對話記錄</div>'
+            : messages
+                .map(
+                  (message) => `
+            <div class="message ${message.role === "user" ? "user-message" : "assistant-message"}">
+              <div class="message-content">${message}</div>
+            </div>
+          `,
+                )
+                .join("")
+        }
+      </div>
+    </body>
+    </html>
+  `
+
+    const newWindow = window.open("", "_blank")
+    if (newWindow) {
+      newWindow.document.write(htmlContent)
+      newWindow.document.close()
+    }
   }
   //
   const handleFullscreen = (versionId: string) => {
-  //   setFullscreenVersion(versionId)
+    setFullscreenVersion(versionId)
   }
 
   const handleDragStart = (e: React.DragEvent, version: SavedVersion) => {
@@ -332,7 +290,7 @@ export function VersionCompareView({
   }
 
   const getColumnWidthPercent = () => {
-    const actualWidth = 28 * (columnWidth / 100)
+    const actualWidth = 38 * (columnWidth / 100)
     return `${actualWidth}%`
   }
 
@@ -520,9 +478,7 @@ export function VersionCompareView({
               const messageList = Object.values(messages);
 
               // 獲取該模型的準確率
-              const modelAccuracy =
-                version.modelAccuracy?.find((acc) => acc.model === compareSelectedModel)?.accuracy ||
-                Math.floor(Math.random() * 20) + 80
+			  const modelAccuracy: number = version.modelAccuracy?.find((acc) => acc.model === compareSelectedModel)?.accuracy || -1;
 
               return (
                 <motion.div
@@ -535,7 +491,7 @@ export function VersionCompareView({
                   }}
                   transition={{ delay: versionIndex * 0.1, duration: 0.3 }}
                   className="flex-shrink-0"
-                  style={{ width: getColumnWidthPercent() }}
+                  style={{ width: getColumnWidthPercent(), height: "85%" }}
                   draggable
                   onDragStart={(e) => handleDragStart(e, version)}
                   onDragOver={(e) => handleDragOver(e, versionIndex)}
@@ -655,9 +611,8 @@ export function VersionCompareView({
                             key={message.id || msgIndex}
                             message={message}
                             index={msgIndex}
-                            onRating={(messageId, rating) =>
-                              handleMessageRating(version.id, compareSelectedModel, messageId, rating)
-                            }
+                            modelId={compareSelectedModel}
+                            versionId={version.id}
                             showRating={message.role === "assistant"}
                           />
                         ))
@@ -702,16 +657,14 @@ export function VersionCompareView({
                     {sortedVersions.find((v) => v.id === fullscreenVersion)?.name} - 全螢幕檢視
                   </h3>
                   <div className="flex items-center space-x-2">
-                    <div className="text-xs text-green-400 font-mono">
-                      {(() => {
-                        const version = sortedVersions.find((v) => v.id === fullscreenVersion)
-                        if (!version) return "N/A"
-                        const modelAccuracy =
-                          version.modelAccuracy?.find((acc) => acc.model === compareSelectedModel)?.accuracy ||
-                          Math.floor(Math.random() * 20) + 80
-                        return `${modelAccuracy.toFixed(1)}%`
-                      })()}
-                    </div>
+                    {/*<div className="text-xs text-green-400 font-mono">*/}
+                    {/*  {(() => {*/}
+                    {/*    const version = sortedVersions.find((v) => v.id === fullscreenVersion)*/}
+                    {/*    if (!version) return "N/A"*/}
+					{/*	  const modelAccuracy: number = version.modelAccuracy?.find((acc) => acc.model === compareSelectedModel)?.accuracy || -1;*/}
+					{/*	  return `${modelAccuracy.toFixed(1)}%`*/}
+                    {/*  })()}*/}
+                    {/*</div>*/}
                     <Button
                       variant="ghost"
                       size="sm"
@@ -752,10 +705,11 @@ export function VersionCompareView({
                       messageList.map((message, msgIndex) => (
                         <MessageBubble
                           key={message.id || msgIndex}
-                          message={message}
-                          index={msgIndex}
-                          showRating={message.role === "assistant"}
-                          responseTime={message.spendTime}
+						  message={message}
+						  index={msgIndex}
+						  modelId={compareSelectedModel}
+						  versionId={fullscreenVersion}
+						  showRating={message.role === "assistant"}
                         />
                       ))
                     )

@@ -42,12 +42,12 @@ export function usePromptChat() {
 					const totalPrompts = mergeSystemPrompts();
 
 					const messagePromises = modelNames.map(async (modelName) => {
-						const messages = getModelMessages(modelName);
+						const historyMessages = getModelMessages(modelName);
 
 						try {
 							const result = await generate({
 								modelName: modelName,
-								messages: messages,
+								messages: historyMessages,
 								systemPrompt: totalPrompts
 							});
 
@@ -122,5 +122,6 @@ export function usePromptChat() {
 		handleSubmit,
 	};
 }
+
 
 
