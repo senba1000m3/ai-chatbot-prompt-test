@@ -57,9 +57,15 @@ export const CHAT_MODELS: Record<string, ChatModel[]> = {
 } as const;
 
 export function getChatModel(model: string): ChatModel | undefined {
+	console.log(model);
 	for (const models of Object.values(CHAT_MODELS)) {
+		console.log(model);
 		const match = models.find(m => m.model === model);
-		if (match) return match;
+		if (match){
+			// console.log(match);
+			console.log("hit");
+			return match;
+		}
 	}
 
 	return undefined;
