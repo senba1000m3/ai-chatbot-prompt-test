@@ -60,7 +60,7 @@ export function RightPanelControls({
   const {
     clearModelMessages,
     systemPrompt,
-    userPrompt,
+    hintMessage,
     selectedModels,
     selectedTools,
 	untitledCounter,
@@ -80,7 +80,7 @@ export function RightPanelControls({
       modelAccuracy: [],
       data: {
         systemPrompt,
-        userPrompt,
+		hintMessage,
 		parameters,
         models: selectedModels,
         tools: selectedTools,

@@ -149,7 +149,7 @@ export function SidebarContainer({
   systemPromptEnabled,
 }: SidebarContainerProps) {
   const {
-    setSelectedModels: setStoreSelectedModels, savedVersions, toggleVersionExpanded, setSystemPrompt, systemPrompt, setIsSystemPromptOn, isSystemPromptOn, userPrompt, setUserPrompt, isCompareMode, showVersionHistory
+    setSelectedModels: setStoreSelectedModels, savedVersions, toggleVersionExpanded, setSystemPrompt, systemPrompt, setIsSystemPromptOn, isSystemPromptOn, isCompareMode, showVersionHistory
   } = usePromptStore()
 
 	const [isReadOnly, setIsReadOnly] = useState(false);
@@ -172,7 +172,7 @@ export function SidebarContainer({
 			  repliesLimits: version.data.systemPrompt.repliesLimits || "",
 			  preventLeaks: version.data.systemPrompt.preventLeaks || "",
 			},
-			userPrompt: version.data.userPrompt || [],
+			hintMessage: version.data.hintMessage || [],
 			parameters: {
 			  temperature: version.data.parameters.temperature ?? 0,
 			  batchSize: version.data.parameters.batchSize || "",
@@ -453,11 +453,7 @@ export function SidebarContainer({
             </CollapsibleSection>
 
             <CollapsibleSection title="Default Hint Message" defaultOpen={true}>
-              <DefaultHintMessage
-                messages={userPrompt}
-                onChange={setUserPrompt}
-                isReadOnly={isReadOnly && !isEditing}
-              />
+              <DefaultHintMessage isReadOnly={isReadOnly}/>
             </CollapsibleSection>
 
             <CollapsibleSection title="Parameters" defaultOpen={true}>

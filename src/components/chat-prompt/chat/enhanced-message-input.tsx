@@ -11,28 +11,39 @@ import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Send, ChevronUpIcon } from "lucide-react"
 
-export function EnhancedMessageInput({ disabled }: { disabled: boolean }) {
+export function EnhancedMessageInput() {
   const {
     inputMessage,
     setInputMessage,
-    multiSendTimes,
-    setMultiSendTimes,
+	ifShowHintMessage,
+	setIfShowHintMessage,
+	inputSendTimes,
+	setInputSendTimes,
+	ifInputDisabled,
+	setIfInputDisabled
   } = usePromptStore();
   const { handleSubmit } = usePromptChat();
 
+  const [multiSendTimes, setMultiSendTimes] = useState(5);
   const [isComposing, setIsComposing] = useState(false);
-  const placeholderText = disabled ? "請點擊清除並重新開始對話！" : "輸入訊息...";
-  const cursorClass = disabled ? "cursor-not-allowed" : "";
+  const placeholderText = ifInputDisabled ? "請點擊清除並重新開始對話！" : "輸入訊息...";
+  const cursorClass = ifInputDisabled ? "cursor-not-allowed" : "";
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
+	if (ifShowHintMessage){
+		setIfShowHintMessage(false);
+	}
+
     await handleSubmit(inputMessage);
     setInputMessage("");
   };
 
   const handleKeyPress = async (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey && !disabled) {
+    if (e.key === "Enter" && !e.shiftKey && !ifInputDisabled) {
       e.preventDefault();
+	  setInputSendTimes(1);
+
       await handleSendMessage();
     }
   };
@@ -46,25 +57,32 @@ export function EnhancedMessageInput({ disabled }: { disabled: boolean }) {
         onCompositionEnd={() => setIsComposing(false)}
         placeholder={placeholderText}
         className={`flex-1 bg-gray-900 border-gray-800 text-white h-10 focus:border-blue-500 focus:ring-blue-500 transition-colors ${cursorClass}`}
-        disabled={disabled}
+        disabled={ifInputDisabled}
         onKeyPress={handleKeyPress}
       />
-      <motion.div whileHover={{ scale: disabled ? 1 : 1.05 }} whileTap={{ scale: disabled ? 1 : 0.95 }}>
+      <motion.div whileHover={{ scale: ifInputDisabled ? 1 : 1.05 }} whileTap={{ scale: ifInputDisabled ? 1 : 0.95 }}>
         <Button
-          onClick={handleSendMessage}
+          onClick={() =>{
+			  setInputSendTimes(1);
+			  handleSendMessage();
+		  }}
           size="sm"
           className="h-10 px-4 bg-blue-600 hover:bg-blue-700 transition-colors"
-          disabled={disabled || !inputMessage.trim()}
+          disabled={ifInputDisabled || !inputMessage.trim()}
         >
           <Send className="w-4 h-4" />
         </Button>
       </motion.div>
       <div className="flex">
-        <motion.div whileHover={{ scale: disabled ? 1 : 1.05 }} whileTap={{ scale: disabled ? 1 : 0.95 }}>
+        <motion.div whileHover={{ scale: ifInputDisabled ? 1 : 1.05 }} whileTap={{ scale: ifInputDisabled ? 1 : 0.95 }}>
           <Button
-            onClick={handleSendMessage} // Note: multiSendTimes is not handled by the new hook
+            onClick={() =>{
+				setInputSendTimes(multiSendTimes);
+				setIfInputDisabled(true)
+				handleSendMessage();
+			}}
             className="bg-green-600 hover:bg-green-700 rounded-r-none transition-colors h-10"
-            disabled={disabled || !inputMessage.trim()}
+            disabled={ifInputDisabled || !inputMessage.trim()}
           >
             <Send className="w-4 h-4 mr-2" />
             發送 {multiSendTimes} 次
@@ -72,10 +90,10 @@ export function EnhancedMessageInput({ disabled }: { disabled: boolean }) {
         </motion.div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <motion.div whileHover={{ scale: disabled ? 1 : 1.05 }} whileTap={{ scale: disabled ? 1 : 0.95 }}>
+            <motion.div whileHover={{ scale: ifInputDisabled ? 1 : 1.05 }} whileTap={{ scale: ifInputDisabled ? 1 : 0.95 }}>
               <Button
                 className="bg-green-600 hover:bg-green-700 rounded-l-none border-l border-green-500 px-2 transition-colors h-10"
-                disabled={disabled}
+                disabled={ifInputDisabled}
               >
                 <ChevronUpIcon className="w-4 h-4" />
               </Button>

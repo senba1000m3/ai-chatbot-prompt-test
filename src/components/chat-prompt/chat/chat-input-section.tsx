@@ -10,7 +10,6 @@ interface HintMessage {
 }
 
 interface ChatInputSectionProps {
-  defaultHintMessages: HintMessage[]
   onHintMessageClick: (content: string) => void
   showHintButtons: boolean
   inputMessage: string
@@ -18,20 +17,15 @@ interface ChatInputSectionProps {
   onSendMessage: (times?: number) => void
   multiSendTimes: number
   setMultiSendTimes: (times: number) => void
-  inputDisabled: boolean
 }
 
 export function ChatInputSection({
-  defaultHintMessages,
   onHintMessageClick,
   showHintButtons,
-  inputDisabled,
 }: Omit<ChatInputSectionProps, "inputMessage" | "setInputMessage" | "onSendMessage" | "multiSendTimes" | "setMultiSendTimes">) {
   const {
     inputMessage,
     setInputMessage,
-    multiSendTimes,
-    setMultiSendTimes,
   } = usePromptStore();
 
   function onSendMessage(times: number = 1) {
@@ -51,14 +45,12 @@ export function ChatInputSection({
     <div className="border-t border-gray-800 bg-black">
       {/* 預設提示按鈕 */}
       <div className="p-4 pb-1">
-        <HintMessageButtons messages={defaultHintMessages} onMessageClick={onHintMessageClick} show={showHintButtons} />
+        <HintMessageButtons />
       </div>
 
       {/* 輸入框 */}
       <div className="p-4 pt-1">
-        <EnhancedMessageInput
-          disabled={inputDisabled}
-        />
+        <EnhancedMessageInput />
       </div>
     </div>
   )

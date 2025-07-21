@@ -1,9 +1,11 @@
 "use client"
 
+import { useState } from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Smile, Frown } from "lucide-react"
-import { useState } from "react"
+import { MarkdownText } from "@/components/common/typography"
+import { MessageContentRenderer } from "@/components/main/chat/messages/content-renderer"
 import { usePromptStore, type ModelMessage } from "@/lib/store/prompt"
 
 interface MessageBubbleProps {
@@ -96,7 +98,11 @@ export function MessageBubble({ message, index, modelId, versionId, showRating =
           message.role === "user" ? "bg-blue-600 text-white" : "bg-gray-800 text-white border border-gray-700"
         }`}
       >
-        <div className="text-sm whitespace-pre-wrap">{message.content}</div>
+        <div className="text-sm whitespace-pre-wrap">
+          <MarkdownText >
+			  {message.content as string}
+		  </MarkdownText>
+        </div>
       </div>
     </motion.div>
   )

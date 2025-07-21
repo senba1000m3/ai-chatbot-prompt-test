@@ -50,7 +50,7 @@ export interface SavedVersion {
 	modelAccuracy: ModelAccuracy[];
 	data: {
 		systemPrompt: SystemPromptData;
-		userPrompt: HintMessage[];
+		hintMessage: HintMessage[];
 		parameters: ParametersType;
 		models: string[];
 		tools: string[];
@@ -65,16 +65,20 @@ interface PromptStoreProps {
 	setSystemPrompt: (updater: (prev: SystemPromptData) => SystemPromptData) => void;
 	isSystemPromptOn: Record<string, boolean>;
 	setIsSystemPromptOn: (key: string, value: boolean) => void;
-	userPrompt: HintMessage[];
-	setUserPrompt: (userPrompt: HintMessage[]) => void;
+	hintMessage: HintMessage[];
+	setHintMessage: (hintMessage: HintMessage[]) => void;
+	ifShowHintMessage: boolean;
+	setIfShowHintMessage: (ifShowHintMessage: boolean) => void;
 
 	parameters: ParametersType;
 	setParameters: (params: Partial<ParametersType>) => void;
 
 	inputMessage: string;
 	setInputMessage: (value: string) => void;
-	multiSendTimes: number;
-	setMultiSendTimes: (times: number) => void;
+	inputSendTimes: number;
+	setInputSendTimes: (times: number) => void;
+	ifInputDisabled: boolean;
+	setIfInputDisabled: (disabled: boolean) => void;
 
 	selectedModels: string[];
 	setSelectedModels: (models: string[]) => void;
@@ -161,13 +165,15 @@ export const usePromptStore = create<PromptStoreProps>()(
 					return { isSystemPromptOn: newIsSystemPromptOn };
 				});
 			},
-			userPrompt: [
+			hintMessage: [
 				{ id: "1", content: "請幫我分析這個問題" },
 				{ id: "2", content: "能否提供更詳細的說明？" },
 			],
-			setUserPrompt: (userPrompt: HintMessage[]) => {
-				set({ userPrompt })
+			setHintMessage: (hintMessage: HintMessage[]) => {
+				set({ hintMessage })
 			},
+			ifShowHintMessage: true,
+			setIfShowHintMessage: (ifShowHintMessage: boolean) => set({ ifShowHintMessage }),
 			parameters: {
 				temperature: 0,
 				batchSize: "1",
@@ -184,8 +190,10 @@ export const usePromptStore = create<PromptStoreProps>()(
 			},
 			inputMessage: "",
 			setInputMessage: (value: string) => set({ inputMessage: value }),
-			multiSendTimes: 1,
-			setMultiSendTimes: (times: number) => set({ multiSendTimes: times }),
+			inputSendTimes: 1,
+			setInputSendTimes: (times: number) => set({ inputSendTimes: times }),
+			ifInputDisabled: false,
+			setIfInputDisabled: (disabled: boolean) => set({ ifInputDisabled: disabled }),
 
 			selectedModels: [],
 			setSelectedModels: (models: string[]) => set({ selectedModels: models }),
@@ -257,10 +265,14 @@ export const usePromptStore = create<PromptStoreProps>()(
 				return order.map(id => msgs[id]).filter(Boolean);
 			},
 			clearModelMessages: () => {
+				const state = get();
 				set({
 					modelMessages: {},
 					modelMessageOrder: {}
 				});
+				state.setIfShowHintMessage(true);
+				state.setInputSendTimes(1);
+				state.setIfInputDisabled(false);
 			},
 			modelIsLoading: {},
 			setModelIsLoading: (modelId: string, isLoading: boolean) => {
@@ -311,7 +323,7 @@ export const usePromptStore = create<PromptStoreProps>()(
 				const { data } = version;
 				set({
 					systemPrompt: data.systemPrompt,
-					userPrompt: data.userPrompt,
+					hintMessage: data.hintMessage,
 					selectedModels: data.models,
 					selectedTools: data.tools,
 					parameters: {
@@ -326,7 +338,7 @@ export const usePromptStore = create<PromptStoreProps>()(
 				const { data } = version;
 				set({
 					systemPrompt: data.systemPrompt,
-					userPrompt: data.userPrompt,
+					hintMessage: data.hintMessage,
 					selectedModels: data.models,
 					selectedTools: data.tools,
 					parameters: {
@@ -500,7 +512,7 @@ export const usePromptStore = create<PromptStoreProps>()(
 				selectedTools: state.selectedTools,
 				systemPrompt: state.systemPrompt,
 				isSystemPromptOn: state.isSystemPromptOn,
-				userPrompt: state.userPrompt,
+				hintMessage: state.hintMessage,
 				savedVersions: state.savedVersions,
 			}),
 			onRehydrateStorage: () => (state) => {
@@ -520,5 +532,4 @@ export const usePromptStore = create<PromptStoreProps>()(
 		}
 	)
 );
-
 

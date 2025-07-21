@@ -17,20 +17,20 @@ import { Edit, X, Save } from "lucide-react"
 import { usePromptStore } from "@/lib/store/prompt"
 
 interface ReadOnlyIndicatorProps {
-  isReadOnly: boolean
-	  setIsReadOnly: (value: boolean) => void
-  isEditing: boolean
-	  setIsEditing: (value: boolean) => void
+    isReadOnly: boolean
+	setIsReadOnly: (value: boolean) => void
+    isEditing: boolean
+	setIsEditing: (value: boolean) => void
 }
 
 export function ReadOnlyIndicator({
-  isReadOnly,
+    isReadOnly,
 	setIsReadOnly,
-  isEditing,
-	setIsEditing,
+    isEditing,
+	 setIsEditing,
 }: ReadOnlyIndicatorProps) {
 
-	const { setSystemPrompt, setUserPrompt } = usePromptStore();
+	const { hintMessage, setHintMessage } = usePromptStore();
 
 	const exitVersionMode = () => {
 		setIsReadOnly(false)
@@ -45,7 +45,7 @@ export function ReadOnlyIndicator({
 		// 	repliesLimits: "",
 		// 	preventLeaks: "",
 		// })
-		// setUserPrompt([
+		// setHintMessage([
 		// 	{ id: "1", content: "請幫我分析這個問題" },
 		// 	{ id: "2", content: "能否提供更詳細的說明？" },
 		// ])

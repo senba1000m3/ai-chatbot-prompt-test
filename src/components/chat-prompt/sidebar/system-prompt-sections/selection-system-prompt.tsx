@@ -292,7 +292,7 @@ export function SelectionSystemPrompt({
                   value={newOptionContent}
                   onChange={(e) => setNewOptionContent(e.target.value)}
                   placeholder="輸入選項內容..."
-                  className="min-h-[100px] bg-gray-800 border-gray-700 text-white resize-none"
+                  className="min-h-[100px] bg-gray-800 border-gray-700 text-white resize-none max-h-[50vh]"
                 />
               </div>
             </div>
@@ -339,7 +339,7 @@ export function SelectionSystemPrompt({
                 <Textarea
                   value={editContent}
                   onChange={(e) => setEditContent(e.target.value)}
-                  className="min-h-[100px] bg-gray-800 border-gray-700 text-white resize-none"
+                  className="min-h-[100px] bg-gray-800 border-gray-700 text-white resize-none max-h-[50vh]"
                 />
               </div>
             </div>

@@ -288,8 +288,8 @@ export function VersionCompareSidebar({
                       <div>
                         <div className="text-xs text-gray-400 mb-1">Default Hint Messages:</div>
                         <div className="text-xs text-gray-300 max-h-20 overflow-y-auto bg-gray-900 p-2 rounded border border-gray-700">
-                          {version.data.userPrompt.length > 0 ? (
-							  version.data.userPrompt.map((msg, idx) => (
+                          {version.data.hintMessage.length > 0 ? (
+							  version.data.hintMessage.map((msg, idx) => (
                               <div key={msg.id || idx}>
                                 {idx + 1}. {msg.content || "無內容"}
                               </div>
@@ -457,8 +457,8 @@ export function VersionCompareSidebar({
                               <div>
                                 <div className="text-xs text-gray-400 mb-1">Default Hint Messages:</div>
                                 <div className="text-xs text-gray-300 max-h-20 overflow-y-auto bg-gray-900 p-2 rounded border border-gray-700">
-                                  {version.data.userPrompt.length > 0 ? (
-                                    version.data.userPrompt.map((msg, idx) => (
+                                  {version.data.hintMessage.length > 0 ? (
+                                    version.data.hintMessage.map((msg, idx) => (
                                       <div key={msg.id || idx}>
                                         {idx + 1}. {msg.content || "無內容"}
                                       </div>

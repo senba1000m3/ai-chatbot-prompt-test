@@ -368,10 +368,8 @@ export function ChatViewContainer({
           {/* 输入框部分，确保它始终在可见区域内 */}
           <div className="relative bottom-22 left-0 right-0 z-10 bg-black">
             <ChatInputSection
-              defaultHintMessages={defaultHintMessages}
               onHintMessageClick={onHintMessageClick}
               showHintButtons={showHintButtons}
-              inputDisabled={inputDisabled}
             />
           </div>
 

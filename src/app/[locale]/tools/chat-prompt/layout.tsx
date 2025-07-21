@@ -15,7 +15,7 @@ export default function RootLayout({
   params: { locale: string }
 }>) {
   return (
-    <div className="">
+    <div className="h-screen overflow-hidden">
 		{children}
 	</div>
   )

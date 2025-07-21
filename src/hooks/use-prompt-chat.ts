@@ -17,7 +17,6 @@ const promptDictionary: Record<string, string> = {
 	preventLeaks: "prevent-leaks",
 };
 
-
 const mergeSystemPrompts = () => {
 	const { systemPrompt, isSystemPromptOn } = usePromptStore.getState();
 	const currentPrompts: string[] = [];
@@ -42,10 +41,12 @@ export function usePromptChat() {
 		updateModelMessage,
 		setModelIsLoading,
 		getModelMessages,
+		inputSendTimes,
+		setInputSendTimes,
 	} = usePromptStore();
 
 	const sendMessage = useCallback(
-		async ({ modelNames, input }: { modelNames: string[], input?: string }) => {
+		async ({ modelNames, input, sendTimes }: { modelNames: string[], input?: string, sendTimes?: number }) => {
 			startChatTransition(async () => {
 
 				modelNames.forEach(modelName => {
@@ -54,59 +55,63 @@ export function usePromptChat() {
 
 				try {
 					const totalPrompts = mergeSystemPrompts();
+					const currentSendTimes = sendTimes || usePromptStore.getState().inputSendTimes;
 
-					const messagePromises = modelNames.map(async (modelName) => {
-						const historyMessages = getModelMessages(modelName);
+					for (let i = 0; i < currentSendTimes; i++) {
+						const messagePromises = modelNames.map(async (modelName) => {
+							const historyMessages = getModelMessages(modelName);
 
-						try {
-							const result = await generate({
-								modelName: modelName,
-								messages: historyMessages as CoreMessage[],
-								systemPrompt: totalPrompts
-							});
+							try {
+								const result = await generate({
+									modelName: modelName,
+									messages: historyMessages as CoreMessage[],
+									systemPrompt: totalPrompts
+								});
 
-							return {
-								modelName,
-								success: true,
-								result: result?.text,
-								spendTime: result?.spendTime
-							};
-						} catch (err) {
-							const error = ensureError(err);
-							return { modelName, success: false, error: error.message };
-						}
-					});
+								return {
+									modelName,
+									success: true,
+									result: result?.text,
+									spendTime: result?.spendTime
+								};
+							} catch (err) {
+								const error = ensureError(err);
+								return { modelName, success: false, error: error.message };
+							}
+						});
 
-					const results = await Promise.all(messagePromises);
+						const results = await Promise.all(messagePromises);
 
-					results.forEach(({ modelName, success, result, error, spendTime }) => {
-						// console.log(modelName+spendTime);
-						if (success) {
-							appendModelMessage(modelName, {
-								id: nanoid(),
-								role: "assistant",
-								content: result,
-								spendTime: spendTime
-							});
-						} else {
-							appendModelMessage(modelName, {
-								role: "assistant",
-								content: `Error: ${error || "Unknown error"}`,
-							});
-						}
-					});
+						results.forEach(({ modelName, success, result, error, spendTime }) => {
+							// console.log(modelName+spendTime);
+							if (success) {
+								appendModelMessage(modelName, {
+									id: nanoid(),
+									role: "assistant",
+									content: result,
+									spendTime: spendTime
+								});
+							} else {
+								appendModelMessage(modelName, {
+									role: "assistant",
+									content: `Error: ${error || "Unknown error"}`,
+								});
+							}
+						});
+					}
 				}
 				finally {
 					modelNames.forEach(modelName => {
 						setModelIsLoading(modelName, false);
 					});
+					usePromptStore.getState().setInputSendTimes(1);
 				}
 			});
 		}, [appendModelMessage, setModelIsLoading, getModelMessages]
 	);
 
 	const handleSubmit = useCallback(
-		async (input: string) => {
+		async (input: string, sendTimes?: number) => {
 			if (!input.trim()) {
 				return;
 			}
@@ -126,7 +131,7 @@ export function usePromptChat() {
 
 			await sendMessage({
 				modelNames: currentSelectedModels,
-				input: input
+				input: input,
 			});
 		},
 		[appendModelMessage, sendMessage]

@@ -7,22 +7,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { Trash2, Plus } from "lucide-react"
+import { usePromptStore, type HintMessage } from "@/lib/store/prompt"
 import { useState } from "react"
 
-interface HintMessage {
-  id: string
-  content: string
-}
-
-interface DefaultHintMessageProps {
-  messages: HintMessage[]
-  onChange: (messages: HintMessage[]) => void
-  isReadOnly: boolean
-}
-
-export function DefaultHintMessage({ messages, onChange, isReadOnly }: DefaultHintMessageProps) {
+export function DefaultHintMessage({ isReadOnly }: { isReadOnly: boolean }) {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editValue, setEditValue] = useState("")
+	const { setHintMessage, hintMessage } = usePromptStore();
 
   const handleDoubleClick = (message: HintMessage) => {
     if (isReadOnly) return
@@ -33,8 +24,8 @@ export function DefaultHintMessage({ messages, onChange, isReadOnly }: DefaultHi
   const handleEditSave = (id: string) => {
     if (!editValue.trim()) return
 
-    const updatedMessages = messages.map((msg) => (msg.id === id ? { ...msg, content: editValue.trim() } : msg))
-    onChange(updatedMessages)
+    const updatedMessages = hintMessage.map((msg) => (msg.id === id ? { ...msg, content: editValue.trim() } : msg))
+	setHintMessage(updatedMessages)
     setEditingId(null)
     setEditValue("")
   }
@@ -45,17 +36,17 @@ export function DefaultHintMessage({ messages, onChange, isReadOnly }: DefaultHi
   }
 
   const handleDelete = (id: string) => {
-    const updatedMessages = messages.filter((msg) => msg.id !== id)
-    onChange(updatedMessages)
+    const updatedMessages = hintMessage.filter((msg) => msg.id !== id)
+	setHintMessage(updatedMessages)
   }
 
   const handleAddNew = () => {
-    const newMessage: HintMessage = {
+    const newHintMessage: HintMessage = {
       id: Date.now().toString(),
       content: "",
     }
-    onChange([...messages, newMessage])
-    setEditingId(newMessage.id)
+	setHintMessage([...hintMessage, newHintMessage])
+    setEditingId(newHintMessage.id)
     setEditValue("")
   }
 
@@ -70,7 +61,7 @@ export function DefaultHintMessage({ messages, onChange, isReadOnly }: DefaultHi
   return (
     <div className="space-y-3">
       <AnimatePresence>
-        {messages.map((message, index) => (
+        {hintMessage.map((message, index) => (
           <motion.div
             key={message.id}
             initial={{ opacity: 0, y: 10 }}
@@ -122,7 +113,7 @@ export function DefaultHintMessage({ messages, onChange, isReadOnly }: DefaultHi
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: messages.length * 0.05, duration: 0.3 }}
+          transition={{ delay: hintMessage.length * 0.05, duration: 0.3 }}
         >
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <Button

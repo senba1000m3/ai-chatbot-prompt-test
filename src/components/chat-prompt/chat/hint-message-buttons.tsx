@@ -3,31 +3,21 @@
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { usePromptChat } from "@/hooks/use-prompt-chat"
+import { usePromptStore, type HintMessage } from "@/lib/store/prompt"
 import { useState } from "react"
 
-interface HintMessage {
-  id: string
-  content: string
-}
-
-interface HintMessageButtonsProps {
-  messages: HintMessage[]
-  onMessageClick: (content: string) => void
-  show: boolean
-}
-
-export function HintMessageButtons({ messages }: HintMessageButtonsProps) {
-	const [ifShowHintMessage, setIfShowHintMessage] = useState(true);
+export function HintMessageButtons() {
 	const { handleSubmit } = usePromptChat();
+	const { hintMessage, ifShowHintMessage, setIfShowHintMessage } = usePromptStore();
 
 	const handleSendMessage = async (msg: string) => {
 		await handleSubmit(msg);
-		setIfShowHintMessage(false);
+		setIfShowHintMessage(false)
 	};
 
   return (
     <AnimatePresence>
-      {ifShowHintMessage && messages.length > 0 && (
+      {ifShowHintMessage && hintMessage.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -35,7 +25,7 @@ export function HintMessageButtons({ messages }: HintMessageButtonsProps) {
           transition={{ duration: 0.3 }}
           className="flex flex-wrap gap-2 mb-4"
         >
-          {messages.map((message, index) => (
+          {hintMessage.map((message, index) => (
             <motion.div
               key={message.id}
               initial={{ opacity: 0, scale: 0.9 }}

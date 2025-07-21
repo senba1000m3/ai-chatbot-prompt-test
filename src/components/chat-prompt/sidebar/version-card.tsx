@@ -99,7 +99,7 @@ export function VersionCard({version, onDownloadVersion, filteredModelAccuracy, 
       repliesLimits: version.data?.systemPrompt?.repliesLimits || "",
       preventLeaks: version.data?.systemPrompt?.preventLeaks || "",
     },
-    userPrompt: version.data?.userPrompt || [],
+    hintMessage: version.data?.hintMessage || [],
     parameters: {
       temperature: version.data?.parameters?.temperature || 0,
       batchSize: version.data?.parameters?.batchSize || "1",
@@ -300,16 +300,16 @@ export function VersionCard({version, onDownloadVersion, filteredModelAccuracy, 
             {/* Default Hint Message 詳情 */}
             <div>
               <h4 className="text-sm font-medium text-white mb-2">
-                Default Hint Message ({safeVersionData.userPrompt.length})
+                Default Hint Message ({safeVersionData.hintMessage.length})
               </h4>
               <div className="space-y-1">
-                {safeVersionData.userPrompt.slice(0, 3).map((prompt, index) => (
+                {safeVersionData.hintMessage.slice(0, 3).map((prompt, index) => (
                   <div key={prompt.id || index} className="text-xs text-gray-300 truncate">
                     {index + 1}. {prompt.content || "無內容"}
                   </div>
                 ))}
-                {safeVersionData.userPrompt.length > 3 && (
-                  <div className="text-xs text-gray-400">... 還有 {safeVersionData.userPrompt.length - 3} 個</div>
+                {safeVersionData.hintMessage.length > 3 && (
+                  <div className="text-xs text-gray-400">... 還有 {safeVersionData.hintMessage.length - 3} 個</div>
                 )}
               </div>
             </div>
