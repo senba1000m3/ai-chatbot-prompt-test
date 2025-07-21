@@ -7,14 +7,27 @@ import { nanoid } from "@/lib/utils";
 import type { CoreMessage } from "ai";
 import { readStreamableValue } from "ai/rsc";
 
+const promptDictionary: Record<string, string> = {
+	characterSettings: "character-settings",
+	selfAwareness: "self-awareness",
+	workflow: "workflow",
+	formatLimits: "format-limits",
+	usedTools: "used-tools",
+	repliesLimits: "replies-limits",
+	preventLeaks: "prevent-leaks",
+};
+
+
 const mergeSystemPrompts = () => {
 	const { systemPrompt, isSystemPromptOn } = usePromptStore.getState();
 	const currentPrompts: string[] = [];
 
 	Object.entries(systemPrompt).forEach(([key, prompt]) => {
 		if (isSystemPromptOn[key]) {
-			currentPrompts.push("\n【" + key + "】");
+			const title = promptDictionary[key];
+			currentPrompts.push("\n<" + title + ">");
 			currentPrompts.push(prompt);
+			currentPrompts.push("</" + title + ">\n");
 		}
 	});
 
