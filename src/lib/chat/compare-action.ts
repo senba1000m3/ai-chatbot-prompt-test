@@ -48,7 +48,7 @@ export async function generate({
 			overall_quality: z.number().int().min(0).max(100).describe("綜合品質分數（0-100）。"),
 			reasoning: z.string().describe("關於綜合品質分數的簡短理由。"),
 		}),
-		messages: messagesWithSystem,
+		messages: messagesWithSystem as CoreMessage[],
 	});
 
 	// 演化式評分：將前次準確率與本次評估加權平均
@@ -70,6 +70,7 @@ export async function generate({
 
 	let finalAccuracy = baseScore + ratingAdjustment;
 	finalAccuracy = Math.max(0, Math.min(100, finalAccuracy));
+	finalAccuracy = Math.round(finalAccuracy * 10) / 10;
 
 	return {
 		accuracy: finalAccuracy,

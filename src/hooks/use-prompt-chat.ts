@@ -4,6 +4,7 @@ import { usePromptStore } from "@/lib/store/prompt";
 import { ensureError } from "@/lib/response";
 import { generate } from "@/lib/chat/prompt-action";
 import { nanoid } from "@/lib/utils";
+import type { CoreMessage } from "ai";
 import { readStreamableValue } from "ai/rsc";
 
 const mergeSystemPrompts = () => {
@@ -47,7 +48,7 @@ export function usePromptChat() {
 						try {
 							const result = await generate({
 								modelName: modelName,
-								messages: historyMessages,
+								messages: historyMessages as CoreMessage[],
 								systemPrompt: totalPrompts
 							});
 
@@ -88,7 +89,7 @@ export function usePromptChat() {
 					});
 				}
 			});
-		}, [appendModelMessage, updateModelMessage, setModelIsLoading, getModelMessages]
+		}, [appendModelMessage, setModelIsLoading, getModelMessages]
 	);
 
 	const handleSubmit = useCallback(
@@ -105,7 +106,7 @@ export function usePromptChat() {
 
 			currentSelectedModels.forEach(modelName => {
 				appendModelMessage(modelName, {
-					role: "user",
+					role : "user",
 					content: input,
 				});
 			});
@@ -122,6 +123,5 @@ export function usePromptChat() {
 		handleSubmit,
 	};
 }
-
 
 

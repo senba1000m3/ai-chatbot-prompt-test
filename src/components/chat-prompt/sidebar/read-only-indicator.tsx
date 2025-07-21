@@ -128,7 +128,7 @@ export function ReadOnlyIndicator({
                   <AlertDialogHeader>
                     <AlertDialogTitle className="text-white">儲存編輯</AlertDialogTitle>
                     <AlertDialogDescription className="text-gray-300">
-                      確定要儲存對版本 "{currentVersionName}" 的編輯嗎？
+                      確定要儲存對版本 &quot;{currentVersionName}&quot; 的編輯嗎？
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter className="flex justify-center space-x-4">

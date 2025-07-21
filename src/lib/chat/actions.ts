@@ -44,6 +44,7 @@ export async function generate({
 		const characterPrompt = await redis.get(character);
 
 		const result = streamText({
+			// temperature: 0.5,
 			model: chatModel.provider(
 				model,
 				(useWebSearch && chatModel.webSearch) ? chatModel?.settings ?? {} : {}

@@ -10,29 +10,9 @@ import { ModelChatCard } from "./model-chat-card"
 import { UnifiedChatView } from "./unified-chat-view"
 import { PopupViewPlaceholder } from "./popup-view-placeholder"
 import { ChatInputSection } from "./chat-input-section"
-import { usePromptStore } from "@/lib/store/prompt"
+import { usePromptStore, type ModelMessage, type HintMessage} from "@/lib/store/prompt"
 
 type ViewMode = "popup" | "unified" | "separate"
-
-interface Message {
-  role: "user" | "assistant"
-  content: string
-  model?: string
-  rating?: "good" | "bad" | null
-  id?: string
-}
-
-interface ModelResponse {
-  id: string
-  name: string
-  messages: Message[]
-  isLoading: boolean
-}
-
-interface HintMessage {
-  id: string
-  content: string
-}
 
 interface ChatViewContainerProps {
   viewMode: ViewMode
@@ -70,24 +50,22 @@ export function ChatViewContainer({
   messagesEndRef,
 }: Omit<ChatViewContainerProps, "inputMessage" | "setInputMessage" | "multiSendTimes" | "setMultiSendTimes" | "onSendMessage" | "modelResponses">) {
   const {
-    inputMessage,
-    setInputMessage,
-    multiSendTimes,
-    setMultiSendTimes,
-    modelResponses,
-    setModelResponses,
     selectedModels,
     getModelMessages,
   } = usePromptStore()
-
-  // console.log('modelResponses', modelResponses);
-  // console.log('selectedModels', selectedModels);
 
   const localScrollRefs = useRef<(HTMLDivElement | null)[]>([])
   const localMessagesEndRef = useRef<HTMLDivElement>(null)
 
   const actualScrollRefs = scrollRefs || localScrollRefs
   const actualMessagesEndRef = messagesEndRef || localMessagesEndRef
+
+  const modelResponses = selectedModels.map(modelId => ({
+    id: modelId,
+    name: modelId,
+    messages: getModelMessages(modelId),
+    isLoading: false,
+  }));
 
   // 計算每個對話框的高度 - 為輸入框預留空間
   const getIndividualChatHeight = () => {
@@ -118,7 +96,7 @@ export function ChatViewContainer({
 
   const handleUnifiedPopupWindow = () => {
     const conversationFlow: Array<{
-      type: "user" | "assistant"
+      type: "user" | "assistant" | "system"
       content: string
       model?: string
     }> = []
@@ -127,19 +105,19 @@ export function ChatViewContainer({
 
     for (let i = 0; i < maxLength; i++) {
       const userMessage = modelResponses[0]?.messages[i]
-      if (userMessage && userMessage.role === "user") {
+      if (userMessage && userMessage.role === "user" && userMessage.content) {
         conversationFlow.push({
           type: "user",
-          content: userMessage.content,
+          content: userMessage.content as string,
         })
       }
 
       modelResponses.forEach((model) => {
         const assistantMessage = model.messages[i]
-        if (assistantMessage && assistantMessage.role === "assistant") {
+        if (assistantMessage && assistantMessage.role === "assistant" && assistantMessage.content) {
           conversationFlow.push({
             type: "assistant",
-            content: assistantMessage.content,
+            content: assistantMessage.content as string,
             model: model.name,
           })
         }
@@ -274,7 +252,12 @@ export function ChatViewContainer({
                   {selectedModels.map((modelId, index) => (
                     <ModelChatCard
                       key={modelId}
-                      model={{ id: modelId, messages: getModelMessages(modelId) }}
+                      model={{
+                        id: modelId,
+                        name: modelId,
+                        messages: getModelMessages(modelId).filter(m => m.role !== 'system'),
+                        isLoading: false,
+                      }}
                       index={index}
                       scrollRef={(el) => (actualScrollRefs.current[index] = el)}
                       syncScroll={syncScroll}
@@ -338,10 +321,10 @@ export function ChatViewContainer({
                 <div className="flex-1">
                   <UnifiedChatView
                     modelResponses={modelResponses}
-                    messagesEndRef={actualMessagesEndRef}
+                    // messagesEndRef={actualMessagesEndRef}
                     chatHeight={chatHeight - 120}
                     onPopupWindow={handleUnifiedPopupWindow}
-                    onMessageRating={onMessageRating}
+                    // onMessageRating={onMessageRating}
                   />
                 </div>
               </div>
@@ -362,7 +345,7 @@ export function ChatViewContainer({
                 <div className="flex-1 p-4 overflow-y-auto">
                   {modelResponses
                     .find((m) => m.id === fullscreenModel)
-                    ?.messages.map((message, msgIndex) => (
+                    ?.messages.filter(m => m.role !== 'system').map((message, msgIndex) => (
                       <motion.div
                         key={msgIndex}
                         initial={{ opacity: 0, x: message.role === "user" ? 20 : -20 }}
@@ -374,7 +357,7 @@ export function ChatViewContainer({
                             : "bg-gray-800 text-white mr-8 border border-gray-700"
                         }`}
                       >
-                        <div className="text-sm whitespace-pre-wrap">{message.content}</div>
+                        <div className="text-sm whitespace-pre-wrap">{message.content as string}</div>
                       </motion.div>
                     ))}
                 </div>

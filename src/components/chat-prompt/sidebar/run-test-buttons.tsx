@@ -39,7 +39,7 @@ export function RunTestButtons({ isReadOnly, onRunTest, runTimes, setRunTimes }:
                 className="bg-blue-600 text-white hover:bg-blue-700 rounded-r-none transition-colors"
                 onContextMenu={(e) => {
                   e.preventDefault()
-                  document.querySelector("[data-run-dropdown]")?.click()
+                  ;(document.querySelector("[data-run-dropdown]") as HTMLElement)?.click()
                 }}
               >
                 <Play className="w-4 h-4 mr-2" />

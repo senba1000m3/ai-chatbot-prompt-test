@@ -34,12 +34,6 @@ interface PromptOption {
 }
 
 interface SidebarContainerProps {
-  isCompareMode: boolean
-  selectedVersionsForCompare: string[]
-  onToggleCompareMode: () => void
-  onConfirmCompare: () => void
-  onCancelCompare: () => void
-  onSelectAll: () => void
   searchQuery: string
   onSearchChange: (query: string) => void
   selectedModelFilters: string[]
@@ -109,11 +103,6 @@ interface SidebarContainerProps {
 }
 
 export function SidebarContainer({
-  selectedVersionsForCompare,
-  onToggleCompareMode,
-  onConfirmCompare,
-  onCancelCompare,
-  onSelectAll,
   searchQuery,
   onSearchChange,
   selectedModelFilters,

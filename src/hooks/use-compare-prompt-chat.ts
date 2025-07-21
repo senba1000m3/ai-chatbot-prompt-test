@@ -5,6 +5,7 @@ import { ensureError } from "@/lib/response";
 import { generate } from "@/lib/chat/prompt-action";
 import { generate as generateAccuracy } from "@/lib/chat/compare-action";
 import { nanoid } from "@/lib/utils";
+import type { CoreMessage } from "ai";
 import type { ModelMessage } from "@/lib/store/prompt";
 
 // const mergeSystemPrompts = () => {
@@ -51,7 +52,7 @@ export function useComparePromptChat() {
 
 						const result = await generate({
 							modelName: modelName,
-							messages: historyMessages,
+							messages: historyMessages as CoreMessage[],
 							systemPrompt: currentPrompts.join("\n").trim(),
 						});
 
@@ -109,7 +110,7 @@ export function useComparePromptChat() {
 						try {
 							const originalAccuracy = version.modelAccuracy.find(ma => ma.model === modelName)?.accuracy || 0;
 							const accuracyResult = await generateAccuracy({
-								messages: historyMessages,
+								messages: historyMessages as CoreMessage[],
 								systemPrompt: systemPrompt,
 								originalAccuracy: originalAccuracy,
 							});

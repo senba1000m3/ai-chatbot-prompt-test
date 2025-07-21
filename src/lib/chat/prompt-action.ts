@@ -38,7 +38,7 @@ export async function generate({ modelName, messages = [], systemPrompt }: { mod
 
 	const { text } = await generateText({
 		model: chatModel.provider(chatModel.model),
-		messages: messagesWithSystem,
+		messages: messagesWithSystem as CoreMessage[],
 	});
 
 	const endTime = Date.now();

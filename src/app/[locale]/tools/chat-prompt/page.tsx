@@ -748,7 +748,7 @@ export default function AIPromptTester() {
 
 		setSavedVersions((prev) => [newVersion, ...prev])
 		if (!saveVersionName) {
-			setUntitledCounter((prev) => prev + 1)
+			setUntitledCounter((prev: any) => prev + 1)
 		}
 
 		setSaveVersionName("")
@@ -1151,14 +1151,14 @@ export default function AIPromptTester() {
 
 	// 系統提示選項更新處理函數
 	const handleSystemPromptOptionsChange = (type: "characterSettings" | "usedTools", options: PromptOption[]) => {
-		setSystemPromptOptions((prev) => ({
+		setSystemPromptOptions((prev: any) => ({
 			...prev,
 			[type]: options,
 		}))
 	}
 
 	// System Prompt 開關處理函數
-	const handleSystemPromptToggle = (type: keyof typeof systemPromptEnabled, enabled: boolean) => {
+	const handleSystemPromptToggle = (type: string, enabled: boolean) => {
 		setSystemPromptEnabled((prev) => ({
 			...prev,
 			[type]: enabled,
@@ -1186,11 +1186,6 @@ export default function AIPromptTester() {
 						/>
 					) : (
 						<SidebarContainer
-							showVersionHistory={showVersionHistory}
-							setShowVersionHistory={setShowVersionHistory}
-							isCompareMode={isCompareMode}
-							selectedVersionsForCompare={selectedVersionsForCompare}
-							filteredAndSortedVersions={filteredAndSortedVersions}
 							searchQuery={searchQuery}
 							onSearchChange={setSearchQuery}
 							selectedModelFilters={selectedModelFilters}
@@ -1202,12 +1197,7 @@ export default function AIPromptTester() {
 							sortBy={sortBy}
 							onSortChange={setSortBy}
 							filterOptions={filterOptions}
-							onLoadVersion={handleLoadVersion}
-							onCopyVersion={handleCopyVersion}
-							onDeleteVersion={handleDeleteVersion}
-							onToggleExpanded={toggleVersionExpanded}
 							getFilteredModelAccuracy={getFilteredModelAccuracy}
-							savedVersions={savedVersions}
 							isReadOnly={isReadOnly}
 							isEditing={isEditing}
 							currentVersionName={getCurrentVersionName()}
@@ -1226,8 +1216,6 @@ export default function AIPromptTester() {
 							onToolSave={handleToolSave}
 							availableModels={availableModels}
 							availableTools={availableTools}
-							systemPrompt={systemPrompt}
-							setSystemPrompt={setSystemPrompt}
 							systemPromptOptions={systemPromptOptions}
 							onSystemPromptOptionsChange={handleSystemPromptOptionsChange}
 							defaultHintMessages={defaultHintMessages}
@@ -1247,17 +1235,19 @@ export default function AIPromptTester() {
 							onModelDialogChange={handleModelDialogChange}
 							onToolDialogChange={handleToolDialogChange}
 							systemPromptEnabled={systemPromptEnabled}
-							onSystemPromptToggle={handleSystemPromptToggle}
-						/>
+							onToggleVersionSelect={function (versionId: string): void {
+								throw new Error("Function not implemented.")
+							}} onSystemPromptToggle={function (type: string, enabled: boolean): void {
+							throw new Error("Function not implemented.")
+						}}>
+						</SidebarContainer>
 					)}
 
 					{/* 比較模式時顯示比較視圖，否則顯示正常的右側面板 */}
 					{isInCompareView ? (
 						<VersionCompareView
-							compareVersions={compareVersions}
 							chatHeight={chatHeight}
 							colorMode={colorMode}
-							onVersionReorder={handleVersionReorder}
 							onColorModeChange={handleColorModeChange}
 							initialVersionOrder={initialVersionOrder}
 							onUpdateVersions={handleUpdateCompareVersions}
@@ -1281,16 +1271,13 @@ export default function AIPromptTester() {
 								onViewModeChange={setViewMode}
 								chatHeight={chatHeight}
 								setChatHeight={setChatHeight}
-								savedVersions={savedVersions}
 								colorMode={colorMode}
 								onColorModeChange={handleColorModeChange}
-								isInCompareView={isInCompareView}
 								isReadOnly={isReadOnly}
 							/>
 
 							<ChatViewContainer
 								viewMode={viewMode}
-								modelResponses={modelResponses}
 								fullscreenModel={fullscreenModel}
 								setFullscreenModel={setFullscreenModel}
 								syncScroll={syncScroll}
@@ -1302,14 +1289,8 @@ export default function AIPromptTester() {
 								defaultHintMessages={defaultHintMessages}
 								onHintMessageClick={handleHintMessageClick}
 								showHintButtons={showHintButtons}
-								inputMessage={inputMessage}
-								setInputMessage={setInputMessage}
-								onSendMessage={handleSendMessage}
-								multiSendTimes={multiSendTimes}
-								setMultiSendTimes={setMultiSendTimes}
 								inputDisabled={inputDisabled}
 								scrollRefs={scrollRefs}
-								messagesEndRef={messagesEndRef}
 							/>
 						</motion.div>
 					)}
@@ -1318,5 +1299,4 @@ export default function AIPromptTester() {
 		</TooltipProvider>
 	)
 }
-
 

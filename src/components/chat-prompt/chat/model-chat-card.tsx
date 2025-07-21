@@ -7,21 +7,12 @@ import { ExternalLink, Maximize2 } from "lucide-react"
 import { motion } from "framer-motion"
 import { LoadingSpinner } from "./loading-spinner"
 import { MessageBubble } from "./message-bubble"
-import { usePromptStore } from "@/lib/store/prompt";
-
-interface Message {
-  role: "user" | "assistant"
-  content: string
-  model?: string
-  rating?: "good" | "bad" | null
-  id?: string
-  responseTime?: number
-}
+import { usePromptStore, type ModelMessage } from "@/lib/store/prompt";
 
 interface ModelResponse {
   id: string
   name: string
-  messages: Message[]
+  messages: ModelMessage[]
   isLoading: boolean
 }
 
@@ -104,8 +95,8 @@ export function ModelChatCard({
               <MessageBubble
                 key={msg.id || i}
                 message={msg}
+				modelId={model.id}
                 index={i}
-                onRating={onMessageRating}
                 showRating={false}
               />
             ))

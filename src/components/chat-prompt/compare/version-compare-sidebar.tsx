@@ -104,12 +104,12 @@ export function VersionCompareSidebar({
     })
   }
 
-  const handleDragStart = (e: React.DragEvent, version: SavedVersion) => {
+  const handleDragStart = (e: any, version: SavedVersion) => {
     setDraggedItem(version)
     e.dataTransfer.effectAllowed = "move"
   }
 
-  const handleDragOver = (e: React.DragEvent, index: number) => {
+  const handleDragOver = (e: any, index: number) => {
     e.preventDefault()
     e.dataTransfer.dropEffect = "move"
     setDragOverIndex(index)
@@ -119,7 +119,7 @@ export function VersionCompareSidebar({
     setDragOverIndex(null)
   }
 
-  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+  const handleDrop = (e: any, dropIndex: number) => {
     e.preventDefault()
     if (!draggedItem) return
 

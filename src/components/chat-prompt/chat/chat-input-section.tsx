@@ -32,11 +32,8 @@ export function ChatInputSection({
     setInputMessage,
     multiSendTimes,
     setMultiSendTimes,
-    modelResponses,
-    setModelResponses,
   } = usePromptStore();
 
-  // 訊息發送，直接 append 到 zustand
   function onSendMessage(times: number = 1) {
     if (!inputMessage.trim()) return;
     // append 訊息到 modelResponses
@@ -46,7 +43,7 @@ export function ChatInputSection({
       messages: [{ role: "user", content: inputMessage }],
       isLoading: false,
     };
-    setModelResponses([...modelResponses, newResponse]);
+
     setInputMessage("");
   }
 
@@ -60,11 +57,6 @@ export function ChatInputSection({
       {/* 輸入框 */}
       <div className="p-4 pt-1">
         <EnhancedMessageInput
-          inputMessage={inputMessage}
-          setInputMessage={setInputMessage}
-          onSendMessage={onSendMessage}
-          multiSendTimes={multiSendTimes}
-          setMultiSendTimes={setMultiSendTimes}
           disabled={inputDisabled}
         />
       </div>

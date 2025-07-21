@@ -7,25 +7,19 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/comp
 import { ExternalLink } from "lucide-react"
 import { LoadingSpinner } from "./loading-spinner"
 import type { RefObject } from "react"
+import { type ModelMessage } from "@/lib/store/prompt"
 import React from "react"
 
-interface Message {
-  role: "user" | "assistant"
-  content: string
-  model?: string
-  responseTime?: number
-}
 
 interface ModelResponse {
   id: string
   name: string
-  messages: Message[]
+  messages: ModelMessage[]
   isLoading: boolean
 }
 
 interface UnifiedChatViewProps {
   modelResponses: ModelResponse[]
-  messagesEndRef: RefObject<HTMLDivElement>
   chatHeight: number
   onPopupWindow?: () => void
   onFullscreen?: () => void
@@ -33,7 +27,6 @@ interface UnifiedChatViewProps {
 
 export function UnifiedChatView({
   modelResponses,
-  messagesEndRef,
   chatHeight,
   onPopupWindow,
   onFullscreen,
@@ -52,7 +45,7 @@ export function UnifiedChatView({
     if (userMessage && userMessage.role === "user") {
       conversationFlow.push({
         type: "user",
-        content: userMessage.content,
+        content: userMessage.content as string,
       })
     }
 
@@ -61,9 +54,9 @@ export function UnifiedChatView({
       if (assistantMessage && assistantMessage.role === "assistant") {
         conversationFlow.push({
           type: "assistant",
-          content: assistantMessage.content,
+          content: assistantMessage.content as string,
           model: model.name,
-          responseTime: assistantMessage.responseTime,
+          // responseTime: assistantMessage,
         })
       }
     })
@@ -168,13 +161,6 @@ export function UnifiedChatView({
     }
   }
 
-  // 自動滾動到底部
-  React.useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" })
-    }
-  }, [modelResponses])
-
   return (
     <TooltipProvider>
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
@@ -253,7 +239,6 @@ export function UnifiedChatView({
               </motion.div>
             ))}
             {modelResponses.some((m) => m.isLoading) && <LoadingSpinner />}
-            <div ref={messagesEndRef} />
           </div>
         </Card>
       </motion.div>

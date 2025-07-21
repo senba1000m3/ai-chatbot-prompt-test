@@ -6,10 +6,14 @@ import { nanoid } from "@/lib/utils";
 import type { CoreMessage } from "ai";
 import type { SourcePart } from "@/types/chat";
 
-export interface ModelMessage extends CoreMessage {
+export type ModelMessage = {
 	spendTime?: number;
-	rating?: "good" | "bad" | null
-}
+	rating?: "good" | "bad" | null;
+	id?: string;
+	model?: string;
+	role: "user" | "assistant" | "system";
+	content: string | undefined;
+};
 
 export interface HintMessage {
 	id: string;
@@ -231,20 +235,17 @@ export const usePromptStore = create<PromptStoreProps>()(
 			updateModelMessage: (modelId: string, messageId: string, update: Partial<ModelMessage>) => {
 				set(state => {
 					const modelMsgs = state.modelMessages[modelId] || {};
-					if (!modelMsgs[messageId]) return state;
+					if (!modelMsgs[messageId]) {
+						return state; // Return original state if message not found
+					}
 
-					const updatedMessage = {
-						...modelMsgs[messageId],
-						...update,
-					};
+					const updatedMessage = { ...modelMsgs[messageId], ...update } as ModelMessage;
+					const newModelMsgs = { ...modelMsgs, [messageId]: updatedMessage };
 
 					return {
 						modelMessages: {
 							...state.modelMessages,
-							[modelId]: {
-								...modelMsgs,
-								[messageId]: updatedMessage,
-							},
+							[modelId]: newModelMsgs,
 						},
 					};
 				});
@@ -448,11 +449,12 @@ export const usePromptStore = create<PromptStoreProps>()(
 			updateMessageRating: (messageId: string, modelId: string, rating: "good" | "bad" | null, versionId?: string) => {
 				set(state => {
 					if (versionId) {
+						// 更新比較模式下的訊息
 						const versionMessages = state.compareModelMessages[versionId] || {};
 						const modelMessages = versionMessages[modelId] || {};
 						if (!modelMessages[messageId]) return state;
 
-						const updatedMessage = { ...modelMessages[messageId], rating };
+						const updatedMessage = { ...modelMessages[messageId], rating } as ModelMessage;
 
 						return {
 							compareModelMessages: {
@@ -466,13 +468,22 @@ export const usePromptStore = create<PromptStoreProps>()(
 								},
 							},
 						};
+					} else {
+						// 更新一般模式下的訊息
+						const modelMsgs = state.modelMessages[modelId] || {};
+						if (!modelMsgs[messageId]) return state;
+
+						const updatedMessage = { ...modelMsgs[messageId], rating } as ModelMessage;
+						const newModelMsgs = { ...modelMsgs, [messageId]: updatedMessage };
+
+						return {
+							modelMessages: {
+								...state.modelMessages,
+								[modelId]: newModelMsgs,
+							},
+						};
 					}
 				});
-
-				// if (versionId) {
-				// 	const messages = get().getCompareModelMessages(versionId, modelId);
-				// 	console.log(`[After Update] Messages for version ${versionId}, model ${modelId}:`, messages);
-				// }
 			},
 			getCompareModelMessages: () => {
 				console.log(get().compareModelMessages);
@@ -509,4 +520,5 @@ export const usePromptStore = create<PromptStoreProps>()(
 		}
 	)
 );
+
 
