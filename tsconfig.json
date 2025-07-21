@@ -9,6 +9,7 @@
 		"lib": ["dom", "dom.iterable", "esnext"],
 		"module": "esnext",
 		"moduleResolution": "bundler",
+		"noUnusedLocals": false,
 		"noEmit": true,
 		"plugins": [
 			{
