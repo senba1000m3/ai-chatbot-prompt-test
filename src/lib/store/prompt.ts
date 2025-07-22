@@ -103,9 +103,12 @@ interface PromptStoreProps {
 	toggleVersionExpanded: (versionId: string) => void;
 	loadVersion: (version: SavedVersion) => void;
 	copyVersion: (version: SavedVersion) => void;
+	editVersion: (versionId: string) => void;
+	editingVersionID: string;
+	setEditingVersionID: (versionId: string) => void;
+	resetVersion: () => void;
 	clearAllVersions: () => void;
 	updateVersionAccuracy: (versionId: string, modelId: string, accuracy: number) => void;
-
 	untitledCounter: number;
 	addUntitledCounter: () => void;
 	resetUntitledCounter: () => void;
@@ -333,6 +336,7 @@ export const usePromptStore = create<PromptStoreProps>()(
 						parameter3: data.parameters.parameter3,
 					},
 				});
+				get().setShowVersionHistory(false)
 			},
 			copyVersion: (version: SavedVersion) => {
 				const { data } = version;
@@ -348,6 +352,54 @@ export const usePromptStore = create<PromptStoreProps>()(
 						parameter3: data.parameters.parameter3,
 					},
 				});
+				get().setShowVersionHistory(false)
+			},
+			editVersion: (versionId: string) => {
+				const state = get();
+				set((prevState) => ({
+					savedVersions: prevState.savedVersions.map((version) =>
+						version.id === versionId
+							? {
+								...version,
+								data: {
+									systemPrompt: state.systemPrompt,
+									hintMessage: state.hintMessage,
+									parameters: state.parameters,
+									models: state.selectedModels,
+									tools: state.selectedTools,
+								},
+							}
+							: version
+					),
+				}));
+			},
+			editingVersionID: "",
+			setEditingVersionID: (versionId: string) => set({ editingVersionID: versionId }),
+			resetVersion: () => {
+				set({
+					systemPrompt: {
+						characterSettings: "",
+						selfAwareness: "",
+						workflow: "",
+						formatLimits: "",
+						usedTools: "",
+						repliesLimits: "",
+						preventLeaks: ""
+					},
+					hintMessage: [
+						{ id: "1", content: "請幫我分析這個問題" },
+						{ id: "2", content: "能否提供更詳細的說明？" },
+					],
+					selectedModels: [],
+					selectedTools: [],
+					parameters: {
+						temperature: 0,
+						batchSize: "1",
+						parameter2: "",
+						parameter3: "",
+					},
+				});
+				get().setShowVersionHistory(false);
 			},
 			clearAllVersions: () => {
 				set({ savedVersions: [] });

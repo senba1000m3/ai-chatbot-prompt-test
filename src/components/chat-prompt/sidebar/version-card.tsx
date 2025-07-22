@@ -47,7 +47,7 @@ const availableTools = [
 ]
 
 export function VersionCard({version, onDownloadVersion, filteredModelAccuracy, setIsReadOnly}: VersionCardProps) {
-  const { loadVersion, copyVersion, deleteVersion, toggleVersionExpanded } = usePromptStore()
+  const { loadVersion, copyVersion, deleteVersion, toggleVersionExpanded, setEditingVersionID } = usePromptStore()
   const [isDeleting, setIsDeleting] = useState(false)
 
   // 使用篩選後的準確率，如果沒有則使用原始準確率
@@ -182,6 +182,7 @@ export function VersionCard({version, onDownloadVersion, filteredModelAccuracy, 
                 <AlertDialogCancel>取消</AlertDialogCancel>
                 <AlertDialogAction onClick={() => {
 					loadVersion(version);
+					setEditingVersionID(version.id);
 					setIsReadOnly(true);
 				}}>載入</AlertDialogAction>
               </AlertDialogFooter>

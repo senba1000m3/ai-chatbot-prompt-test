@@ -301,15 +301,16 @@ export function SidebarContainer({
                       onToggleExpanded={toggleVersionExpanded}
                     />
                   ) : (
-                    <VersionCard
-                      key={version.id}
-                      version={version}
-                      onDownloadVersion={handleDownloadVersion}
-                      filteredModelAccuracy={getFilteredModelAccuracy(version)}
-					  setIsReadOnly={setIsReadOnly}
-                    />
+					<VersionCard
+						key={version.id}
+						version={version}
+						onDownloadVersion={handleDownloadVersion}
+						filteredModelAccuracy={getFilteredModelAccuracy(version)}
+						setIsReadOnly={setIsReadOnly}
+					/>
                   ),
                 )}
+				  <div style={{marginBottom: "70px"}} />
               </AnimatePresence>
               {filteredAndSortedVersions.length === 0 && savedVersions.length > 0 && (
                 <motion.div
@@ -477,6 +478,7 @@ export function SidebarContainer({
             />
           </div>
         </div>
+		<div style={{marginBottom: "70px"}} />
       </motion.div>
     </>
   )

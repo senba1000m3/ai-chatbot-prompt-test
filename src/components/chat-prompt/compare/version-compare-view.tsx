@@ -30,7 +30,7 @@ const versionColors = [
   { border: "border-green-500", bg: "bg-green-900/20", badge: "bg-green-600" },
   { border: "border-purple-500", bg: "bg-purple-900/20", badge: "bg-purple-600" },
   { border: "border-orange-500", bg: "bg-orange-900/20", badge: "bg-orange-600" },
-  { border: "border-pink-500", bg: "bg-pink-900/20", badge: "bg-pink-600" },
+  { border: "border-pink-500", bg: "bg-pink-S900/20", badge: "bg-pink-600" },
 ]
 
 // 擴展的模型列表

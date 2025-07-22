@@ -27,53 +27,24 @@ export function ReadOnlyIndicator({
     isReadOnly,
 	setIsReadOnly,
     isEditing,
-	 setIsEditing,
+	setIsEditing,
 }: ReadOnlyIndicatorProps) {
 
-	const { hintMessage, setHintMessage } = usePromptStore();
+	const { hintMessage, setHintMessage, setShowVersionHistory, resetVersion, editVersion, editingVersionID } = usePromptStore();
 
 	const exitVersionMode = () => {
-		setIsReadOnly(false)
-		setIsEditing(false)
+		setIsReadOnly(false);
+		setIsEditing(false);
+		setShowVersionHistory(false);
+		resetVersion();
+	}
 
-		// setSystemPrompt({
-		// 	characterSettings: systemPromptOptions.characterSettings[0]?.content || "",
-		// 	selfAwareness: "",
-		// 	workflow: "",
-		// 	formatLimits: "",
-		// 	usedTools: systemPromptOptions.usedTools[0]?.content || "",
-		// 	repliesLimits: "",
-		// 	preventLeaks: "",
-		// })
-		// setHintMessage([
-		// 	{ id: "1", content: "請幫我分析這個問題" },
-		// 	{ id: "2", content: "能否提供更詳細的說明？" },
-		// ])
-		// setTemperature([0.0])
-		// setBatchSize("1")
-		// setParameter2("option1")
-		// setParameter3("option1")
-		// setSelectedModels(["gpt-4o", "gemini-2.0-flash"])
-		// setSelectedTools(["sticker"])
-		// setModelResponses([
-		// 	{
-		// 		id: "gpt-4o",
-		// 		name: "GPT-4o",
-		// 		messages: [],
-		// 		isLoading: false,
-		// 	},
-		// 	{
-		// 		id: "gemini-2.0-flash",
-		// 		name: "Gemini 2.0 Flash",
-		// 		messages: [],
-		// 		isLoading: false,
-		// 	},
-		// ])
-		// setInputMessage("")
-		// setShowHintButtons(true)
-		// setInputDisabled(false)
-		//
-		// setShowVersionHistory(true)
+	const saveVersionEdit = () => {
+		setIsReadOnly(false);
+		setIsEditing(false);
+		setShowVersionHistory(false);
+		editVersion(editingVersionID);
+		resetVersion();
 	}
 
 	const currentVersionName = "123";
@@ -133,7 +104,7 @@ export function ReadOnlyIndicator({
                   </AlertDialogHeader>
                   <AlertDialogFooter className="flex justify-center space-x-4">
                     <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                      <AlertDialogAction onClick={() =>{}} className="bg-green-600 hover:bg-green-700">
+                      <AlertDialogAction onClick={saveVersionEdit} className="bg-green-600 hover:bg-green-700">
                         確認
                       </AlertDialogAction>
                     </motion.div>

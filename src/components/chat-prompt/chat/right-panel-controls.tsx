@@ -67,7 +67,8 @@ export function RightPanelControls({
 	addSavedVersion,
 	savedVersions,
 	parameters,
-	isInCompareView
+	isInCompareView,
+	setShowVersionHistory
   } = usePromptStore()
 
   const [saveVersionName, setSaveVersionName] = useState("");
@@ -89,6 +90,7 @@ export function RightPanelControls({
 
 	setSaveDialogOpen(false);
 	setSaveVersionName("");
+	setShowVersionHistory(true);
   }
 
   const isNameDuplicate =

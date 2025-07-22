@@ -59,7 +59,13 @@ export function SelectionSystemPrompt({
 
   // 根據當前值找到對應的選項
   const currentOption = options.find((option) => option.content === value)
-  const displayTitle = currentOption?.title || "自訂內容"
+  const defaultOption = options.find(option => option.isDefault)
+
+  const displayTitle = value === "" && defaultOption
+    ? defaultOption.title
+    : (currentOption
+        ? currentOption.title
+        : "自訂內容")
 
   const handleSelectOption = (option: PromptOption) => {
     onChange(option.content) // 傳遞 content 而不是 id
