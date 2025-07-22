@@ -106,7 +106,17 @@ export function MessageBubble({ message, index, modelId, versionId, showRating =
 		  transition={{ delay: 0.3, duration: 0.3 }}
 		  className="flex justify-end mt-2"
 		>
-			<div className="text-xs text-gray-500 font-mono bg-gray-800 px-2 py-1 rounded">{message.spendTime}ms</div>
+			 <div
+			  className={`text-xs font-mono px-2 py-1 rounded bg-gray-800 ${
+				message.spendTime <= 3000
+				  ? 'text-green-400'
+				  : message.spendTime <= 10000
+				  ? 'text-yellow-400'
+				  : 'text-red-400'
+			  }`}
+			>
+			  {message.spendTime}ms
+			</div>
 		</motion.div>
 	  )}
     </motion.div>
