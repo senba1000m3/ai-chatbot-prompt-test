@@ -89,7 +89,7 @@ export function MessageBubble({ message, index, modelId, versionId, showRating =
         }`}
       >
         <div className="text-sm whitespace-pre-wrap">
-          {message.role === "assistant" && message.content == "" ? (
+          {message.role === "assistant" && message.content == "......" ? (
             <LoadingSpinner />
           ) : (
             <MarkdownText>

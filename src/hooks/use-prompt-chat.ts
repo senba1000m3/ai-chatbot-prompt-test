@@ -84,7 +84,6 @@ export function usePromptChat() {
 						const results = await Promise.all(messagePromises);
 
 						results.forEach(({ modelName, success, result, error, spendTime, assistantMessageId }) => {
-							// console.log(modelName+spendTime);
 							if (success) {
 								updateModelMessage(modelName, assistantMessageId, {
 									content: result,
@@ -120,7 +119,6 @@ export function usePromptChat() {
 				return;
 			}
 
-			// 先 append user message
 			currentSelectedModels.forEach(modelName => {
 				appendModelMessage(modelName, {
 					role: "user",
@@ -128,11 +126,10 @@ export function usePromptChat() {
 				});
 			});
 
-			// 立即 append loading assistant message 並記錄 id
 			const assistantMessageIds = currentSelectedModels.map(modelName =>
 				appendModelMessage(modelName, {
 					role: "assistant",
-					content: "",
+					content: "......",
 				})
 			);
 

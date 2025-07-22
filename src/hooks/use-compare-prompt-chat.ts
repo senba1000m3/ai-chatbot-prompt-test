@@ -33,16 +33,14 @@ export function useComparePromptChat() {
 	} = usePromptStore();
 
 	const sendMessage = async ({ modelName, userMessage }: { modelName: string, userMessage: ModelMessage }) => {
-		// 先 append user message
 		compareVersions.forEach(version => {
 			appendCompareModelMessage(version.id, modelName, userMessage);
 		});
 
-		// 立即 append loading assistant message 並記錄 id
 		const assistantMessageIds = compareVersions.map(version =>
 			appendCompareModelMessage(version.id, modelName, {
 				role: "assistant",
-				content: "",
+				content: "......",
 				id: nanoid(),
 			})
 		);
@@ -90,7 +88,6 @@ export function useComparePromptChat() {
 
 				results.forEach(({ versionId, modelName, success, result, error, spendTime, assistantMessageId }) => {
 					if (success) {
-						// 用 update 更新 assistant message
 						appendCompareModelMessage(versionId, modelName, {
 							id: assistantMessageId,
 							role: "assistant",
@@ -106,7 +103,6 @@ export function useComparePromptChat() {
 					}
 				});
 
-				// After sending messages, update the model accuracy
 				const accuracyPromises = results.map(async (result) => {
 					if (result.success) {
 						const { versionId, modelName } = result;
