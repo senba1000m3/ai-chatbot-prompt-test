@@ -1230,17 +1230,6 @@ export default function AIPromptTester() {
 						/>
 					) : (
 						<SidebarContainer
-							searchQuery={searchQuery}
-							onSearchChange={setSearchQuery}
-							selectedModelFilters={selectedModelFilters}
-							onModelFilterChange={setSelectedModelFilters}
-							selectedCharacterSettingsFilters={selectedCharacterSettingsFilters}
-							onCharacterSettingsFilterChange={setSelectedCharacterSettingsFilters}
-							selectedToolsFilters={selectedToolsFilters}
-							onToolsFilterChange={setSelectedToolsFilters}
-							sortBy={sortBy}
-							onSortChange={setSortBy}
-							filterOptions={filterOptions}
 							getFilteredModelAccuracy={getFilteredModelAccuracy}
 							isReadOnly={isReadOnly}
 							isEditing={isEditing}

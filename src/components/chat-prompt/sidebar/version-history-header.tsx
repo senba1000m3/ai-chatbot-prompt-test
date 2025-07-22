@@ -125,10 +125,11 @@ export function VersionHistoryHeader({
 		searchQuery.length > 0
 
 	const getSortLabel = (value: string) => {
+		// 修正排序 key 與 sidebar-container 一致
 		switch (value) {
-			case "newest":
+			case "date-desc":
 				return "最新優先"
-			case "oldest":
+			case "date-asc":
 				return "最舊優先"
 			case "name-asc":
 				return "名稱 A-Z"
@@ -233,8 +234,7 @@ export function VersionHistoryHeader({
 					onClick={() => setShowFilters(!showFilters)}
 					className={`bg-gray-800 border-gray-700 text-white hover:bg-gray-700 ${hasActiveFilters ? "border-blue-500 text-blue-400" : ""}`}
 				>
-					<Filter className="w-4 h-4 mr-1" />
-					篩選
+					<Filter className="w-4 h-4 mr-1" />篩選模型
 					{hasActiveFilters && (
 						<Badge variant="secondary" className="ml-2 bg-blue-600 text-white text-xs">
 							{selectedModels.length + selectedCharacterSettings.length + selectedTools.length}
@@ -251,10 +251,10 @@ export function VersionHistoryHeader({
 						</Button>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent className="bg-gray-900 border-gray-700">
-						<DropdownMenuItem onClick={() => onSortChange("newest")} className="text-white hover:bg-gray-800">
+						<DropdownMenuItem onClick={() => onSortChange("date-desc")} className="text-white hover:bg-gray-800">
 							最新優先
 						</DropdownMenuItem>
-						<DropdownMenuItem onClick={() => onSortChange("oldest")} className="text-white hover:bg-gray-800">
+						<DropdownMenuItem onClick={() => onSortChange("date-asc")} className="text-white hover:bg-gray-800">
 							最舊優先
 						</DropdownMenuItem>
 						<DropdownMenuSeparator className="bg-gray-700" />
@@ -338,7 +338,7 @@ export function VersionHistoryHeader({
 											}`}
 											onClick={() => handleCharacterSettingsToggle(setting)}
 										>
-											{setting.length > 20 ? setting.substring(0, 20) + "..." : setting}
+											{setting.length > 40 ? setting.substring(0, 40) + "..." : setting}
 										</Badge>
 									))}
 								</div>

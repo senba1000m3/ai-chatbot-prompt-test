@@ -137,6 +137,20 @@ interface PromptStoreProps {
 	setCompareSelectedModel: (models: string) => void;
 };
 
+export const availableModels = [
+	{ id: "o4-mini", name: "o4-mini", category: "OpenAI Models" },
+	{ id: "o3-mini", name: "o3-mini", category: "OpenAI Models" },
+	{ id: "gpt-4.1", name: "GPT-4.1", category: "OpenAI Models" },
+	{ id: "gpt-4.1-mini", name: "GPT-4.1 mini", category: "OpenAI Models" },
+	{ id: "gpt-4.1-nano", name: "GPT-4.1 nano", category: "OpenAI Models" },
+	{ id: "gpt-4o", name: "GPT-4o", category: "OpenAI Models" },
+	{ id: "gpt-4o-mini", name: "GPT-4o mini", category: "OpenAI Models" },
+	{ id: "gemini-2.5-flash", name: "Gemini 2.5 Flash", category: "Google" },
+	{ id: "gemini-2.5-flash-lite", name: "Gemini 2.5 Flash Lite", category: "Google" },
+	{ id: "gemini-2.0-flash", name: "Gemini 2.0 Flash", category: "Google" },
+	{ id: "gemini-2.0-flash-lite", name: "Gemini 2.0 Flash Lite", category: "Google" },
+];
+
 export const usePromptStore = create<PromptStoreProps>()(
 	persist(
 		(set, get) => ({

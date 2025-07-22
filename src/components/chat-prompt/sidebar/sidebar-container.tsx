@@ -16,7 +16,7 @@ import { SelectionSystemPrompt } from "./system-prompt-sections/selection-system
 import { DetailedSystemPrompt } from "./system-prompt-sections/detailed-system-prompt"
 import { AdditionalSystemPrompt } from "./system-prompt-sections/additional-system-prompt"
 import { DefaultHintMessage } from "./default-hint-message"
-import { usePromptStore, type SavedVersion, type HintMessage, type SystemPromptData, type ModelAccuracy } from "@/lib/store/prompt"
+import { usePromptStore, type SavedVersion, type HintMessage, type SystemPromptData, type ModelAccuracy, availableModels } from "@/lib/store/prompt"
 
 interface Message {
   role: "user" | "assistant"
@@ -34,21 +34,6 @@ interface PromptOption {
 }
 
 interface SidebarContainerProps {
-  searchQuery: string
-  onSearchChange: (query: string) => void
-  selectedModelFilters: string[]
-  onModelFilterChange: (filters: string[]) => void
-  selectedCharacterSettingsFilters: string[]
-  onCharacterSettingsFilterChange: (filters: string[]) => void
-  selectedToolsFilters: string[]
-  onToolsFilterChange: (filters: string[]) => void
-  sortBy: string
-  onSortChange: (sort: string) => void
-  filterOptions: {
-    models: string[]
-    characterSettings: string[]
-    tools: string[]
-  }
   onToggleVersionSelect: (versionId: string) => void
   getFilteredModelAccuracy: (version: SavedVersion) => ModelAccuracy[]
   isReadOnly: boolean
@@ -103,17 +88,6 @@ interface SidebarContainerProps {
 }
 
 export function SidebarContainer({
-  searchQuery,
-  onSearchChange,
-  selectedModelFilters,
-  onModelFilterChange,
-  selectedCharacterSettingsFilters,
-  onCharacterSettingsFilterChange,
-  selectedToolsFilters,
-  onToolsFilterChange,
-  sortBy,
-  onSortChange,
-  filterOptions,
   onToggleVersionSelect,
   getFilteredModelAccuracy,
   modelDialogOpen,
@@ -196,46 +170,64 @@ export function SidebarContainer({
 		URL.revokeObjectURL(url);
 	}
 
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedModelFilters, setSelectedModelFilters] = useState<string[]>([]);
+  const [selectedCharacterSettingsFilters, setSelectedCharacterSettingsFilters] = useState<string[]>([]);
+  const [selectedToolsFilters, setSelectedToolsFilters] = useState<string[]>([]);
+  const [sortBy, setSortBy] = useState("date-desc");
+
   const filteredAndSortedVersions = useMemo(() => {
-    return savedVersions
-      .filter(version => {
-        const searchMatch =
-          searchQuery.trim() === "" || version.name.toLowerCase().includes(searchQuery.toLowerCase())
-
-        const modelMatch =
-          selectedModelFilters.length === 0 ||
-          version.data.models.some(model => selectedModelFilters.includes(model))
-
-        const characterMatch =
-          selectedCharacterSettingsFilters.length === 0 ||
-          selectedCharacterSettingsFilters.includes(version.data.systemPrompt.characterSettings)
-
-        const toolMatch =
-          selectedToolsFilters.length === 0 || version.data.tools.some(tool => selectedToolsFilters.includes(tool))
-
-        return searchMatch && modelMatch && characterMatch && toolMatch
-      })
-      .sort((a, b) => {
-        switch (sortBy) {
-          case "name-asc":
-            return a.name.localeCompare(b.name)
-          case "name-desc":
-            return b.name.localeCompare(a.name)
-          case "date-desc":
-            return new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime()
-          case "date-asc":
-          default:
-            return new Date(a.savedAt).getTime() - new Date(b.savedAt).getTime()
-        }
-      })
-  }, [
-    savedVersions,
-    searchQuery,
-    selectedModelFilters,
-    selectedCharacterSettingsFilters,
-    selectedToolsFilters,
-    sortBy,
-  ])
+    let result = savedVersions;
+    // 搜尋
+    if (searchQuery.trim() !== "") {
+      result = result.filter(version => version.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    }
+    // 模型篩選
+    if (selectedModelFilters.length > 0) {
+      result = result.filter(version => version.data.models.some(model => selectedModelFilters.includes(model)));
+    }
+    // 角色設定篩選
+    if (selectedCharacterSettingsFilters.length > 0) {
+      result = result.filter(version => selectedCharacterSettingsFilters.includes(version.data.systemPrompt.characterSettings));
+    }
+    // 工具篩選
+    if (selectedToolsFilters.length > 0) {
+      result = result.filter(version => version.data.tools.some(tool => selectedToolsFilters.includes(tool)));
+    }
+    // 排序
+    switch (sortBy) {
+      case "name-asc":
+        result = [...result].sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case "name-desc":
+        result = [...result].sort((a, b) => b.name.localeCompare(a.name));
+        break;
+      case "date-desc":
+        result = [...result].sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime());
+        break;
+      case "date-asc":
+        result = [...result].sort((a, b) => new Date(a.savedAt).getTime() - new Date(b.savedAt).getTime());
+        break;
+      case "accuracy-high":
+        result = [...result].sort((a, b) => {
+          const aAcc = a.modelAccuracy?.reduce((sum, m) => sum + m.accuracy, 0) ?? 0;
+          const bAcc = b.modelAccuracy?.reduce((sum, m) => sum + m.accuracy, 0) ?? 0;
+          return bAcc - aAcc;
+        });
+        break;
+      case "accuracy-low":
+        result = [...result].sort((a, b) => {
+          const aAcc = a.modelAccuracy?.reduce((sum, m) => sum + m.accuracy, 0) ?? 0;
+          const bAcc = b.modelAccuracy?.reduce((sum, m) => sum + m.accuracy, 0) ?? 0;
+          return aAcc - bAcc;
+        });
+        break;
+      default:
+        result = [...result].sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime());
+        break;
+    }
+    return result;
+  }, [savedVersions, searchQuery, selectedModelFilters, selectedCharacterSettingsFilters, selectedToolsFilters, sortBy])
 
   // 初次渲染時自動同步 tempSelectedModels 到 zustand
   useEffect(() => {
@@ -263,6 +255,13 @@ export function SidebarContainer({
     setIsSystemPromptOn(type, enabled);
   }
 
+  // 自動生成 filterOptions
+  const filterOptions = {
+    models: availableModels.map(m => m.id),
+    characterSettings: Array.from(new Set(savedVersions.map(v => v.data.systemPrompt.characterSettings).filter(Boolean))),
+    tools: Array.from(new Set(savedVersions.flatMap(v => v.data.tools).filter(Boolean))),
+  };
+
   return (
     <>
       <VersionHistoryToggle/>
@@ -278,15 +277,15 @@ export function SidebarContainer({
           >
             <VersionHistoryHeader
               searchQuery={searchQuery}
-              onSearchChange={onSearchChange}
+              onSearchChange={setSearchQuery}
               selectedModels={selectedModelFilters}
-              onModelFilterChange={onModelFilterChange}
+              onModelFilterChange={setSelectedModelFilters}
               selectedCharacterSettings={selectedCharacterSettingsFilters}
-              onCharacterSettingsFilterChange={onCharacterSettingsFilterChange}
+              onCharacterSettingsFilterChange={setSelectedCharacterSettingsFilters}
               selectedTools={selectedToolsFilters}
-              onToolsFilterChange={onToolsFilterChange}
+              onToolsFilterChange={setSelectedToolsFilters}
               sortBy={sortBy}
-              onSortChange={onSortChange}
+              onSortChange={setSortBy}
               availableModels={filterOptions.models}
               availableCharacterSettings={filterOptions.characterSettings}
               availableTools={filterOptions.tools}

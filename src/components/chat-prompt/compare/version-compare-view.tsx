@@ -13,7 +13,7 @@ import { Slider } from "@/components/ui/slider"
 import { ExternalLink, ChevronDown, GripVertical, Palette, PaintBucket, Eye, Filter, Search, Send } from "lucide-react"
 import { useState, useMemo, useRef } from "react"
 import { MessageBubble } from "../chat/message-bubble"
-import { usePromptStore, type SavedVersion, type ModelMessage, type ModelAccuracy } from "@/lib/store/prompt"
+import { usePromptStore, type SavedVersion, type ModelMessage, type ModelAccuracy, availableModels } from "@/lib/store/prompt"
 import { useComparePromptChat } from "@/hooks/use-compare-prompt-chat"
 
 interface VersionCompareViewProps {
@@ -31,21 +31,6 @@ const versionColors = [
   { border: "border-purple-500", bg: "bg-purple-900/20", badge: "bg-purple-600" },
   { border: "border-orange-500", bg: "bg-orange-900/20", badge: "bg-orange-600" },
   { border: "border-pink-500", bg: "bg-pink-S900/20", badge: "bg-pink-600" },
-]
-
-// 擴展的模型列表
-const availableModels = [
-  { id: "o4-mini", name: "o4-mini", category: "OpenAI Models" },
-  { id: "o3-mini", name: "o3-mini", category: "OpenAI Models" },
-  { id: "gpt-4.1", name: "GPT-4.1", category: "OpenAI Models" },
-  { id: "gpt-4.1-mini", name: "GPT-4.1 mini", category: "OpenAI Models" },
-  { id: "gpt-4.1-nano", name: "GPT-4.1 nano", category: "OpenAI Models" },
-  { id: "gpt-4o", name: "GPT-4o", category: "OpenAI Models" },
-  { id: "gpt-4o-mini", name: "GPT-4o mini", category: "OpenAI Models" },
-  { id: "gemini-2.5-flash", name: "Gemini 2.5 Flash", category: "Google" },
-  { id: "gemini-2.5-flash-lite", name: "Gemini 2.5 Flash Lite", category: "Google" },
-  { id: "gemini-2.0-flash", name: "Gemini 2.0 Flash", category: "Google" },
-  { id: "gemini-2.0-flash-lite", name: "Gemini 2.0 Flash Lite", category: "Google" },
 ]
 
 // 按分類分組模型
