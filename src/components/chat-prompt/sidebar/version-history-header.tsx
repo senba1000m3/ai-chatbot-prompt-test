@@ -1,10 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Search, Filter, ArrowUpDown, X, GitCompare, ChevronDown, CheckSquare } from "lucide-react"
+import { Search, Filter, ArrowUpDown, X, GitCompare, ChevronDown, CheckSquare, Upload } from "lucide-react"
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { motion, AnimatePresence } from "framer-motion"
 import { usePromptStore, type SavedVersion } from "@/lib/store/prompt";
+import { nanoid } from "nanoid"
 
 interface VersionHistoryHeaderProps {
 	searchQuery: string
@@ -47,9 +48,10 @@ export function VersionHistoryHeader({
 										 availableTools,
 									 }: VersionHistoryHeaderProps) {
 	const [showFilters, setShowFilters] = useState(false);
+	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	const { savedVersions, setSavedVersions, isCompareMode, setIsCompareMode, compareSelectedVersions, setCompareSelectedVersions, clearCompareSelectedVersions,
-		setIsInCompareView, setCompareVersions, setShowVersionHistory, setInitialVersionOrder} = usePromptStore();
+		setIsInCompareView, setCompareVersions, setShowVersionHistory, setInitialVersionOrder, addSavedVersion} = usePromptStore();
 
 	const isAllSelected = compareSelectedVersions.length === savedVersions.length && savedVersions.length > 0
 
@@ -144,61 +146,112 @@ export function VersionHistoryHeader({
 		}
 	}
 
+	const handleUploadVersion = (event: React.ChangeEvent<HTMLInputElement>) => {
+		const file = event.target.files?.[0];
+		if (!file) return;
+		const reader = new FileReader();
+		reader.onload = (e) => {
+			try {
+				const json = JSON.parse(e.target?.result as string);
+				if (json && json.name && json.data) {
+					const baseName = json.name;
+					let newName = baseName;
+					let num = 1;
+					const nameExists = (name: string) => savedVersions.some(v => v.name === name);
+					while (nameExists(newName)) {
+						newName = `${baseName} ${++num}`;
+					}
+					addSavedVersion({ ...json, name: newName, id: nanoid() });
+				} else {
+					alert("格式錯誤，請確認檔案內容");
+				}
+			} catch (err) {
+				alert("無法解析 JSON 檔案");
+			}
+		};
+		reader.readAsText(file);
+		if (fileInputRef.current) fileInputRef.current.value = "";
+	};
+
+	const handleUploadButtonClick = () => {
+		fileInputRef.current?.click();
+	};
+
 	return (
 		<div className="p-4 border-b border-gray-800 bg-gray-900">
 			<div className="flex items-center justify-between mb-3">
 				<h2 className="text-lg font-semibold text-white">版本歷史</h2>
-
-				{!isCompareMode ? (
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={handleToggleCompareMode}
-						className="text-blue-300 border-blue-600 hover:bg-blue-800 bg-transparent"
-					>
-						<GitCompare className="w-4 h-4 mr-1" />
-						Prompt 版本比對
-					</Button>
-				) : (
-					<div className="flex items-center space-x-2">
-						<Button
-							variant="outline"
-							size="sm"
-							onClick={handleSelectAll}
-							className={`text-xs px-2 py-1 h-9 transition-colors ${
-								isAllSelected
-									? "text-orange-300 border-orange-600 hover:bg-orange-800 bg-transparent"
-									: "text-purple-300 border-purple-600 hover:bg-purple-800 bg-transparent"
-							}`}
-						>
-							{isAllSelected ? (
-								"取消全選"
-							) : (
-								<>
-									<CheckSquare className="w-3 h-3 mr-1" />
-									全選
-								</>
-							)}
-						</Button>
-						<Button
-							variant="outline"
-							size="sm"
-							onClick={handleConfirmCompare}
-							disabled={compareSelectedVersions.length < 2}
-							className="bg-green-600 border-green-500 text-white hover:bg-green-700 disabled:opacity-50"
-						>
-							確認
-						</Button>
-						<Button
-							variant="outline"
-							size="sm"
-							onClick={handleCancelCompare}
-							className="bg-red-600 border-red-500 text-white hover:bg-red-700"
-						>
-							取消
-						</Button>
-					</div>
-				)}
+				<div className="flex items-center gap-2">
+					{!isCompareMode && (
+						<>
+							<Button
+								variant="outline"
+								size="sm"
+								className="border-yellow-600 text-yellow-400 hover:bg-yellow-900 bg-transparent flex items-center gap-1"
+								onClick={handleUploadButtonClick}
+							>
+								<Upload className="w-4 h-4" />
+								上傳
+							</Button>
+							<input
+								ref={fileInputRef}
+								type="file"
+								accept="application/json"
+								style={{ display: "none" }}
+								onChange={handleUploadVersion}
+							/>
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={handleToggleCompareMode}
+								className="text-blue-300 border-blue-600 hover:bg-blue-800 bg-transparent"
+							>
+								<GitCompare className="w-4 h-4 mr-1" />
+								版本比對
+							</Button>
+						</>
+					)}
+					{isCompareMode && (
+						<div className="flex items-center space-x-2">
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={handleSelectAll}
+								className={`text-xs px-2 py-1 h-9 transition-colors ${
+									isAllSelected
+										? "text-orange-300 border-orange-600 hover:bg-orange-800 bg-transparent"
+										: "text-purple-300 border-purple-600 hover:bg-purple-800 bg-transparent"
+								}`}
+							>
+								{isAllSelected ? (
+									"取消全選"
+								) : (
+									<>
+										<CheckSquare className="w-3 h-3 mr-1" />
+										全選
+									</>
+								)}
+							</Button>
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={handleConfirmCompare}
+								disabled={compareSelectedVersions.length < 2}
+								className="bg-green-600 border-green-500 text-white hover:bg-green-700 disabled:opacity-50"
+							>
+								確認
+							</Button>
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={handleCancelCompare}
+								className="bg-red-600 border-red-500 text-white hover:bg-red-700"
+							>
+								取消
+							</Button>
+						</div>
+					)}
+				</div>
 			</div>
 
 			{isCompareMode && (
@@ -264,7 +317,6 @@ export function VersionHistoryHeader({
 						<DropdownMenuItem onClick={() => onSortChange("name-desc")} className="text-white hover:bg-gray-800">
 							名稱 Z-A
 						</DropdownMenuItem>
-						<DropdownMenuSeparator className="bg-gray-700" />
 						<DropdownMenuItem onClick={() => onSortChange("accuracy-high")} className="text-white hover:bg-gray-800">
 							準確率高-低
 						</DropdownMenuItem>
