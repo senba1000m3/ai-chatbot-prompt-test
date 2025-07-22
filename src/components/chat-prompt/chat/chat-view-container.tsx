@@ -259,7 +259,6 @@ export function ChatViewContainer({
                         isLoading: false,
                       }}
                       index={index}
-                      scrollRef={(el) => (actualScrollRefs.current[index] = el)}
                       syncScroll={syncScroll}
                       onPopupWindow={onPopupWindow}
                       onFullscreen={setFullscreenModel}

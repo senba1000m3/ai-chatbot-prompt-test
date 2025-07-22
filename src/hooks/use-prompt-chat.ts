@@ -46,7 +46,7 @@ export function usePromptChat() {
 	} = usePromptStore();
 
 	const sendMessage = useCallback(
-		async ({ modelNames, input, sendTimes }: { modelNames: string[], input?: string, sendTimes?: number }) => {
+		async ({ modelNames, input, sendTimes, assistantMessageIds }: { modelNames: string[], input?: string, sendTimes?: number, assistantMessageIds: string[] }) => {
 			startChatTransition(async () => {
 
 				modelNames.forEach(modelName => {
@@ -58,7 +58,7 @@ export function usePromptChat() {
 					const currentSendTimes = sendTimes || usePromptStore.getState().inputSendTimes;
 
 					for (let i = 0; i < currentSendTimes; i++) {
-						const messagePromises = modelNames.map(async (modelName) => {
+						const messagePromises = modelNames.map(async (modelName, idx) => {
 							const historyMessages = getModelMessages(modelName);
 
 							try {
@@ -72,28 +72,26 @@ export function usePromptChat() {
 									modelName,
 									success: true,
 									result: result?.text,
-									spendTime: result?.spendTime
+									spendTime: result?.spendTime,
+									assistantMessageId: assistantMessageIds[idx]
 								};
 							} catch (err) {
 								const error = ensureError(err);
-								return { modelName, success: false, error: error.message };
+								return { modelName, success: false, error: error.message, assistantMessageId: assistantMessageIds[idx] };
 							}
 						});
 
 						const results = await Promise.all(messagePromises);
 
-						results.forEach(({ modelName, success, result, error, spendTime }) => {
+						results.forEach(({ modelName, success, result, error, spendTime, assistantMessageId }) => {
 							// console.log(modelName+spendTime);
 							if (success) {
-								appendModelMessage(modelName, {
-									id: nanoid(),
-									role: "assistant",
+								updateModelMessage(modelName, assistantMessageId, {
 									content: result,
-									spendTime: spendTime
+									spendTime,
 								});
 							} else {
-								appendModelMessage(modelName, {
-									role: "assistant",
+								updateModelMessage(modelName, assistantMessageId, {
 									content: `Error: ${error || "Unknown error"}`,
 								});
 							}
@@ -107,7 +105,7 @@ export function usePromptChat() {
 					usePromptStore.getState().setInputSendTimes(1);
 				}
 			});
-		}, [appendModelMessage, setModelIsLoading, getModelMessages]
+		}, [updateModelMessage, setModelIsLoading, getModelMessages]
 	);
 
 	const handleSubmit = useCallback(
@@ -122,16 +120,26 @@ export function usePromptChat() {
 				return;
 			}
 
+			// 先 append user message
 			currentSelectedModels.forEach(modelName => {
 				appendModelMessage(modelName, {
-					role : "user",
+					role: "user",
 					content: input,
 				});
 			});
 
+			// 立即 append loading assistant message 並記錄 id
+			const assistantMessageIds = currentSelectedModels.map(modelName =>
+				appendModelMessage(modelName, {
+					role: "assistant",
+					content: "",
+				})
+			);
+
 			await sendMessage({
 				modelNames: currentSelectedModels,
 				input: input,
+				assistantMessageIds,
 			});
 		},
 		[appendModelMessage, sendMessage]
@@ -141,5 +149,4 @@ export function usePromptChat() {
 		handleSubmit,
 	};
 }
-
 

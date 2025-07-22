@@ -33,13 +33,23 @@ export function useComparePromptChat() {
 	} = usePromptStore();
 
 	const sendMessage = async ({ modelName, userMessage }: { modelName: string, userMessage: ModelMessage }) => {
+		// 先 append user message
 		compareVersions.forEach(version => {
 			appendCompareModelMessage(version.id, modelName, userMessage);
 		});
 
+		// 立即 append loading assistant message 並記錄 id
+		const assistantMessageIds = compareVersions.map(version =>
+			appendCompareModelMessage(version.id, modelName, {
+				role: "assistant",
+				content: "",
+				id: nanoid(),
+			})
+		);
+
 		startChatTransition(async () => {
 			try {
-				const messagePromises = compareVersions.map(async (version) => {
+				const messagePromises = compareVersions.map(async (version, idx) => {
 					const currentPrompts: string[] = [];
 					Object.entries(version.data.systemPrompt).forEach(([key, prompt]) => {
 						currentPrompts.push("\n【" + key + "】");
@@ -62,6 +72,7 @@ export function useComparePromptChat() {
 							success: true,
 							result: result?.text,
 							spendTime: result?.spendTime,
+							assistantMessageId: assistantMessageIds[idx],
 						};
 					} catch (err) {
 						const error = ensureError(err);
@@ -69,24 +80,26 @@ export function useComparePromptChat() {
 							versionId: version.id,
 							modelName: modelName,
 							success: false,
-							error: error.message
+							error: error.message,
+							assistantMessageId: assistantMessageIds[idx],
 						};
 					}
 				});
 
 				const results = await Promise.all(messagePromises);
 
-				results.forEach(({ versionId, modelName, success, result, error, spendTime }) => {
+				results.forEach(({ versionId, modelName, success, result, error, spendTime, assistantMessageId }) => {
 					if (success) {
+						// 用 update 更新 assistant message
 						appendCompareModelMessage(versionId, modelName, {
-							id: nanoid(),
+							id: assistantMessageId,
 							role: "assistant",
 							content: result,
 							spendTime: spendTime,
 						});
 					} else {
 						appendCompareModelMessage(versionId, modelName, {
-							id: nanoid(),
+							id: assistantMessageId,
 							role: "assistant",
 							content: `Error: ${error || "Unknown error"}`,
 						});

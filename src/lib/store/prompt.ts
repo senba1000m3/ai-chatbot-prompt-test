@@ -91,7 +91,7 @@ interface PromptStoreProps {
 	updateModelMessage: (modelId: string, messageId: string, update: Partial<ModelMessage>) => void;
 	getModelMessages: (modelId: string) => ModelMessage[];
 	clearModelMessages: () => void;
-	modelIsLoading: Record<string, boolean>;
+	modelIsLoading: Record<string, boolean>; // 這邊 loading 是檢查是不是所有模型都回傳
 	setModelIsLoading: (modelId: string, isLoading: boolean) => void;
 
 	// SavedVersion 管理
@@ -135,6 +135,10 @@ interface PromptStoreProps {
 	clearCompareModelMessages: () => void;
 	compareSelectedModel: string;
 	setCompareSelectedModel: (models: string) => void;
+
+	// messageScrollRef: React.RefObject<HTMLDivElement>;
+	// setMessageScrollRef: (ref: React.RefObject<HTMLDivElement>) => void;
+	// scrollToBottom: () => void;
 };
 
 export const availableModels = [
@@ -254,6 +258,7 @@ export const usePromptStore = create<PromptStoreProps>()(
 						},
 					};
 				});
+
 				return messageId;
 			},
 			clearCompareModelMessages: () => {set({compareModelMessages: {},});},
@@ -404,7 +409,7 @@ export const usePromptStore = create<PromptStoreProps>()(
 						{ id: "1", content: "請幫我分析這個問題" },
 						{ id: "2", content: "能否提供更詳細的說明？" },
 					],
-					selectedModels: [],
+					selectedModels: ["gpt-4o", "gemini-2.0-flash"],
 					selectedTools: [],
 					parameters: {
 						temperature: 0,

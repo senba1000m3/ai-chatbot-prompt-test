@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Smile, Frown } from "lucide-react"
 import { MarkdownText } from "@/components/common/typography"
 import { MessageContentRenderer } from "@/components/main/chat/messages/content-renderer"
+import { LoadingSpinner } from "@/components/chat-prompt/chat/loading-spinner"
 import { usePromptStore, type ModelMessage } from "@/lib/store/prompt"
 
 interface MessageBubbleProps {
@@ -16,7 +17,7 @@ interface MessageBubbleProps {
   showRating?: boolean
 }
 
-export function MessageBubble({ message, index, modelId, versionId, showRating = false }: MessageBubbleProps) {
+export function MessageBubble({ message, index, modelId, versionId, showRating = false }: MessageBubbleProps & { messages?: ModelMessage[] }) {
   const { updateMessageRating, getCompareModelMessages } = usePromptStore()
   const [currentRating, setCurrentRating] = useState<"good" | "bad" | null>(message.rating || null)
 
@@ -82,28 +83,32 @@ export function MessageBubble({ message, index, modelId, versionId, showRating =
         </motion.div>
       )}
 
-      {message.role === "assistant" && message.spendTime && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.3, duration: 0.3 }}
-          className="flex justify-end mb-1"
-        >
-          <div className="text-xs text-gray-500 font-mono bg-gray-800 px-2 py-1 rounded">{message.spendTime}ms</div>
-        </motion.div>
-      )}
-
       <div
         className={`p-3 rounded-lg ${
           message.role === "user" ? "bg-blue-600 text-white" : "bg-gray-800 text-white border border-gray-700"
         }`}
       >
         <div className="text-sm whitespace-pre-wrap">
-          <MarkdownText >
-			  {message.content as string}
-		  </MarkdownText>
+          {message.role === "assistant" && message.content == "" ? (
+            <LoadingSpinner />
+          ) : (
+            <MarkdownText>
+              {message.content as string}
+            </MarkdownText>
+          )}
         </div>
       </div>
+
+	  {message.role === "assistant" && message.spendTime && (
+		<motion.div
+		  initial={{ opacity: 0, scale: 0.8 }}
+		  animate={{ opacity: 1, scale: 1 }}
+		  transition={{ delay: 0.3, duration: 0.3 }}
+		  className="flex justify-end mt-2"
+		>
+			<div className="text-xs text-gray-500 font-mono bg-gray-800 px-2 py-1 rounded">{message.spendTime}ms</div>
+		</motion.div>
+	  )}
     </motion.div>
   )
 }

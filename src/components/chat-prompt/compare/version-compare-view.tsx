@@ -11,7 +11,7 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/comp
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Slider } from "@/components/ui/slider"
 import { ExternalLink, ChevronDown, GripVertical, Palette, PaintBucket, Eye, Filter, Search, Send } from "lucide-react"
-import { useState, useMemo, useRef } from "react"
+import { useState, useMemo, useRef, useEffect, createRef } from "react"
 import { MessageBubble } from "../chat/message-bubble"
 import { usePromptStore, type SavedVersion, type ModelMessage, type ModelAccuracy, availableModels } from "@/lib/store/prompt"
 import { useComparePromptChat } from "@/hooks/use-compare-prompt-chat"
@@ -61,7 +61,8 @@ export function VersionCompareView({
 	compareModelMessages,
 	compareSelectedModel,
 	setCompareSelectedModel,
-	updateVersionAccuracy
+	updateVersionAccuracy,
+	modelMessages
   } = usePromptStore()
 	const { handleSubmit } = useComparePromptChat();
 
@@ -75,7 +76,17 @@ export function VersionCompareView({
       .filter((v): v is SavedVersion => !!v)
   }, [compareVersions, compareVersionsOrder])
 
-  const [globalModelFilter, setGlobalModelFilter] = useState<string>("all")
+	const scrollRefs = useMemo(() => sortedVersions.map(() => createRef<HTMLDivElement>()), [sortedVersions.length, sortedVersions]);
+
+	useEffect(() => {
+		scrollRefs.forEach(ref => {
+			if (ref.current) {
+				ref.current.scrollTop = ref.current.scrollHeight;
+			}
+		});
+	}, [compareModelMessages, sortedVersions.map(v => compareModelMessages[v.id]?.[compareSelectedModel]?.length).join(","), scrollRefs]);
+
+  const [globalModelFilter, setGlobalModelFilter] = useState<string>("gpt-4o")
   const [modelSearchQuery, setModelSearchQuery] = useState("")
   const [draggedItem, setDraggedItem] = useState<SavedVersion | null>(null)
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
@@ -86,7 +97,6 @@ export function VersionCompareView({
 
   // 聊天輸入相關狀態
   const [inputMessage, setInputMessage] = useState("")
-  const scrollRefs = useRef<(HTMLDivElement | null)[]>([])
 
   // 為每個版本分配固定的顏色索引，基於版本ID而不是當前位置
   const versionColorMap = useMemo(() => {
@@ -360,12 +370,12 @@ export function VersionCompareView({
                       />
                     </div>
                   </div>
-                  <DropdownMenuItem
-                    onClick={() => handleGlobalModelChange("all")}
-                    className="text-white hover:bg-gray-800 transition-colors"
-                  >
-                    全部模型
-                  </DropdownMenuItem>
+                  {/*<DropdownMenuItem*/}
+                  {/*  onClick={() => handleGlobalModelChange("all")}*/}
+                  {/*  className="text-white hover:bg-gray-800 transition-colors"*/}
+                  {/*>*/}
+                  {/*  全部模型*/}
+                  {/*</DropdownMenuItem>*/}
 
                   {/* 按分類顯示模型 */}
                   {Object.entries(modelsByCategory).map(([category, categoryModels]) => {
@@ -439,8 +449,8 @@ export function VersionCompareView({
                 <span className="text-xs text-gray-300 min-w-[3rem] text-center">{columnWidth}%</span>
               </div>
             </div>
-            <p className="text-sm text-gray-400">
-              比較 {sortedVersions.length} 個版本的設定（{displayVersionNames}）
+            <p className="text-sm mt-[10px] text-gray-400">
+              比較 {sortedVersions.length} 個版本的設定（{sortedVersions.map((version) =>{return version.name}).join("、")}）
             </p>
           </div>
         </div>
@@ -454,7 +464,8 @@ export function VersionCompareView({
             }}
           >
             {sortedVersions.map((version, versionIndex) => {
-              const colorConfig = versionColors[versionColorMap[version.id]]
+
+			  const colorConfig = versionColors[versionColorMap[version.id]]
               const isDragOver = dragOverIndex === versionIndex
               const isDragging = draggedItem?.id === version.id
 
@@ -477,12 +488,6 @@ export function VersionCompareView({
                   transition={{ delay: versionIndex * 0.1, duration: 0.3 }}
                   className="flex-shrink-0"
                   style={{ width: getColumnWidthPercent(), height: "85%" }}
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, version)}
-                  onDragOver={(e) => handleDragOver(e, versionIndex)}
-                  onDragLeave={handleDragLeave}
-                  onDrop={(e) => handleDrop(e, versionIndex)}
-                  onDragEnd={handleDragEnd}
                 >
                   <Card
                     className={`flex flex-col transition-all duration-200 h-[150%] ${
@@ -494,7 +499,15 @@ export function VersionCompareView({
                     } ${isDragOver ? "ring-2 ring-blue-500" : ""}`}
                   >
                     {/* 可拖動的標題區域 */}
-                    <div className="p-3 border-b border-gray-800 flex justify-between items-center bg-gray-800 flex-shrink-0 cursor-move hover:bg-gray-700 transition-colors">
+                    <div
+                      className="p-3 border-b border-gray-800 flex justify-between items-center bg-gray-800 flex-shrink-0 cursor-move hover:bg-gray-700 transition-colors"
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, version)}
+                      onDragOver={(e) => handleDragOver(e, versionIndex)}
+                      onDragLeave={handleDragLeave}
+                      onDrop={(e) => handleDrop(e, versionIndex)}
+                      onDragEnd={handleDragEnd}
+                    >
                       <div className="flex items-center space-x-2">
                         <GripVertical className="w-4 h-4 text-gray-400" />
                         <Badge variant="outline" className={`text-white border-gray-600 ${colorConfig.badge}`}>
@@ -577,7 +590,7 @@ export function VersionCompareView({
 
                     {/* 對話內容區域 */}
                     <div
-                      // ref={(el) => (scrollRefs.current[versionIndex] = el)}
+                      ref={scrollRefs[versionIndex]}
                       className="flex-1 p-3 overflow-y-auto space-y-3 min-h-0"
                     >
                       {(() => {

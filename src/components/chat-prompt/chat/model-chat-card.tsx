@@ -1,6 +1,6 @@
 "use client"
 
-import type React from "react"
+import React, { useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
 import { ExternalLink, Maximize2 } from "lucide-react"
@@ -19,7 +19,6 @@ interface ModelResponse {
 interface ModelChatCardProps {
   model: ModelResponse
   index: number
-  scrollRef: (el: HTMLDivElement | null) => void
   syncScroll: boolean
   onPopupWindow: (modelId: string) => void
   onFullscreen: (modelId: string) => void
@@ -31,7 +30,6 @@ interface ModelChatCardProps {
 export function ModelChatCard({
   model,
   index,
-  scrollRef,
   syncScroll,
   onPopupWindow,
   onFullscreen,
@@ -45,6 +43,19 @@ export function ModelChatCard({
       onSyncScroll(index, target.scrollTop, target.scrollHeight, target.clientHeight)
     }
   }
+
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const { modelMessages } = usePromptStore();
+
+  useEffect(() => {
+	const scrollToBottom = () => {
+		if (scrollRef && scrollRef.current) {
+			scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+		}
+	};
+
+    scrollToBottom();
+  }, [modelMessages.length, model.messages.map(m => m.content).join(",")]);
 
   return (
     <motion.div
@@ -95,7 +106,7 @@ export function ModelChatCard({
               <MessageBubble
                 key={msg.id || i}
                 message={msg}
-				modelId={model.id}
+                modelId={model.id}
                 index={i}
                 showRating={false}
               />
