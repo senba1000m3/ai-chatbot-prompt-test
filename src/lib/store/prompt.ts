@@ -613,9 +613,23 @@ const keysToWatch = [
 	'parameters',
 	'selectedModels',
 	'selectedTools',
+	'savedVersions',
+	'untitledCounter',
+	'editingVersionID',
+	'inputMessage',
+	'inputSendTimes',
+	'ifInputDisabled',
+	'isSystemPromptOn',
+	'compareSelectedVersions',
+	'isCompareMode',
+	'isInCompareView',
+	'compareVersions',
+	'compareVersionsOrder',
+	'compareModelMessages',
+	'compareSelectedModel',
+	'showVersionHistory',
 ];
 
-let prevStore: any = {};
 usePromptStore.subscribe((state, prevState) => {
 	for (const key of keysToWatch) {
 		if ((state as any)[key] !== (prevState as any)[key]) {
@@ -624,3 +638,48 @@ usePromptStore.subscribe((state, prevState) => {
 		}
 	}
 });
+
+export type PromptStoreData = Omit<PromptStoreProps,
+	| "setSystemPrompt"
+	| "setIsSystemPromptOn"
+	| "setHintMessage"
+	| "setIfShowHintMessage"
+	| "setParameters"
+	| "setInputMessage"
+	| "setInputSendTimes"
+	| "setIfInputDisabled"
+	| "setSelectedModels"
+	| "setSelectedTools"
+	| "appendModelMessage"
+	| "updateModelMessage"
+	| "getModelMessages"
+	| "clearModelMessages"
+	| "setModelIsLoading"
+	| "setSavedVersions"
+	| "addSavedVersion"
+	| "updateSavedVersion"
+	| "deleteVersion"
+	| "toggleVersionExpanded"
+	| "loadVersion"
+	| "copyVersion"
+	| "editVersion"
+	| "setEditingVersionID"
+	| "resetVersion"
+	| "clearAllVersions"
+	| "updateVersionAccuracy"
+	| "addUntitledCounter"
+	| "resetUntitledCounter"
+	| "setShowVersionHistory"
+	| "setCompareSelectedVersions"
+	| "clearCompareSelectedVersions"
+	| "setIsCompareMode"
+	| "setIsInCompareView"
+	| "setCompareVersions"
+	| "setInitialVersionOrder"
+	| "onVersionReorder"
+	| "appendCompareModelMessage"
+	| "updateMessageRating"
+	| "getCompareModelMessages"
+	| "clearCompareModelMessages"
+	| "setCompareSelectedModel"
+>;

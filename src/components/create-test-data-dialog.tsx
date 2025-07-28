@@ -123,7 +123,7 @@ export function CreateTestDataDialog({ open, onOpenChange, onSubmit }: CreateTes
 		})
 	}
 
-	const useDefaultExample = (index: number) => {
+	const handleDefaultExample = (index: number) => {
 		const example = DEFAULT_EXAMPLES[index]
 
 		setTestAreaName(example.name)
@@ -165,7 +165,7 @@ export function CreateTestDataDialog({ open, onOpenChange, onSubmit }: CreateTes
 										key={index}
 										variant="outline"
 										className="justify-start h-auto py-3 px-4"
-										onClick={() => useDefaultExample(index)}
+										onClick={() => handleDefaultExample(index)}
 									>
 										<div className="grid text-start">
 											<span className="font-medium text-base">{example.name}</span>

@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { nanoid } from "@/lib/utils";
-import { usePromptStore, type PromptStoreProps, type HintMessage } from "@/lib/store/prompt";
+import { usePromptStore, type PromptStoreProps, type HintMessage, type PromptStoreData } from "@/lib/store/prompt";
 
 // Types & Interfaces
 export interface TestArea {
@@ -13,7 +13,7 @@ export interface TestAreaWithData extends TestArea {
 	createdAt: string
 	updatedAt: string
 	author: string
-	data: PromptStoreProps
+	data: PromptStoreData
 }
 
 interface NicknameStoreProps {
@@ -35,14 +35,14 @@ interface NicknameStoreProps {
 	setDefaultHintMessage: (messages: string[]) => void;
 
 	// 備份與載入
-	setPromptBackup: (backup: PromptStoreProps) => void;
-	loadPromptBackup: (backup: PromptStoreProps) => void;
+	setPromptBackup: (backup: PromptStoreData) => void;
+	loadPromptBackup: (backup: PromptStoreData) => void;
 }
 
 // 取得 PromptStoreProps 的純資料預設值
-function getDefaultPromptStoreData(get: () => NicknameStoreProps): PromptStoreProps {
+function getDefaultPromptStoreData(get: () => NicknameStoreProps): PromptStoreData {
 	const defaultHintMessage = get().defaultHintMessage || [];
-	// @ts-ignore
+
 	return {
 		systemPrompt: {
 			characterSettings: "",
@@ -103,7 +103,6 @@ export const useNicknameStore = create<NicknameStoreProps>()(
 			setNowTestAreaId: (id: string) => set({ nowTestAreaId: id }),
 			addTestArea: (testArea: TestArea) => {
 				try {
-					const nanoid = require("nanoid").nanoid;
 					const nickname = get().nickname;
 					const newTestArea: TestAreaWithData = {
 						...testArea,
@@ -124,7 +123,6 @@ export const useNicknameStore = create<NicknameStoreProps>()(
 			},
 			duplicateTestArea: (id: string) => {
 				try {
-					const nanoid = require("nanoid").nanoid;
 					const originalArea = get().testAreas.find(area => area.id === id);
 					if (!originalArea) return undefined;
 					const duplicatedArea: TestAreaWithData = {
@@ -133,7 +131,7 @@ export const useNicknameStore = create<NicknameStoreProps>()(
 						name: `${originalArea.name} (複製)`,
 						createdAt: new Date().toISOString(),
 						updatedAt: new Date().toISOString(),
-						data: originalArea.data ?? ({} as PromptStoreProps),
+						data: originalArea.data ?? ({} as PromptStoreData),
 					};
 					set(state => ({ testAreas: [...state.testAreas, duplicatedArea] }));
 					return duplicatedArea;
@@ -153,39 +151,16 @@ export const useNicknameStore = create<NicknameStoreProps>()(
 				}));
 				return { defaultHintMessage: messagesWithId };
 			}),
-			setPromptBackup: (backup: PromptStoreProps) => {
+			setPromptBackup: (backup: PromptStoreData) => {
 				const { nowTestAreaId, testAreas } = get();
 				const updatedTestAreas = testAreas.map(area =>
 					area.id === nowTestAreaId ? { ...area, data: backup } : area
 				);
 				set({ testAreas: updatedTestAreas });
 			},
-			loadPromptBackup: (backup: PromptStoreProps) => {
+			loadPromptBackup: (backup: PromptStoreData) => {
 				usePromptStore.setState({
-					systemPrompt: backup.systemPrompt,
-					isSystemPromptOn: backup.isSystemPromptOn,
-					hintMessage: backup.hintMessage,
-					ifShowHintMessage: backup.ifShowHintMessage,
-					parameters: backup.parameters,
-					inputMessage: backup.inputMessage,
-					inputSendTimes: backup.inputSendTimes,
-					ifInputDisabled: backup.ifInputDisabled,
-					selectedModels: backup.selectedModels,
-					selectedTools: backup.selectedTools,
-					modelMessages: backup.modelMessages,
-					modelMessageOrder: backup.modelMessageOrder,
-					modelIsLoading: backup.modelIsLoading,
-					savedVersions: backup.savedVersions,
-					editingVersionID: backup.editingVersionID,
-					untitledCounter: backup.untitledCounter,
-					showVersionHistory: backup.showVersionHistory,
-					compareSelectedVersions: backup.compareSelectedVersions,
-					isCompareMode: backup.isCompareMode,
-					isInCompareView: backup.isInCompareView,
-					compareVersions: backup.compareVersions,
-					compareVersionsOrder: backup.compareVersionsOrder,
-					compareModelMessages: backup.compareModelMessages,
-					compareSelectedModel: backup.compareSelectedModel,
+					...backup
 				});
 			},
 		}),
