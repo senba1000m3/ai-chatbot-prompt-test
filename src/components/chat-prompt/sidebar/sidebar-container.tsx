@@ -123,7 +123,7 @@ export function SidebarContainer({
   systemPromptEnabled,
 }: SidebarContainerProps) {
   const {
-    setSelectedModels: setStoreSelectedModels, savedVersions, toggleVersionExpanded, setSystemPrompt, systemPrompt, setIsSystemPromptOn, isSystemPromptOn, isCompareMode, showVersionHistory
+    setSelectedModels, savedVersions, toggleVersionExpanded, setSystemPrompt, systemPrompt, setIsSystemPromptOn, isSystemPromptOn, isCompareMode, showVersionHistory
   } = usePromptStore()
 
 	const [isReadOnly, setIsReadOnly] = useState(false);
@@ -231,18 +231,17 @@ export function SidebarContainer({
 
   // 初次渲染時自動同步 tempSelectedModels 到 zustand
   useEffect(() => {
-    setStoreSelectedModels(tempSelectedModels)
-  }, [tempSelectedModels, setStoreSelectedModels])
+	  setSelectedModels(tempSelectedModels)
+  }, [tempSelectedModels, setSelectedModels])
 
   // 在模型儲存時同步到 zustand
   const handleModelSave = () => {
-    setStoreSelectedModels(tempSelectedModels)
+	  setSelectedModels(tempSelectedModels)
     if (onModelSave) onModelSave()
   }
 
   // 處理 systemPrompt 的變更，直接使用 zustand 的 setSystemPrompt
   const handleSystemPromptChange = (key: string, value: string) => {
-    console.log(key, value);
 	setSystemPrompt(prev => ({
       ...prev,
       [key]: value,

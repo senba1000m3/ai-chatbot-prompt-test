@@ -1,10 +1,21 @@
 "use client"
 
+import { useRouter, useParams } from "next/navigation"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { Home, User, Sun, Monitor, RotateCcw } from "lucide-react"
+import { Home, User, Sun, Monitor, RotateCcw, ChevronRight } from "lucide-react"
+import { usePromptStore } from "@/lib/store/prompt"
+import { useNicknameStore } from "@/lib/store/prompt-login"
 
 export function Header() {
+	const router = useRouter();
+	const params = useParams();
+	const assemblyId = params?.id;
+	const { isCompareMode } = usePromptStore();
+	const { nickname, testAreas, nowTestAreaId } = useNicknameStore();
+
+	const currentTestAreaName = testAreas.find(area => area.id === assemblyId)?.name || "未知";
+
   return (
     <motion.header
       initial={{ y: -20, opacity: 0 }}
@@ -19,11 +30,16 @@ export function Header() {
           transition={{ delay: 0.1, duration: 0.3 }}
           className="flex items-center space-x-4"
         >
-          <h1 className="text-xl font-bold text-white">聊天 Prompt 測試區</h1>
+          <h1 className="text-xl font-bold text-white"><button onClick={() =>{
+			  router.push("/tools/chat-prompt/dashboard")
+		  }}>TAI 工廠</button></h1>
           <div className="flex items-center space-x-2 text-sm text-gray-400">
-            <Home className="w-4 h-4" />
-            <span>Prompt 測試區</span>
-            {/*<span>{">"}</span>*/}
+			  <Home className="w-4 h-4" />
+			  <button onClick={() =>{
+				  router.push(`./${assemblyId}`)
+			  }}>{`【${currentTestAreaName}】 產線`}</button>
+			  <ChevronRight className="w-4 h-4" />
+			  <span> {isCompareMode ? "QC 區" : "RD 區"} </span>
             {/*<span>中文直書作文</span>*/}
           </div>
         </motion.div>
@@ -35,7 +51,7 @@ export function Header() {
         >
           <div className="flex items-center space-x-2 text-sm text-gray-400">
             <User className="w-4 h-4" />
-            <span>千羽 (更換暱稱)</span>
+            <span>{nickname}</span>
           </div>
           <div className="flex items-center space-x-2">
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
@@ -48,11 +64,11 @@ export function Header() {
                 <Monitor className="w-4 h-4" />
               </Button>
             </motion.div>
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
-                <RotateCcw className="w-4 h-4" />
-              </Button>
-            </motion.div>
+            {/*<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>*/}
+            {/*  <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">*/}
+            {/*    <RotateCcw className="w-4 h-4" />*/}
+            {/*  </Button>*/}
+            {/*</motion.div>*/}
           </div>
         </motion.div>
       </div>

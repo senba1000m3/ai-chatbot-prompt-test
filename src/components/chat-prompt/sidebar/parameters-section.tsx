@@ -40,7 +40,7 @@ export function ParametersSection({
         <Slider
           value={temperature}
           onValueChange={setTemperature}
-          max={2}
+          max={1}
           min={0}
           step={0.1}
           className="w-full [&_[role=slider]]:bg-blue-500 [&_[role=slider]]:border-blue-500 [&_.bg-primary]:bg-blue-500"

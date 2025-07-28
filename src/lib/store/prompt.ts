@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { nanoid } from "@/lib/utils";
+import { useNicknameStore } from "@/lib/store/prompt-login";
 
 // Types & Interfaces
 import type { CoreMessage } from "ai";
@@ -59,7 +60,7 @@ export interface SavedVersion {
 
 type NewSavedVersion = Omit<SavedVersion, "id" | "savedAt" | "expanded">;
 
-interface PromptStoreProps {
+export interface PromptStoreProps {
 	// Prompt 相關
 	systemPrompt: SystemPromptData;
 	setSystemPrompt: (updater: (prev: SystemPromptData) => SystemPromptData) => void;
@@ -586,6 +587,7 @@ export const usePromptStore = create<PromptStoreProps>()(
 				hintMessage: state.hintMessage,
 				savedVersions: state.savedVersions,
 			}),
+			// onRehydrateStorage 仍可保留
 			onRehydrateStorage: () => (state) => {
 				if (state) {
 					const maxCounter = state.savedVersions.reduce((max, version) => {
@@ -599,8 +601,26 @@ export const usePromptStore = create<PromptStoreProps>()(
 					}, 0);
 					state.untitledCounter = maxCounter + 1;
 				}
-			}
+			},
 		}
 	)
 );
 
+// 監聽 store 變化，手動備份
+const keysToWatch = [
+	'systemPrompt',
+	'hintMessage',
+	'parameters',
+	'selectedModels',
+	'selectedTools',
+];
+
+let prevStore: any = {};
+usePromptStore.subscribe((state, prevState) => {
+	for (const key of keysToWatch) {
+		if ((state as any)[key] !== (prevState as any)[key]) {
+			useNicknameStore.getState().setPromptBackup({ ...state });
+			break;
+		}
+	}
+});

@@ -69,7 +69,7 @@ export function UnifiedChatView({
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>統一對話框 - 聊天 Prompt 測試區</title>
+      <title>統一對話框 - 聊天 Prompt 產線</title>
       <style>
         body {
           margin: 0;
@@ -132,7 +132,7 @@ export function UnifiedChatView({
     <body>
       <div class="header">
         <div class="title">統一對話框</div>
-        <div class="subtitle">聊天 Prompt 測試區 - 獨立視窗</div>
+        <div class="subtitle">聊天 Prompt 產線 - 獨立視窗</div>
       </div>
       <div class="messages">
         ${
