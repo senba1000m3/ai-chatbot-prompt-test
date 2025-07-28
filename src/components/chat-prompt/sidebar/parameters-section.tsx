@@ -3,30 +3,11 @@
 import { motion } from "framer-motion"
 import { Slider } from "@/components/ui/slider"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { usePromptStore, type ParametersType } from "@/lib/store/prompt"
 
-interface ParametersSectionProps {
-  temperature: number[]
-  setTemperature: (value: number[]) => void
-  batchSize: string
-  setBatchSize: (value: string) => void
-  parameter2: string
-  setParameter2: (value: string) => void
-  parameter3: string
-  setParameter3: (value: string) => void
-  isReadOnly: boolean
-}
+export function ParametersSection( {isReadOnly} : { isReadOnly: boolean } ) {
+	const { parameters, setParameters } = usePromptStore();
 
-export function ParametersSection({
-  temperature,
-  setTemperature,
-  batchSize,
-  setBatchSize,
-  parameter2,
-  setParameter2,
-  parameter3,
-  setParameter3,
-  isReadOnly,
-}: ParametersSectionProps) {
   return (
     <motion.div
       initial={{ y: 20, opacity: 0 }}
@@ -36,10 +17,10 @@ export function ParametersSection({
 
 
       <div className="mb-6">
-        <label className="block text-sm mb-3 text-white">Temperature: {temperature[0]}</label>
+        <label className="block text-sm mb-3 text-white">Temperature: {parameters.temperature}</label>
         <Slider
-          value={temperature}
-          onValueChange={setTemperature}
+          value={[parameters.temperature]}
+		  onValueChange={([value]) => setParameters({ ...parameters, temperature: value })}
           max={1}
           min={0}
           step={0.1}
