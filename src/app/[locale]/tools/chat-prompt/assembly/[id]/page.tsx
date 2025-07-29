@@ -237,12 +237,6 @@ export default function AIPromptTester() {
 	const [viewMode, setViewMode] = useState<ViewMode>("separate")
 	const [selectedModels, setSelectedModels] = useState<string[]>(["gpt-4o", "gemini-2.0-flash"])
 	const [selectedTools, setSelectedTools] = useState<string[]>(["sticker"])
-	const [modelDialogOpen, setModelDialogOpen] = useState(false)
-	const [toolDialogOpen, setToolDialogOpen] = useState(false)
-	const [tempSelectedModels, setTempSelectedModels] = useState<string[]>(["gpt-4o", "gemini-2.0-flash"])
-	const [tempSelectedTools, setTempSelectedTools] = useState<string[]>(["sticker"])
-
-	// 根據選擇的模型動態生成 modelResponses
 	const [modelResponses, setModelResponses] = useState<ModelResponse[]>(() => {
 		return selectedModels.map((modelId) => {
 			const model = availableModels.find((m) => m.id === modelId)
@@ -1029,55 +1023,6 @@ export default function AIPromptTester() {
 		})
 	}
 
-	const handleModelDialogOpen = () => {
-		setTempSelectedModels([...selectedModels])
-		setModelDialogOpen(true)
-	}
-
-	const handleToolDialogOpen = () => {
-		setTempSelectedTools([...selectedTools])
-		setToolDialogOpen(true)
-	}
-
-	const handleModelDialogChange = (open: boolean) => {
-		setModelDialogOpen(open)
-		if (!open) {
-			setTempSelectedModels([...selectedModels])
-		}
-	}
-
-	const handleToolDialogChange = (open: boolean) => {
-		setToolDialogOpen(open)
-		if (!open) {
-			setTempSelectedTools([...selectedTools])
-		}
-	}
-
-	const handleModelSave = () => {
-		setSelectedModels([...tempSelectedModels])
-		setModelDialogOpen(false)
-	}
-
-	const handleToolSave = () => {
-		setSelectedTools([...tempSelectedTools])
-		setToolDialogOpen(false)
-	}
-
-	const handleModelToggle = (modelId: string) => {
-		setTempSelectedModels((prev) => {
-			if (prev.includes(modelId)) {
-				return prev.filter((id) => id !== modelId)
-			} else if (prev.length < 4) {
-				return [...prev, modelId]
-			}
-			return prev
-		})
-	}
-
-	const handleToolToggle = (toolId: string) => {
-		setTempSelectedTools((prev) => (prev.includes(toolId) ? prev.filter((id) => id !== toolId) : [...prev, toolId]))
-	}
-
 	const handlePopupWindow = (modelId: string) => {
 		const model = modelResponses.find((m) => m.id === modelId)
 		if (!model) return
@@ -1222,16 +1167,6 @@ export default function AIPromptTester() {
 							onExitReadOnly={exitVersionMode}
 							onEdit={handleEditVersion}
 							onSaveEdit={handleSaveEdit}
-							modelDialogOpen={modelDialogOpen}
-							setModelDialogOpen={setModelDialogOpen}
-							toolDialogOpen={toolDialogOpen}
-							setToolDialogOpen={setToolDialogOpen}
-							tempSelectedModels={tempSelectedModels}
-							onModelToggle={handleModelToggle}
-							onModelSave={handleModelSave}
-							tempSelectedTools={tempSelectedTools}
-							onToolToggle={handleToolToggle}
-							onToolSave={handleToolSave}
 							availableModels={availableModels}
 							availableTools={availableTools}
 							systemPromptOptions={systemPromptOptions}
@@ -1246,12 +1181,7 @@ export default function AIPromptTester() {
 							setParameter2={setParameter2}
 							parameter3={parameter3}
 							setParameter3={setParameter3}
-							selectedModels={selectedModels}
 							selectedTools={selectedTools}
-							onModelDialogOpen={handleModelDialogOpen}
-							onToolDialogOpen={handleToolDialogOpen}
-							onModelDialogChange={handleModelDialogChange}
-							onToolDialogChange={handleToolDialogChange}
 							systemPromptEnabled={systemPromptEnabled}
 							onToggleVersionSelect={function (versionId: string): void {
 								throw new Error("Function not implemented.")
@@ -1317,4 +1247,5 @@ export default function AIPromptTester() {
 		</TooltipProvider>
 	)
 }
+
 

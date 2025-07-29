@@ -42,16 +42,6 @@ interface SidebarContainerProps {
   onExitReadOnly: () => void
   onEdit: () => void
   onSaveEdit: () => void
-  modelDialogOpen: boolean
-  setModelDialogOpen: (open: boolean) => void
-  toolDialogOpen: boolean
-  setToolDialogOpen: (open: boolean) => void
-  tempSelectedModels: string[]
-  onModelToggle: (modelId: string) => void
-  onModelSave: () => void
-  tempSelectedTools: string[]
-  onToolToggle: (toolId: string) => void
-  onToolSave: () => void
   availableModels: Array<{ id: string; name: string; category: string }>
   availableTools: Array<{ id: string; name: string }>
   systemPromptOptions: {
@@ -69,12 +59,7 @@ interface SidebarContainerProps {
   setParameter2: (param: string) => void
   parameter3: string
   setParameter3: (param: string) => void
-  selectedModels: string[]
   selectedTools: string[]
-  onModelDialogOpen: () => void
-  onToolDialogOpen: () => void
-  onModelDialogChange: (open: boolean) => void
-  onToolDialogChange: (open: boolean) => void
   systemPromptEnabled: {
     characterSettings: boolean
     selfAwareness: boolean
@@ -88,46 +73,62 @@ interface SidebarContainerProps {
 }
 
 export function SidebarContainer({
-  onToggleVersionSelect,
   getFilteredModelAccuracy,
-  modelDialogOpen,
-  setModelDialogOpen,
-  toolDialogOpen,
-  setToolDialogOpen,
-  tempSelectedModels,
-  onModelToggle,
-  onModelSave,
-  tempSelectedTools,
-  onToolToggle,
-  onToolSave,
   availableModels,
   availableTools,
   systemPromptOptions,
   onSystemPromptOptionsChange,
-  defaultHintMessages,
-  setDefaultHintMessages,
-  temperature,
-  setTemperature,
-  batchSize,
-  setBatchSize,
-  parameter2,
-  setParameter2,
-  parameter3,
-  setParameter3,
-  selectedModels,
   selectedTools,
-  onModelDialogOpen,
-  onToolDialogOpen,
-  onModelDialogChange,
-  onToolDialogChange,
-  systemPromptEnabled,
 }: SidebarContainerProps) {
   const {
-    setSelectedModels, savedVersions, toggleVersionExpanded, setSystemPrompt, systemPrompt, setIsSystemPromptOn, isSystemPromptOn, isCompareMode, showVersionHistory
+	  selectedModels, setSelectedModels, savedVersions, toggleVersionExpanded, setSystemPrompt, systemPrompt, setIsSystemPromptOn, isSystemPromptOn, isCompareMode, showVersionHistory
   } = usePromptStore()
 
 	const [isReadOnly, setIsReadOnly] = useState(false);
   	const [isEditing, setIsEditing] = useState(false);
+	const defaultModels = ["gpt-4o", "gemini-2.0-flash"];
+	const [tempSelectedModels, setTempSelectedModels] = useState<string[]>(selectedModels.length > 0 ? selectedModels : defaultModels);
+	const [modelDialogOpen, setModelDialogOpen] = useState(false)
+	const defaultTools = ["sticker"];
+	const [tempSelectedTools, setTempSelectedTools] = useState<string[]>(selectedTools.length > 0 ? selectedTools : defaultTools);
+	const [toolDialogOpen, setToolDialogOpen] = useState(false)
+
+	useEffect(() => {
+		setTempSelectedModels(selectedModels.length > 0 ? selectedModels : defaultModels);
+	}, [selectedModels]);
+
+	useEffect(() => {
+	  setTempSelectedTools(selectedTools.length > 0 ? selectedTools : defaultTools);
+	}, [selectedTools]);
+
+	const handleToolDialogOpen = () => {
+	  setTempSelectedTools([...selectedTools]);
+	  setToolDialogOpen(true);
+	};
+
+	const handleToolDialogChange = (open: boolean) => {
+	  setToolDialogOpen(open);
+	  if (!open) {
+		setTempSelectedTools([...selectedTools]);
+	  }
+	};
+
+	const handleToolToggle = (toolId: string) => {
+	  setTempSelectedTools((prev) =>
+		prev.includes(toolId) ? prev.filter((id) => id !== toolId) : [...prev, toolId]
+	  );
+	};
+
+	const handleToolSave = () => {
+	  // setSelectedTools([...tempSelectedTools]);
+	  setToolDialogOpen(false);
+	};
+
+	const [searchQuery, setSearchQuery] = useState("");
+	const [selectedModelFilters, setSelectedModelFilters] = useState<string[]>([]);
+	const [selectedCharacterSettingsFilters, setSelectedCharacterSettingsFilters] = useState<string[]>([]);
+	const [selectedToolsFilters, setSelectedToolsFilters] = useState<string[]>([]);
+	const [sortBy, setSortBy] = useState("date-desc");
 
 	const handleDownloadVersion = (version: SavedVersion) => {
 		const versionToDownload: SavedVersion = {
@@ -169,12 +170,6 @@ export function SidebarContainer({
 		document.body.removeChild(a);
 		URL.revokeObjectURL(url);
 	}
-
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedModelFilters, setSelectedModelFilters] = useState<string[]>([]);
-  const [selectedCharacterSettingsFilters, setSelectedCharacterSettingsFilters] = useState<string[]>([]);
-  const [selectedToolsFilters, setSelectedToolsFilters] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState("date-desc");
 
   const filteredAndSortedVersions = useMemo(() => {
     let result = savedVersions;
@@ -229,15 +224,34 @@ export function SidebarContainer({
     return result;
   }, [savedVersions, searchQuery, selectedModelFilters, selectedCharacterSettingsFilters, selectedToolsFilters, sortBy])
 
-  // 初次渲染時自動同步 tempSelectedModels 到 zustand
-  useEffect(() => {
-	  setSelectedModels(tempSelectedModels)
-  }, [tempSelectedModels, setSelectedModels])
+	const handleModelDialogOpen = () => {
+		setTempSelectedModels([...selectedModels])
+		setModelDialogOpen(true)
+	}
+
+	const handleModelDialogChange = (open: boolean) => {
+		setModelDialogOpen(open)
+		if (!open) {
+			setTempSelectedModels([...selectedModels])
+		}
+	}
+
+	const handleModelToggle = (modelId: string) => {
+		setTempSelectedModels((prev) => {
+			if (prev.includes(modelId)) {
+				return prev.filter((id) => id !== modelId)
+			} else if (prev.length < 4) {
+				return [...prev, modelId]
+			}
+			return prev
+		})
+	}
 
   // 在模型儲存時同步到 zustand
   const handleModelSave = () => {
 	  setSelectedModels(tempSelectedModels)
-    if (onModelSave) onModelSave()
+	  setSelectedModels([...tempSelectedModels])
+	  setModelDialogOpen(false)
   }
 
   // 處理 systemPrompt 的變更，直接使用 zustand 的 setSystemPrompt
@@ -362,21 +376,21 @@ export function SidebarContainer({
                 >
                   <ModelSelectionDialog
                     open={modelDialogOpen}
-                    onOpenChange={onModelDialogChange}
+                    onOpenChange={handleModelDialogChange}
                     selectedModels={tempSelectedModels}
-                    onToggleModel={onModelToggle}
+                    onToggleModel={handleModelToggle}
                     onSave={handleModelSave}
                     availableModels={availableModels}
-                    onClick={onModelDialogOpen}
+                    onClick={handleModelDialogOpen}
                   />
                   <ToolSelectionDialog
                     open={toolDialogOpen}
-                    onOpenChange={onToolDialogChange}
+                    onOpenChange={handleToolDialogChange}
                     selectedTools={tempSelectedTools}
-                    onToggleTool={onToolToggle}
-                    onSave={onToolSave}
+                    onToggleTool={handleToolToggle}
+                    onSave={handleToolSave}
                     availableTools={availableTools}
-                    onClick={onToolDialogOpen}
+                    onClick={handleToolDialogOpen}
                   />
                 </motion.div>
               )}

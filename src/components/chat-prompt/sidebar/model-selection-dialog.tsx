@@ -14,6 +14,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox"
 import { Settings } from "lucide-react"
 import { useState } from "react"
+import { usePromptStore } from "@/lib/store/prompt"
 
 interface Model {
   id: string
