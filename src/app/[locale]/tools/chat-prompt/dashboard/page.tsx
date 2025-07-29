@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { type PromptStoreProps } from "../../../../../lib/store/prompt";
+import { usePromptStore } from "../../../../../lib/store/prompt";
 import { useLoginStore, type TestArea } from "../../../../../lib/store/prompt-login";
 import { nanoid } from "nanoid";
 import { formatDistanceToNow } from "date-fns";
@@ -42,13 +43,36 @@ export default function DashboardPage() {
 	const router = useRouter();
 
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
-	const {nickname, testAreas, addTestArea, deleteTestArea, duplicateTestArea, getTestArea, setNowTestAreaId, loadPromptBackup} = useLoginStore();
+	const {nickname, testAreas, addTestArea, deleteTestArea, duplicateTestArea, getTestArea, setNowTestAreaId, loadPromptBackup, setPromptBackup} = useLoginStore();
+	const promptStore = usePromptStore();
 
 	// Get nickname from zustand and load test areas
 	useEffect(() => {
 		if (!nickname) {
 			router.push("/tools/chat-prompt");
 			return;
+		}
+
+		// 初始化：如果 testAreas 為空，且 prompt store 有內容，則自動建立預設測試區（避免跟舊版本衝突）
+		if (testAreas.length === 0 && promptStore && promptStore.systemPrompt && promptStore.hintMessage && promptStore.parameters) {
+			const defaultTestArea = {
+				id: nanoid(),
+				name: "未儲存產線",
+				author: nickname,
+				updatedAt: new Date().toISOString(),
+				data: {
+					systemPrompt: promptStore.systemPrompt,
+					isSystemPromptOn: promptStore.isSystemPromptOn,
+					hintMessage: promptStore.hintMessage,
+					parameters: promptStore.parameters,
+					selectedModels: promptStore.selectedModels,
+					selectedTools: promptStore.selectedTools,
+					models: promptStore.selectedModels || [],
+					tools: promptStore.selectedTools || [],
+					savedVersions: promptStore.savedVersions || [],
+				},
+			};
+			addTestArea(defaultTestArea);
 		}
 	}, [router, nickname]);
 
