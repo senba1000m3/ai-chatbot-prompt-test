@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { nanoid } from "@/lib/utils";
-import { usePromptStore, type PromptStoreProps, type HintMessage, type PromptStoreData } from "@/lib/store/prompt";
+import { usePromptStore, type HintMessage, type PromptStoreData } from "@/lib/store/prompt";
 
 // Types & Interfaces
 export interface TestArea {
@@ -16,7 +16,7 @@ export interface TestAreaWithData extends TestArea {
 	data: PromptStoreData
 }
 
-interface NicknameStoreProps {
+interface LoginStoreProps {
 	// 名字
 	nickname: string;
 	setNickname: (nickname: string) => void;
@@ -40,7 +40,7 @@ interface NicknameStoreProps {
 }
 
 // 取得 PromptStoreProps 的純資料預設值
-function getDefaultPromptStoreData(get: () => NicknameStoreProps): PromptStoreData {
+function getDefaultPromptStoreData(get: () => LoginStoreProps): PromptStoreData {
 	const defaultHintMessage = get().defaultHintMessage || [];
 
 	return {
@@ -92,7 +92,7 @@ function getDefaultPromptStoreData(get: () => NicknameStoreProps): PromptStoreDa
 	};
 }
 
-export const useNicknameStore = create<NicknameStoreProps>()(
+export const useLoginStore = create<LoginStoreProps>()(
 	persist(
 		(set, get) => ({
 			nickname: "",
@@ -156,6 +156,8 @@ export const useNicknameStore = create<NicknameStoreProps>()(
 				const updatedTestAreas = testAreas.map(area =>
 					area.id === nowTestAreaId ? { ...area, data: backup } : area
 				);
+
+				// console.log(updatedTestAreas);
 				set({ testAreas: updatedTestAreas });
 			},
 			loadPromptBackup: (backup: PromptStoreData) => {

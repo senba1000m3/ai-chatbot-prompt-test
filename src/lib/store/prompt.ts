@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { nanoid } from "@/lib/utils";
-import { useNicknameStore } from "@/lib/store/prompt-login";
+import { useLoginStore } from "@/lib/store/prompt-login";
 
 // Types & Interfaces
 import type { CoreMessage } from "ai";
@@ -633,7 +633,7 @@ const keysToWatch = [
 usePromptStore.subscribe((state, prevState) => {
 	for (const key of keysToWatch) {
 		if ((state as any)[key] !== (prevState as any)[key]) {
-			useNicknameStore.getState().setPromptBackup({ ...state });
+			useLoginStore.getState().setPromptBackup({ ...state });
 			break;
 		}
 	}

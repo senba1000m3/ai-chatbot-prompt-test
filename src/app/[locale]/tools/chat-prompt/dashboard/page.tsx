@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { type PromptStoreProps } from "../../../../../lib/store/prompt";
-import { useNicknameStore, type TestArea } from "../../../../../lib/store/prompt-login";
+import { useLoginStore, type TestArea } from "../../../../../lib/store/prompt-login";
 import { nanoid } from "nanoid";
 import { formatDistanceToNow } from "date-fns";
 import { zhTW } from "date-fns/locale";
@@ -42,16 +42,15 @@ export default function DashboardPage() {
 	const router = useRouter();
 
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
-	const {testAreas, addTestArea, deleteTestArea, duplicateTestArea, getTestArea, setNowTestAreaId, loadPromptBackup} = useNicknameStore();
+	const {nickname, testAreas, addTestArea, deleteTestArea, duplicateTestArea, getTestArea, setNowTestAreaId, loadPromptBackup} = useLoginStore();
 
 	// Get nickname from zustand and load test areas
 	useEffect(() => {
-		const nickname = useNicknameStore.getState().nickname;
 		if (!nickname) {
 			router.push("/tools/chat-prompt");
 			return;
 		}
-	}, [router]);
+	}, [router, nickname]);
 
 	// 創建新產線
 	const handleCreateTestArea = (testArea: TestArea) => {
@@ -185,7 +184,7 @@ export default function DashboardPage() {
 }
 
 function DashboardHeader({ className, children }: React.ComponentProps<"header">) {
-	const nickname = useNicknameStore(state => state.nickname);
+	const nickname = useLoginStore(state => state.nickname);
 
 	return (
 		<header className={cn("self-center flex max-sm:flex-col sm:items-center justify-between gap-2 w-full h-min", className)}>
@@ -204,7 +203,7 @@ function DashboardHeader({ className, children }: React.ComponentProps<"header">
 
 function ChangeNickNameButton() {
 	const router = useRouter();
-	const setNickname = useNicknameStore(state => state.setNickname);
+	const setNickname = useLoginStore(state => state.setNickname);
 
 	function handleClick() {
 		setNickname("");

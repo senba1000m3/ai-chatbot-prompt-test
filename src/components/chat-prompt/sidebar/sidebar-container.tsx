@@ -457,14 +457,6 @@ export function SidebarContainer({
 
             <CollapsibleSection title="Parameters" defaultOpen={true}>
               <ParametersSection
-                temperature={temperature}
-                setTemperature={setTemperature}
-                batchSize={batchSize}
-                setBatchSize={setBatchSize}
-                parameter2={parameter2}
-                setParameter2={setParameter2}
-                parameter3={parameter3}
-                setParameter3={setParameter3}
                 isReadOnly={isReadOnly && !isEditing}
               />
             </CollapsibleSection>

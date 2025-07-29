@@ -27,7 +27,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 // import { Textarea } from "@/components/ui/textarea";
 import { Muted } from "./common/typography"
-import { useNicknameStore } from "@/lib/store/prompt-login";
+import { useLoginStore } from "@/lib/store/prompt-login";
 
 // Icons & Images
 // import { Upload } from "lucide-react";
@@ -69,7 +69,7 @@ export function CreateTestDataDialog({ open, onOpenChange, onSubmit }: CreateTes
 	const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
 	const [isCsvDialogOpen, setIsCsvDialogOpen] = useState(false);
 
-	const { setDefaultHintMessage } = useNicknameStore();
+	const { setDefaultHintMessage } = useLoginStore();
 
 	// 處理選擇 CSV 行
 	const handleSelectCsvRow = useCallback(() => {

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useNicknameStore } from "@/lib/store/prompt-login";
+import { useLoginStore } from "@/lib/store/prompt-login";
 
 // Components & UI
 import { toast } from "sonner";
@@ -27,7 +27,7 @@ const DASHBOARD_URL = "chat-prompt/dashboard";
 export default function HomePage() {
 	const router = useRouter();
 
-	const { nickname, setNickname } = useNicknameStore();
+	const { nickname, setNickname } = useLoginStore();
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const [isSuccess, setIsSuccess] = useState<boolean>(false);
 

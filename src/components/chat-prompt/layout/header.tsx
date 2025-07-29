@@ -5,14 +5,14 @@ import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Home, User, Sun, Monitor, RotateCcw, ChevronRight } from "lucide-react"
 import { usePromptStore } from "@/lib/store/prompt"
-import { useNicknameStore } from "@/lib/store/prompt-login"
+import { useLoginStore } from "@/lib/store/prompt-login"
 
 export function Header() {
 	const router = useRouter();
 	const params = useParams();
 	const assemblyId = params?.id;
 	const { isCompareMode } = usePromptStore();
-	const { nickname, testAreas, nowTestAreaId } = useNicknameStore();
+	const { nickname, testAreas } = useLoginStore();
 
 	const currentTestAreaName = testAreas.find(area => area.id === assemblyId)?.name || "未知";
 
