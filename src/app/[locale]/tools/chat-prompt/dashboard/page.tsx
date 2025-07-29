@@ -46,35 +46,30 @@ export default function DashboardPage() {
 	const {nickname, testAreas, addTestArea, deleteTestArea, duplicateTestArea, getTestArea, setNowTestAreaId, loadPromptBackup, setPromptBackup} = useLoginStore();
 	const promptStore = usePromptStore();
 
-	// Get nickname from zustand and load test areas
+	// 只負責判斷 nickname
 	useEffect(() => {
 		if (!nickname) {
 			router.push("/tools/chat-prompt");
-			return;
 		}
+	}, [router, nickname]);
 
-		// 初始化：如果 testAreas 為空，且 prompt store 有內容，則自動建立預設測試區（避免跟舊版本衝突）
-		if (testAreas.length === 0 && promptStore && promptStore.systemPrompt && promptStore.hintMessage && promptStore.parameters) {
+	// 專門判斷 testAreas 與 promptStore，建立預設產線
+	useEffect(() => {
+		const hasPromptData = promptStore && promptStore.systemPrompt && promptStore.hintMessage && promptStore.parameters;
+		if (testAreas.length === 0 && hasPromptData && nickname) {
+			const tmpId = nanoid();
 			const defaultTestArea = {
-				id: nanoid(),
+				id: tmpId,
 				name: "未儲存產線",
 				author: nickname,
 				updatedAt: new Date().toISOString(),
-				data: {
-					systemPrompt: promptStore.systemPrompt,
-					isSystemPromptOn: promptStore.isSystemPromptOn,
-					hintMessage: promptStore.hintMessage,
-					parameters: promptStore.parameters,
-					selectedModels: promptStore.selectedModels,
-					selectedTools: promptStore.selectedTools,
-					models: promptStore.selectedModels || [],
-					tools: promptStore.selectedTools || [],
-					savedVersions: promptStore.savedVersions || [],
-				},
+				data: {},
 			};
 			addTestArea(defaultTestArea);
+			setNowTestAreaId(tmpId);
+			router.push(`assembly/${tmpId}`);
 		}
-	}, [router, nickname]);
+	}, [testAreas.length, promptStore.systemPrompt, promptStore.hintMessage, promptStore.parameters]);
 
 	// 創建新產線
 	const handleCreateTestArea = (testArea: TestArea) => {
