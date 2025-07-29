@@ -17,7 +17,7 @@ import { VersionCompareView } from "../../../../../../components/chat-prompt/com
 
 // Chat Components
 import { RightPanelControls } from "../../../../../../components/chat-prompt/chat/right-panel-controls"
-import { usePromptStore, type SavedVersion, type SystemPromptData, type ModelAccuracy, type HintMessage } from "../../../../../../lib/store/prompt"
+import { availableModels, usePromptStore, type SavedVersion, type SystemPromptData, type ModelAccuracy, type HintMessage } from "../../../../../../lib/store/prompt"
 
 type ViewMode = "popup" | "unified" | "separate"
 
@@ -43,21 +43,6 @@ interface PromptOption {
 	content: string
 	isDefault?: boolean
 }
-
-// 擴展的模型列表，包含所有可用模型
-const availableModels = [
-	{ id: "o4-mini", name: "o4-mini", category: "OpenAI Models" },
-	{ id: "o3-mini", name: "o3-mini", category: "OpenAI Models" },
-	{ id: "gpt-4.1", name: "GPT-4.1", category: "OpenAI Models" },
-	{ id: "gpt-4.1-mini", name: "GPT-4.1 mini", category: "OpenAI Models" },
-	{ id: "gpt-4.1-nano", name: "GPT-4.1 nano", category: "OpenAI Models" },
-	{ id: "gpt-4o", name: "GPT-4o", category: "OpenAI Models" },
-	{ id: "gpt-4o-mini", name: "GPT-4o mini", category: "OpenAI Models" },
-	{ id: "gemini-2.5-flash", name: "Gemini 2.5 Flash", category: "Google" },
-	{ id: "gemini-2.5-flash-lite", name: "Gemini 2.5 Flash Lite", category: "Google" },
-	{ id: "gemini-2.0-flash", name: "Gemini 2.0 Flash", category: "Google" },
-	{ id: "gemini-2.0-flash-lite", name: "Gemini 2.0 Flash Lite", category: "Google" },
-]
 
 const availableTools = [
 	{ id: "sticker", name: "Sticker" },
@@ -869,7 +854,7 @@ export default function AIPromptTester() {
 	}
 
 	const handleDeleteVersion = (version: SavedVersion) => {
-		console.log("Deleting version:", version.name)
+		// console.log("Deleting version:", version.name)
 
 		setSavedVersions((prev) => prev.filter((v) => v.id !== version.id))
 
@@ -884,7 +869,7 @@ export default function AIPromptTester() {
 
 		setSelectedVersionsForCompare((prev) => prev.filter((id) => id !== version.id))
 
-		console.log("Version deleted successfully")
+		// console.log("Version deleted successfully")
 	}
 
 	const clearAll = () => {

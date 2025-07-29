@@ -88,6 +88,7 @@ export function VersionCompareView({
 
   const [globalModelFilter, setGlobalModelFilter] = useState<string>("gpt-4o")
   const [modelSearchQuery, setModelSearchQuery] = useState("")
+  const [showThinkingModels, setShowThinkingModels] = useState(true);
   const [draggedItem, setDraggedItem] = useState<SavedVersion | null>(null)
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
   const [fullscreenVersion, setFullscreenVersion] = useState<string | null>(null)
@@ -135,10 +136,11 @@ export function VersionCompareView({
   const filteredModels = useMemo(() => {
     return availableModels.filter(
       (model) =>
-        model.name.toLowerCase().includes(modelSearchQuery.toLowerCase()) ||
-        model.id.toLowerCase().includes(modelSearchQuery.toLowerCase()),
-    )
-  }, [modelSearchQuery])
+        (showThinkingModels || !model.isThinking) &&
+        (model.name.toLowerCase().includes(modelSearchQuery.toLowerCase()) ||
+          model.id.toLowerCase().includes(modelSearchQuery.toLowerCase()))
+    );
+  }, [modelSearchQuery, showThinkingModels]);
 
   const handleGlobalModelChange = (modelId: string) => {
     setGlobalModelFilter(modelId)
@@ -358,6 +360,24 @@ export function VersionCompareView({
                   </motion.div>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="bg-gray-900 border-gray-700 w-80">
+                  <div className="relative w-full px-0 py-2 border-b border-gray-700">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="w-full flex items-center justify-start text-sm text-gray-400 hover:text-white focus:outline-none px-2 py-2 pr-10 relative"
+                      onClick={() => setShowThinkingModels(v => !v)}
+                    >
+                      <span className="flex-1 text-left">顯示 Thinking 模型</span>
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none select-none text-lg" style={{zIndex:2}}>
+                        {showThinkingModels ? (
+                          <span className="text-green-500">✔</span>
+                        ) : (
+                          <span className="text-red-500">✗</span>
+                        )}
+                      </span>
+                    </Button>
+                  </div>
                   {/* 搜尋框 */}
                   <div className="p-2 border-b border-gray-700">
                     <div className="relative">
@@ -381,8 +401,9 @@ export function VersionCompareView({
                   {Object.entries(modelsByCategory).map(([category, categoryModels]) => {
                     const filteredCategoryModels = categoryModels.filter(
                       (model) =>
-                        model.name.toLowerCase().includes(modelSearchQuery.toLowerCase()) ||
-                        model.id.toLowerCase().includes(modelSearchQuery.toLowerCase()),
+                        (showThinkingModels || !model.isThinking) &&
+                        (model.name.toLowerCase().includes(modelSearchQuery.toLowerCase()) ||
+                        model.id.toLowerCase().includes(modelSearchQuery.toLowerCase()))
                     )
 
                     if (filteredCategoryModels.length === 0) return null

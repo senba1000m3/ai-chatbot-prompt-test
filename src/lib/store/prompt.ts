@@ -60,6 +60,27 @@ export interface SavedVersion {
 
 type NewSavedVersion = Omit<SavedVersion, "id" | "savedAt" | "expanded">;
 
+// 所有模型
+export const availableModels = [
+	{ id: "o4-mini", name: "o4-mini", category: "OpenAI", webSearch: false, isThinking: false },
+	{ id: "o4-mini-thinking", name: "o4-mini (thinking)", category: "OpenAI", webSearch: false, isThinking: true },
+	{ id: "o3-mini", name: "o3-mini", category: "OpenAI", webSearch: false, isThinking: false },
+	{ id: "o3-mini-thinking", name: "o3-mini (thinking)", category: "OpenAI", webSearch: false, isThinking: true },
+	{ id: "o3", name: "o3", category: "OpenAI", webSearch: false, isThinking: false },
+	{ id: "o3-thinking", name: "o3 (thinking)", category: "OpenAI", webSearch: false, isThinking: true },
+	{ id: "gpt-4.1", name: "GPT-4.1", category: "OpenAI", webSearch: true, isThinking: false },
+	{ id: "gpt-4.1-mini", name: "GPT-4.1 mini", category: "OpenAI", webSearch: true, isThinking: false },
+	{ id: "gpt-4.1-nano", name: "GPT-4.1 nano", category: "OpenAI", webSearch: false, isThinking: false },
+	{ id: "gpt-4o", name: "GPT-4o", category: "OpenAI", webSearch: true, isThinking: false },
+	{ id: "gpt-4o-mini", name: "GPT-4o mini", category: "OpenAI", webSearch: true, isThinking: false },
+	{ id: "gemini-2.5-flash", name: "Gemini 2.5 Flash", category: "Google", webSearch: true, isThinking: false },
+	{ id: "gemini-2.5-flash-thinking", name: "Gemini 2.5 Flash (thinking)", category: "Google", webSearch: true, isThinking: true },
+	{ id: "gemini-2.5-flash-lite", name: "Gemini 2.5 Flash Lite", category: "Google", webSearch: true, isThinking: false },
+	{ id: "gemini-2.5-flash-lite-thinking", name: "Gemini 2.5 Flash Lite (thinking)", category: "Google", webSearch: true, isThinking: true },
+	{ id: "gemini-2.0-flash", name: "Gemini 2.0 Flash", category: "Google", webSearch: true, isThinking: false },
+	{ id: "gemini-2.0-flash-lite", name: "Gemini 2.0 Flash Lite", category: "Google", webSearch: false, isThinking: false },
+];
+
 export interface PromptStoreProps {
 	// Prompt 相關
 	systemPrompt: SystemPromptData;
@@ -141,20 +162,6 @@ export interface PromptStoreProps {
 	// setMessageScrollRef: (ref: React.RefObject<HTMLDivElement>) => void;
 	// scrollToBottom: () => void;
 };
-
-export const availableModels = [
-	{ id: "o4-mini", name: "o4-mini", category: "OpenAI Models" },
-	{ id: "o3-mini", name: "o3-mini", category: "OpenAI Models" },
-	{ id: "gpt-4.1", name: "GPT-4.1", category: "OpenAI Models" },
-	{ id: "gpt-4.1-mini", name: "GPT-4.1 mini", category: "OpenAI Models" },
-	{ id: "gpt-4.1-nano", name: "GPT-4.1 nano", category: "OpenAI Models" },
-	{ id: "gpt-4o", name: "GPT-4o", category: "OpenAI Models" },
-	{ id: "gpt-4o-mini", name: "GPT-4o mini", category: "OpenAI Models" },
-	{ id: "gemini-2.5-flash", name: "Gemini 2.5 Flash", category: "Google" },
-	{ id: "gemini-2.5-flash-lite", name: "Gemini 2.5 Flash Lite", category: "Google" },
-	{ id: "gemini-2.0-flash", name: "Gemini 2.0 Flash", category: "Google" },
-	{ id: "gemini-2.0-flash-lite", name: "Gemini 2.0 Flash Lite", category: "Google" },
-];
 
 export const usePromptStore = create<PromptStoreProps>()(
 	persist(
@@ -525,7 +532,7 @@ export const usePromptStore = create<PromptStoreProps>()(
 									[messageId]: { ...message, id: messageId },
 								},
 							},
-						},
+						}
 					};
 				});
 				return messageId;
@@ -586,6 +593,7 @@ export const usePromptStore = create<PromptStoreProps>()(
 				isSystemPromptOn: state.isSystemPromptOn,
 				hintMessage: state.hintMessage,
 				savedVersions: state.savedVersions,
+				parameters: state.parameters,
 			}),
 			// onRehydrateStorage 仍可保留
 			onRehydrateStorage: () => (state) => {

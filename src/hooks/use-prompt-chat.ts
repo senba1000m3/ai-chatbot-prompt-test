@@ -41,8 +41,6 @@ export function usePromptChat() {
 		updateModelMessage,
 		setModelIsLoading,
 		getModelMessages,
-		inputSendTimes,
-		setInputSendTimes,
 	} = usePromptStore();
 
 	const sendMessage = useCallback(
@@ -58,14 +56,24 @@ export function usePromptChat() {
 					const currentSendTimes = sendTimes || usePromptStore.getState().inputSendTimes;
 
 					for (let i = 0; i < currentSendTimes; i++) {
+
+						const newAssistantMessageIds = modelNames.map(modelName =>
+							appendModelMessage(modelName, {
+								role: "assistant",
+								content: "......",
+							})
+						);
+
 						const messagePromises = modelNames.map(async (modelName, idx) => {
 							const historyMessages = getModelMessages(modelName);
+							const parameters = usePromptStore.getState().parameters;
 
 							try {
 								const result = await generate({
 									modelName: modelName,
 									messages: historyMessages as CoreMessage[],
-									systemPrompt: totalPrompts
+									systemPrompt: totalPrompts,
+									parameters: parameters,
 								});
 
 								return {
@@ -73,11 +81,11 @@ export function usePromptChat() {
 									success: true,
 									result: result?.text,
 									spendTime: result?.spendTime,
-									assistantMessageId: assistantMessageIds[idx]
+									assistantMessageId: newAssistantMessageIds[idx]
 								};
 							} catch (err) {
 								const error = ensureError(err);
-								return { modelName, success: false, error: error.message, assistantMessageId: assistantMessageIds[idx] };
+								return { modelName, success: false, error: error.message, assistantMessageId: newAssistantMessageIds[idx] };
 							}
 						});
 
@@ -126,17 +134,11 @@ export function usePromptChat() {
 				});
 			});
 
-			const assistantMessageIds = currentSelectedModels.map(modelName =>
-				appendModelMessage(modelName, {
-					role: "assistant",
-					content: "......",
-				})
-			);
 
 			await sendMessage({
 				modelNames: currentSelectedModels,
 				input: input,
-				assistantMessageIds,
+				assistantMessageIds: [],
 			});
 		},
 		[appendModelMessage, sendMessage]
@@ -146,4 +148,5 @@ export function usePromptChat() {
 		handleSubmit,
 	};
 }
+
 

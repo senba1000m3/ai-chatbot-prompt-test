@@ -62,6 +62,7 @@ export function useComparePromptChat() {
 							modelName: modelName,
 							messages: historyMessages as CoreMessage[],
 							systemPrompt: currentPrompts.join("\n").trim(),
+							parameters: version.data.parameters
 						});
 
 						return {

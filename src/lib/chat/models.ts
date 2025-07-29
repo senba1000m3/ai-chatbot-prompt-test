@@ -1,12 +1,14 @@
 import { openai } from "@ai-sdk/openai";
 import { google } from "@ai-sdk/google";
-// import { elevenlabs } from "@ai-sdk/elevenlabs";
+import { availableModels } from "@/lib/store/prompt";
 
 // Types & Interfaces
 type ChatModelConfig = {
+	id: string;
 	model: string;
 	name: string;
 	webSearch: boolean;
+	isThinking?: boolean;
 };
 type ChatModel = ChatModelConfig & {
 	provider: any;
@@ -14,35 +16,28 @@ type ChatModel = ChatModelConfig & {
 	settings?: Record<string, any>;
 };
 
+// 取得 OpenAI 與 Google 的模型清單，並根據 availableModels 的 webSearch 屬性設置
+const OPENAI_AI_MODELS = availableModels.filter(m => m.category === "OpenAI").map(m => ({
+	id: m.id,
+	model: m.id.replace(/-thinking$/, ""), // model 屬性去掉 -thinking
+	name: m.name,
+	webSearch: m.webSearch,
+	isThinking: m.isThinking,
+}));
 
-
-const OPENAI_AI_MODELS: ChatModelConfig[] = [
-	{ model: "o4-mini", name: "o4-mini", webSearch: false },
-	// { model: "o3", name: "o3", webSearch: false },
-	{ model: "o3-mini", name: "o3-mini", webSearch: false },
-	{ model: "gpt-4.1", name: "GPT-4.1", webSearch: true },
-	{ model: "gpt-4.1-mini", name: "GPT-4.1 mini", webSearch: true },
-	{ model: "gpt-4.1-nano", name: "GPT-4.1 nano", webSearch: false },
-	{ model: "gpt-4o", name: "GPT-4o", webSearch: true },
-	{ model: "gpt-4o-mini", name: "GPT-4o mini", webSearch: true },
-];
-
-const GOOGLE_AI_MODELS: ChatModelConfig[] = [
-	{ model: "gemini-2.5-flash-preview-05-20", name: "Gemini 2.5 Flash", webSearch: true },
-	{ model: "gemini-2.5-flash-lite-preview-06-17", name: "Gemini 2.5 Flash Lite", webSearch: true },
-	{ model: "gemini-2.0-flash", name: "Gemini 2.0 Flash", webSearch: true },
-	{ model: "gemini-2.0-flash-lite", name: "Gemini 2.0 Flash Lite", webSearch: false },
-];
-
-// const ELEVENLABS_AI_MODELS: ChatModelConfig[] = [
-// 	{ model: "scribe_v1", name: "Scribe v1", webSearch: false },
-// 	{ model: "scribe_v1_experimental", name: "Scribe v1 Experimental", webSearch: false },
-// ];
+const GOOGLE_AI_MODELS = availableModels.filter(m => m.category === "Google").map(m => ({
+	id: m.id,
+	model: m.id.replace(/-thinking$/, ""),
+	name: m.name,
+	webSearch: m.webSearch,
+	isThinking: m.isThinking,
+}));
 
 export const CHAT_MODELS: Record<string, ChatModel[]> = {
 	OpenAI: OPENAI_AI_MODELS.map(model => ({
 		...model,
 		provider: model.webSearch ? openai.responses : openai,
+		isThinking: model.isThinking, // 確保 isThinking 正確帶入
 		tools: model.webSearch ? {
 			webSearch_preview: openai.tools.webSearchPreview({ searchContextSize: "medium" }),
 		} : undefined,
@@ -50,6 +45,7 @@ export const CHAT_MODELS: Record<string, ChatModel[]> = {
 	Google: GOOGLE_AI_MODELS.map(model => ({
 		...model,
 		provider: google,
+		isThinking: model.isThinking, // 確保 isThinking 正確帶入
 		settings: model.webSearch ? {
 			useSearchGrounding: true,
 		}: undefined,
@@ -57,16 +53,12 @@ export const CHAT_MODELS: Record<string, ChatModel[]> = {
 } as const;
 
 export function getChatModel(model: string): ChatModel | undefined {
-	console.log(model);
+	// 直接用 id 精確比對
 	for (const models of Object.values(CHAT_MODELS)) {
-		console.log(model);
-		const match = models.find(m => m.model === model);
+		const match = models.find(m => m.id === model);
 		if (match){
-			// console.log(match);
-			console.log("hit");
 			return match;
 		}
 	}
-
 	return undefined;
 }

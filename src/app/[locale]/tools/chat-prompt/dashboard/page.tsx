@@ -60,7 +60,7 @@ export default function DashboardPage() {
 			toast("創建成功", { description: `產線 \"${newTestArea.name}\" 已創建` });
 			setIsDialogOpen(false);
 			setNowTestAreaId(newTestArea.id);
-			console.log(newTestArea.data);
+			// console.log(newTestArea.data);
 			loadPromptBackup(newTestArea.data);
 			router.push(`assembly/${newTestArea.id}`);
 		} catch (error) {
