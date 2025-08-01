@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { motion } from "framer-motion"
-import { ChevronRight, Copy, Download, Trash2, Play } from "lucide-react"
+import { ChevronRight, Copy, Download, Trash2, Play, GitFork, Eye } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -17,7 +17,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { AnimatePresence } from "framer-motion"
-import { usePromptStore, type SavedVersion, type ModelAccuracy } from "@/lib/store/prompt"
+import { usePromptStore, availableModels, type SavedVersion, type ModelAccuracy } from "@/lib/store/prompt"
 
 interface VersionCardProps {
   version: SavedVersion
@@ -25,21 +25,6 @@ interface VersionCardProps {
   filteredModelAccuracy?: ModelAccuracy[]
 	setIsReadOnly: (value: boolean) => void
 }
-
-// 定義可用的模型和工具
-const availableModels = [
-  { id: "o4-mini", name: "o4-mini" },
-  { id: "o3-mini", name: "o3-mini" },
-  { id: "gpt-4.1", name: "GPT-4.1" },
-  { id: "gpt-4.1-mini", name: "GPT-4.1 mini" },
-  { id: "gpt-4.1-nano", name: "GPT-4.1 nano" },
-  { id: "gpt-4o", name: "GPT-4o" },
-  { id: "gpt-4o-mini", name: "GPT-4o mini" },
-  { id: "gemini-2.5-flash", name: "Gemini 2.5 Flash" },
-  { id: "gemini-2.5-flash-lite", name: "Gemini 2.5 Flash Lite" },
-  { id: "gemini-2.0-flash", name: "Gemini 2.0 Flash" },
-  { id: "gemini-2.0-flash-lite", name: "Gemini 2.0 Flash Lite" },
-]
 
 const availableTools = [
   { id: "sticker", name: "Sticker" },
@@ -124,9 +109,6 @@ export function VersionCard({version, onDownloadVersion, filteredModelAccuracy, 
   // 參數項目
   const parameterItems = [
     { key: "temperature", label: "Temperature", value: safeVersionData.parameters.temperature.toString() },
-    { key: "batchSize", label: "Batch Size", value: safeVersionData.parameters.batchSize },
-    { key: "parameter2", label: "Parameter 2", value: safeVersionData.parameters.parameter2 },
-    { key: "parameter3", label: "Parameter 3", value: safeVersionData.parameters.parameter3 },
   ]
 
   const handleDelete = () => {
@@ -164,36 +146,11 @@ export function VersionCard({version, onDownloadVersion, filteredModelAccuracy, 
         </div>
 
         <div className="flex items-center space-x-1">
-          {/* 載入按鈕 */}
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="sm" className="p-1 h-8 w-8 hover:bg-gray-800">
-                <Play className="h-4 w-4 text-blue-400" />
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>載入版本</AlertDialogTitle>
-                <AlertDialogDescription>
-                  確定要載入版本「{version.name}」嗎？這將會覆蓋當前的設定。
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>取消</AlertDialogCancel>
-                <AlertDialogAction onClick={() => {
-					loadVersion(version);
-					setEditingVersionID(version.id);
-					setIsReadOnly(true);
-				}}>載入</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-
           {/* 複製按鈕 */}
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="ghost" size="sm" className="p-1 h-8 w-8 hover:bg-gray-800">
-                <Copy className="h-4 w-4 text-green-400" />
+                <GitFork className="h-4 w-4 text-blue-400" />
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
@@ -226,6 +183,31 @@ export function VersionCard({version, onDownloadVersion, filteredModelAccuracy, 
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+
+			{/* 查看按鈕 */}
+			<AlertDialog>
+				<AlertDialogTrigger asChild>
+					<Button variant="ghost" size="sm" className="p-1 h-8 w-8 hover:bg-gray-800">
+						<Eye className="h-4 w-4 text-green-400" />
+					</Button>
+				</AlertDialogTrigger>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>查看版本</AlertDialogTitle>
+						<AlertDialogDescription>
+							確定要查看版本 「{version.name}」 嗎？這將會覆蓋當前的設定。
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>取消</AlertDialogCancel>
+						<AlertDialogAction onClick={() => {
+							loadVersion(version);
+							setEditingVersionID(version.id);
+							setIsReadOnly(true);
+						}}>查看</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 
           {/* 刪除按鈕 */}
           <AlertDialog>

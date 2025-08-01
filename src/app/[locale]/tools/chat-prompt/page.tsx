@@ -20,9 +20,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 
 // Constants & Variables
-const DASHBOARD_URL = "chat-prompt/dashboard";
-
-
+const DASHBOARD_URL = "/tools/chat-prompt/dashboard";
 
 export default function HomePage() {
 	const router = useRouter();
@@ -106,3 +104,4 @@ export default function HomePage() {
 		</main>
 	);
 }
+

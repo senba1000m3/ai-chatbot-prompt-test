@@ -81,6 +81,11 @@ export const availableModels = [
 	{ id: "gemini-2.0-flash-lite", name: "Gemini 2.0 Flash Lite", category: "Google", webSearch: false, isThinking: false },
 ];
 
+export const availableTools = [
+	{ id: "sticker", name: "Sticker" },
+	{ id: "plot", name: "Plot" },
+]
+
 export interface PromptStoreProps {
 	// Prompt 相關
 	systemPrompt: SystemPromptData;
@@ -111,6 +116,7 @@ export interface PromptStoreProps {
 	modelMessageOrder: Record<string, string[]>;
 	appendModelMessage: (modelId: string, message: ModelMessage) => string;
 	updateModelMessage: (modelId: string, messageId: string, update: Partial<ModelMessage>) => void;
+	removeModelMessage: (modelId: string, messageId: string) => void;
 	getModelMessages: (modelId: string) => ModelMessage[];
 	clearModelMessages: () => void;
 	modelIsLoading: Record<string, boolean>; // 這邊 loading 是檢查是不是所有模型都回傳
@@ -284,6 +290,25 @@ export const usePromptStore = create<PromptStoreProps>()(
 						modelMessages: {
 							...state.modelMessages,
 							[modelId]: newModelMsgs,
+						},
+					};
+				});
+			},
+			removeModelMessage: (modelId: string, messageId: string) => {
+				set(state => {
+					const modelMsgs = state.modelMessages[modelId] || {};
+					const modelOrder = state.modelMessageOrder[modelId] || [];
+					if (!modelMsgs[messageId]) return state;
+					const { [messageId]: _, ...newModelMsgs } = modelMsgs;
+					const newModelOrder = modelOrder.filter(id => id !== messageId);
+					return {
+						modelMessages: {
+							...state.modelMessages,
+							[modelId]: newModelMsgs,
+						},
+						modelMessageOrder: {
+							...state.modelMessageOrder,
+							[modelId]: newModelOrder,
 						},
 					};
 				});
@@ -660,6 +685,7 @@ export type PromptStoreData = Omit<PromptStoreProps,
 	| "setSelectedTools"
 	| "appendModelMessage"
 	| "updateModelMessage"
+	| "removeModelMessage"
 	| "getModelMessages"
 	| "clearModelMessages"
 	| "setModelIsLoading"

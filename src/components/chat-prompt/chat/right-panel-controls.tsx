@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Input } from "@/components/ui/input"
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
-import { ExternalLink, AlignJustify, Grid2X2, Palette, PaintBucket, Eye } from "lucide-react"
+import { ExternalLink, AlignJustify, Grid2X2, Palette, PaintBucket, Eye, Maximize2 } from "lucide-react"
 import { Slider } from "@/components/ui/slider"
 import { usePromptStore } from "@/lib/store/prompt"
 import { useState } from "react"
@@ -46,6 +46,7 @@ interface RightPanelControlsProps {
   colorMode?: number
   onColorModeChange?: () => void
   isReadOnly?: boolean
+  onUnifiedFullscreen?: () => void
 }
 
 export function RightPanelControls({
@@ -56,6 +57,7 @@ export function RightPanelControls({
   colorMode = 0,
   onColorModeChange,
   isReadOnly = false,
+  onUnifiedFullscreen,
 }: RightPanelControlsProps) {
   const {
     clearModelMessages,
@@ -138,7 +140,7 @@ export function RightPanelControls({
 
   return (
     <TooltipProvider>
-      <div className="p-4 border-b border-gray-800 flex justify-between items-center flex-shrink-0">
+      <div className="p-2 border-b border-gray-800 flex justify-between items-center flex-shrink-0">
         <div className="flex space-x-2">
           <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
             <DialogTrigger asChild>
@@ -226,7 +228,6 @@ export function RightPanelControls({
               className="bg-black border-gray-800"
               onEscapeKeyDown={(event) => {
                 event.preventDefault()
-                // AlertDialog 會自動處理 ESC 鍵
               }}
             >
               <AlertDialogHeader>
@@ -338,7 +339,7 @@ export function RightPanelControls({
               </motion.div>
             </TooltipTrigger>
             <TooltipContent side="bottom" className="z-[9999] bg-gray-800 border-gray-700 text-white">
-              <p>彈出視窗</p>
+              <p>彈出視窗（未添加功能）</p>
             </TooltipContent>
           </Tooltip>
           <Tooltip>

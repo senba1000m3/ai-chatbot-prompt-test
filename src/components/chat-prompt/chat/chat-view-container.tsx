@@ -2,10 +2,11 @@
 
 import type React from "react"
 
-import { useRef } from "react"
+import { useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
 import { motion } from "framer-motion"
+import { Card } from "@/components/ui/card"
 import { ModelChatCard } from "./model-chat-card"
 import { UnifiedChatView } from "./unified-chat-view"
 import { PopupViewPlaceholder } from "./popup-view-placeholder"
@@ -67,7 +68,6 @@ export function ChatViewContainer({
     isLoading: false,
   }));
 
-  // 計算每個對話框的高度 - 為輸入框預留空間
   const getIndividualChatHeight = () => {
     const modelCount = selectedModels.length
     const inputSectionHeight = 120 // 為輸入框預留的高度
@@ -94,43 +94,35 @@ export function ChatViewContainer({
     }
   }
 
-  const handleUnifiedPopupWindow = () => {
-    const conversationFlow: Array<{
-      type: "user" | "assistant" | "system"
-      content: string
-      model?: string
-    }> = []
+  const handleSyncScroll = (sourceIndex: number, scrollTop: number, scrollHeight: number, clientHeight: number) => {
+    if (!syncScroll) return
 
-    const maxLength = Math.max(...modelResponses.map((m) => m.messages.length))
+    const denominator = scrollHeight - clientHeight
+    const scrollPercentage = denominator > 0 ? scrollTop / denominator : 0
 
-    for (let i = 0; i < maxLength; i++) {
-      const userMessage = modelResponses[0]?.messages[i]
-      if (userMessage && userMessage.role === "user" && userMessage.content) {
-        conversationFlow.push({
-          type: "user",
-          content: userMessage.content as string,
-        })
+    actualScrollRefs.current.forEach((ref, index) => {
+      if (ref && index !== sourceIndex) {
+        const targetScrollHeight = ref.scrollHeight
+        const targetClientHeight = ref.clientHeight
+        const targetDenominator = targetScrollHeight - targetClientHeight
+        const targetScrollTop = targetDenominator > 0 ? scrollPercentage * targetDenominator : 0
+        ref.scrollTop = targetScrollTop
       }
+    })
+  }
 
-      modelResponses.forEach((model) => {
-        const assistantMessage = model.messages[i]
-        if (assistantMessage && assistantMessage.role === "assistant" && assistantMessage.content) {
-          conversationFlow.push({
-            type: "assistant",
-            content: assistantMessage.content as string,
-            model: model.name,
-          })
-        }
-      })
-    }
-
+  // 單一卡片彈窗
+  const handlePopupWindow = (modelId: string) => {
+    const model = modelResponses.find((m) => m.id === modelId)
+    if (!model) return
+    const messages = model.messages.filter(m => m.role !== 'system')
     const htmlContent = `
     <!DOCTYPE html>
     <html lang="zh-TW">
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>統一對話框 - OCR 測試系統</title>
+      <title>${model.name} 對話 - 聊天 Prompt 產線</title>
       <style>
         body {
           margin: 0;
@@ -174,11 +166,6 @@ export function ChatViewContainer({
           border: 1px solid #4B5563;
           margin-right: auto;
         }
-        .model-label {
-          font-size: 12px;
-          color: #9CA3AF;
-          margin-bottom: 4px;
-        }
         .message-content {
           white-space: pre-wrap;
           font-size: 14px;
@@ -192,18 +179,17 @@ export function ChatViewContainer({
     </head>
     <body>
       <div class="header">
-        <div class="title">統一對話框</div>
-        <div class="subtitle">OCR 測試系統 - 獨立視窗</div>
+        <div class="title">${model.name} 對話</div>
+        <div class="subtitle">聊天 Prompt 產線 - 獨立視窗</div>
       </div>
       <div class="messages">
         ${
-          conversationFlow.length === 0
+          messages.length === 0
             ? '<div class="no-messages">尚無對話記錄</div>'
-            : conversationFlow
+            : messages
                 .map(
                   (item) => `
-            <div class="message ${item.type === "user" ? "user-message" : "assistant-message"}">
-              ${item.type === "assistant" && item.model ? `<div class="model-label">${item.model}</div>` : ""}
+            <div class="message ${item.role === "user" ? "user-message" : "assistant-message"}">
               <div class="message-content">${item.content}</div>
             </div>
           `,
@@ -214,30 +200,11 @@ export function ChatViewContainer({
     </body>
     </html>
     `
-
     const newWindow = window.open("", "_blank")
     if (newWindow) {
       newWindow.document.write(htmlContent)
       newWindow.document.close()
     }
-  }
-
-  // 同步滾動處理函數
-  const handleSyncScroll = (sourceIndex: number, scrollTop: number, scrollHeight: number, clientHeight: number) => {
-    if (!syncScroll) return
-
-    // 計算滾動百分比
-    const scrollPercentage = scrollTop / (scrollHeight - clientHeight)
-
-    // 同步其他滾動容器
-    actualScrollRefs.current.forEach((ref, index) => {
-      if (ref && index !== sourceIndex) {
-        const targetScrollHeight = ref.scrollHeight
-        const targetClientHeight = ref.clientHeight
-        const targetScrollTop = scrollPercentage * (targetScrollHeight - targetClientHeight)
-        ref.scrollTop = targetScrollTop
-      }
-    })
   }
 
   return (
@@ -247,8 +214,8 @@ export function ChatViewContainer({
           {/* 聊天區域 */}
           <div className="flex-1 p-4 overflow-hidden">
             {viewMode === "separate" && !fullscreenModel && (
-              <div className="h-full relative">
-                <div className={getGridClassName()} style={{ height: `${chatHeight - 120}px` }}>
+              <div className="relative">
+                <div className={getGridClassName()}>
                   {selectedModels.map((modelId, index) => (
                     <ModelChatCard
                       key={modelId}
@@ -260,11 +227,12 @@ export function ChatViewContainer({
                       }}
                       index={index}
                       syncScroll={syncScroll}
-                      onPopupWindow={onPopupWindow}
+                      onPopupWindow={() => handlePopupWindow(modelId)}
                       onFullscreen={setFullscreenModel}
                       chatHeight={getIndividualChatHeight()}
                       onSyncScroll={handleSyncScroll}
                       onMessageRating={onMessageRating}
+                      setScrollRef={el => { actualScrollRefs.current[index] = el; }}
                     />
                   ))}
                 </div>
@@ -272,7 +240,7 @@ export function ChatViewContainer({
                 <div
                   className="absolute"
                   style={{
-                    top: `${(chatHeight - 120) / 2}px`,
+                    top: "calc((100vh - 80px - 48px - 120px) / 2)",
                     left: "50%",
                     transform: "translate(-50%, -50%)",
                     zIndex: 10,
@@ -316,51 +284,100 @@ export function ChatViewContainer({
             )}
 
             {viewMode === "unified" && (
-              <div className="flex flex-col h-full">
-                <div className="flex-1">
-                  <UnifiedChatView
-                    modelResponses={modelResponses}
-                    // messagesEndRef={actualMessagesEndRef}
-                    chatHeight={chatHeight - 120}
-                    onPopupWindow={handleUnifiedPopupWindow}
-                    // onMessageRating={onMessageRating}
-                  />
-                </div>
-              </div>
+              <UnifiedChatView
+                modelResponses={modelResponses}
+                chatHeight={chatHeight - 120}
+              />
             )}
 
             {viewMode === "popup" && <PopupViewPlaceholder />}
 
             {fullscreenModel && (
-              <div className="absolute top-0 left-0 w-full h-[80%] bg-black z-50 flex flex-col">
-                <div className="p-4 flex justify-between items-center border-b border-gray-800">
-                  <div className="text-lg font-semibold">
-                    {modelResponses.find((m) => m.id === fullscreenModel)?.name || "Full Screen"}
-                  </div>
-                  <Button variant="secondary" size="sm" onClick={() => setFullscreenModel(null)}>
-                    關閉全螢幕
-                  </Button>
-                </div>
-                <div className="flex-1 p-4 overflow-y-auto">
-                  {modelResponses
-                    .find((m) => m.id === fullscreenModel)
-                    ?.messages.filter(m => m.role !== 'system').map((message, msgIndex) => (
-                      <motion.div
-                        key={msgIndex}
-                        initial={{ opacity: 0, x: message.role === "user" ? 20 : -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: msgIndex * 0.05, duration: 0.3 }}
-                        className={`p-3 rounded-lg mb-3 ${
-                          message.role === "user"
-                            ? "bg-blue-600 text-white ml-8"
-                            : "bg-gray-800 text-white mr-8 border border-gray-700"
-                        }`}
-                      >
-                        <div className="text-sm whitespace-pre-wrap">{message.content as string}</div>
-                      </motion.div>
-                    ))}
-                </div>
-              </div>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="fixed top-0 left-0 right-0 bottom-0 z-[70] bg-black/90 backdrop-blur-sm"
+              >
+                <motion.div
+                  initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                  animate={{ scale: 1, opacity: 1, y: 0 }}
+                  exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                  transition={{
+                    duration: 0.3,
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 30,
+                  }}
+                  className="h-full p-4"
+                >
+                  <Card className="h-full bg-gray-900 border-gray-800 flex flex-col shadow-2xl">
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1, duration: 0.2 }}
+                      className="p-3 border-b border-gray-800 flex justify-between items-center bg-gray-800"
+                    >
+                      <h3 className="font-medium text-white">
+                        {modelResponses.find((m) => m.id === fullscreenModel)?.name || "Full Screen"} - 全螢幕檢視
+                      </h3>
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setFullscreenModel(null)}
+                          className="text-gray-400 hover:text-white hover:bg-gray-700 transition-colors"
+                        >
+                          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </motion.div>
+                        </Button>
+                      </div>
+                    </motion.div>
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.2, duration: 0.3 }}
+                      className="flex-1 p-3 overflow-y-auto space-y-3"
+                    >
+                      {(() => {
+                        const model = modelResponses.find((m) => m.id === fullscreenModel)
+                        if (!model)
+                          return (
+                            <div className="text-center text-gray-400 py-8">
+                              <p>版本不存在</p>
+                            </div>
+                          )
+                        const messages = model.messages.filter(m => m.role !== 'system')
+                        return messages.length === 0 ? (
+                          <div className="text-center text-gray-400 py-8">
+                            <p>尚無訊息</p>
+                          </div>
+                        ) : (
+                          messages.map((message, msgIndex) => (
+                            <motion.div
+                              key={message.id || msgIndex}
+                              initial={{ opacity: 0, x: message.role === "user" ? 20 : -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: msgIndex * 0.05, duration: 0.3 }}
+                              className={`p-3 rounded-lg mb-3 ${
+                                message.role === "user"
+                                  ? "bg-blue-600 text-white ml-8"
+                                  : "bg-gray-800 text-white mr-8 border border-gray-700"
+                              }`}
+                            >
+                              <div className="text-sm whitespace-pre-wrap">{message.content as string}</div>
+                            </motion.div>
+                          ))
+                        )
+                      })()}
+                    </motion.div>
+                  </Card>
+                </motion.div>
+              </motion.div>
             )}
           </div>
 

@@ -8,7 +8,7 @@ import { ExternalLink } from "lucide-react"
 import { LoadingSpinner } from "./loading-spinner"
 import type { RefObject } from "react"
 import { type ModelMessage } from "@/lib/store/prompt"
-import React from "react"
+import React, { useState } from "react"
 
 
 interface ModelResponse {
@@ -28,9 +28,9 @@ interface UnifiedChatViewProps {
 export function UnifiedChatView({
   modelResponses,
   chatHeight,
-  onPopupWindow,
-  onFullscreen,
 }: UnifiedChatViewProps) {
+  const [ifFullScreen, setIfFullScreen] = useState(false);
+
   const conversationFlow: Array<{
     type: "user" | "assistant"
     content: string
@@ -56,12 +56,12 @@ export function UnifiedChatView({
           type: "assistant",
           content: assistantMessage.content as string,
           model: model.name,
-          // responseTime: assistantMessage,
         })
       }
     })
   }
 
+  // 將彈窗邏輯整合到這裡
   const handlePopupWindow = () => {
     const htmlContent = `
     <!DOCTYPE html>
@@ -161,10 +161,83 @@ export function UnifiedChatView({
     }
   }
 
+  if (ifFullScreen) {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        className="fixed top-0 left-0 right-0 bottom-0 z-[70] bg-black/90 backdrop-blur-sm"
+      >
+        <motion.div
+          initial={{ scale: 0.95, opacity: 0, y: 20 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          exit={{ scale: 0.95, opacity: 0, y: 20 }}
+          transition={{
+            duration: 0.3,
+            type: "spring",
+            stiffness: 300,
+            damping: 30,
+          }}
+          className="h-full p-4"
+        >
+          <Card className="h-full bg-gray-900 border-gray-800 flex flex-col shadow-2xl">
+            <div className="p-3 border-b border-gray-800 bg-gray-800 flex justify-between items-center flex-shrink-0">
+              <h3 className="font-medium text-white">統一對話 - 全螢幕檢視</h3>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIfFullScreen(false)}
+                  className="text-gray-400 hover:text-white hover:bg-gray-700 transition-colors"
+                  aria-label="關閉全螢幕"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </Button>
+              </div>
+            </div>
+            <div className="flex-1 p-3 overflow-y-auto space-y-3 min-h-0">
+              {conversationFlow.map((item, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: item.type === "user" ? 20 : -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05, duration: 0.3 }}
+                >
+                  {item.type === "assistant" && <div className="text-xs text-gray-400 mb-1">{item.model}</div>}
+                  {item.type === "assistant" && item.responseTime && (
+                    <div className="flex justify-start mb-1">
+                      <div className="text-xs text-gray-500 font-mono bg-gray-800 px-2 py-1 rounded mr-8">
+                        {item.responseTime}ms
+                      </div>
+                    </div>
+                  )}
+                  <div
+                    className={`p-3 rounded-lg ${
+                      item.type === "user"
+                        ? "bg-blue-600 text-white ml-8"
+                        : "bg-gray-800 text-white mr-8 border border-gray-700"
+                    }`}
+                  >
+                    <div className="text-sm whitespace-pre-wrap">{item.content}</div>
+                  </div>
+                </motion.div>
+              ))}
+              {modelResponses.some((m) => m.isLoading) && <LoadingSpinner />}
+            </div>
+          </Card>
+        </motion.div>
+      </motion.div>
+    );
+  }
+
   return (
     <TooltipProvider>
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-        <Card className="bg-gray-900 border-gray-800 flex flex-col" style={{ height: `${chatHeight}px` }}>
+        <Card className="bg-gray-900 border-gray-800 flex flex-col" style={{ height: "calc(100vh - 80px - 170px)" }}>
           <div className="p-3 border-b border-gray-800 bg-gray-800 flex justify-between items-center flex-shrink-0">
             <h3 className="font-medium text-white">統一對話框</h3>
             <div className="flex space-x-1">
@@ -175,7 +248,7 @@ export function UnifiedChatView({
                       variant="ghost"
                       size="sm"
                       className="h-6 w-6 p-0 text-gray-400 hover:text-white hover:bg-gray-700 transition-colors"
-                      onClick={onPopupWindow || handlePopupWindow}
+                      onClick={handlePopupWindow}
                     >
                       <ExternalLink className="w-3 h-3" />
                     </Button>
@@ -187,23 +260,22 @@ export function UnifiedChatView({
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 w-6 p-0 text-gray-400 hover:text-white hover:bg-gray-700 transition-colors"
-                      onClick={onFullscreen}
-                    >
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
-                        />
-                      </svg>
-                    </Button>
-                  </motion.div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIfFullScreen(true)}
+                    className="h-6 w-6 p-0 text-gray-400 hover:text-white hover:bg-gray-700 transition-colors"
+                    aria-label="全螢幕"
+                  >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+                      />
+                    </svg>
+                  </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="z-[9999] bg-gray-800 border-gray-700 text-white">
                   <p>全螢幕</p>

@@ -1151,14 +1151,7 @@ export default function AIPromptTester() {
 
 				<div className="flex flex-1 overflow-hidden pt-[70px]">
 					{/* 比較模式時顯示比較側邊欄 */}
-					{isInCompareView ? (
-						<VersionCompareSidebar
-							availableModels={availableModels}
-							availableTools={availableTools}
-							onVersionReorder={handleVersionReorder}
-							colorMode={colorMode}
-						/>
-					) : (
+					{!isInCompareView && (
 						<SidebarContainer
 							getFilteredModelAccuracy={getFilteredModelAccuracy}
 							isReadOnly={isReadOnly}
@@ -1194,7 +1187,6 @@ export default function AIPromptTester() {
 					{/* 比較模式時顯示比較視圖，否則顯示正常的右側面板 */}
 					{isInCompareView ? (
 						<VersionCompareView
-							chatHeight={chatHeight}
 							colorMode={colorMode}
 							onColorModeChange={handleColorModeChange}
 							initialVersionOrder={initialVersionOrder}
@@ -1247,5 +1239,6 @@ export default function AIPromptTester() {
 		</TooltipProvider>
 	)
 }
+
 
 

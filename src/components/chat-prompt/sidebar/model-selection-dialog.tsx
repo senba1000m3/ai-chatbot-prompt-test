@@ -88,7 +88,7 @@ export function ModelSelectionDialog({
         </motion.div>
       </DialogTrigger>
       <DialogContent
-        className="max-w-md bg-black border-gray-800"
+        className="max-w-md bg-black border-gray-800 max-h-[85vh] overflow-y-auto"
         onEscapeKeyDown={handleEscapeKeyDown}
         onInteractOutside={handleInteractOutside}
       >

@@ -287,9 +287,9 @@ export function VersionHistoryHeader({
 					onClick={() => setShowFilters(!showFilters)}
 					className={`bg-gray-800 border-gray-700 text-white hover:bg-gray-700 ${hasActiveFilters ? "border-blue-500 text-blue-400" : ""}`}
 				>
-					<Filter className="w-4 h-4 mr-1" />篩選模型
+					<Filter className="w-4 h-4" />篩選模型
 					{hasActiveFilters && (
-						<Badge variant="secondary" className="ml-2 bg-blue-600 text-white text-xs">
+						<Badge variant="secondary" className="bg-blue-600 text-white text-xs">
 							{selectedModels.length + selectedCharacterSettings.length + selectedTools.length}
 						</Badge>
 					)}

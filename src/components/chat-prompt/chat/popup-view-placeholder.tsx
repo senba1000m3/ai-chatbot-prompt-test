@@ -15,7 +15,7 @@ export function PopupViewPlaceholder() {
         <motion.div animate={{ y: [0, -10, 0] }} transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}>
           <ExternalLink className="w-12 h-12 mx-auto mb-4" />
         </motion.div>
-        <p>彈出視窗模式</p>
+        <p>彈出視窗模式（目前未添加）</p>
         <p className="text-sm">對話框將在新視窗中開啟</p>
       </div>
     </motion.div>

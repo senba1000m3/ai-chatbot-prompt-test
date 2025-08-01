@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { Smile, Frown } from "lucide-react"
+import { Smile, Frown, Copy, Trash } from "lucide-react"
 import { MarkdownText } from "@/components/common/typography"
 import { MessageContentRenderer } from "@/components/main/chat/messages/content-renderer"
 import { LoadingSpinner } from "@/components/chat-prompt/chat/loading-spinner"
@@ -17,8 +17,8 @@ interface MessageBubbleProps {
   showRating?: boolean
 }
 
-export function MessageBubble({ message, index, modelId, versionId, showRating = false }: MessageBubbleProps & { messages?: ModelMessage[] }) {
-  const { updateMessageRating, getCompareModelMessages } = usePromptStore()
+export function MessageBubble({ message, index, modelId, versionId, showRating = false, onDelete }: MessageBubbleProps & { messages?: ModelMessage[], onDelete?: (id: string) => void }) {
+  const { updateMessageRating, getCompareModelMessages, removeModelMessage } = usePromptStore()
   const [currentRating, setCurrentRating] = useState<"good" | "bad" | null>(message.rating || null)
 
   const handleRating = (rating: "good" | "bad") => {
@@ -29,6 +29,18 @@ export function MessageBubble({ message, index, modelId, versionId, showRating =
     }
 
 	getCompareModelMessages();
+  }
+
+  const handleCopy = () => {
+    if (message.content) {
+      navigator.clipboard.writeText(String(message.content))
+    }
+  }
+
+  const handleDelete = () => {
+    if (message.id) {
+      removeModelMessage(modelId, message.id)
+    }
   }
 
   return (
@@ -45,6 +57,60 @@ export function MessageBubble({ message, index, modelId, versionId, showRating =
       }}
       className={`${message.role === "user" ? "ml-8" : "mr-8"} mb-4`}
     >
+      <div
+        className={`relative p-3 rounded-lg ${
+          message.role === "user" ? "bg-blue-600 text-white" : "bg-gray-800 text-white border border-gray-700"
+        }`}
+      >
+        <div className="text-sm">
+          {message.role === "assistant" && message.content == "......" ? (
+            <LoadingSpinner />
+          ) : (
+            <MarkdownText>
+              {message.content as string}
+            </MarkdownText>
+          )}
+        </div>
+      </div>
+
+      {/* spendTime 與 ICON 區塊（spinner 時不顯示 ICON） */}
+      {(message.role === "assistant" && message.spendTime && message.content !== "......") ? (
+        <div className="flex justify-end items-center mt-2">
+          <div
+            className={`text-xs font-mono px-2 py-1 rounded bg-gray-800 mr-2 ${
+              message.spendTime <= 3000
+                ? 'text-green-400'
+                : message.spendTime <= 10000
+                ? 'text-yellow-400'
+                : 'text-red-400'
+            }`}
+          >
+            {message.spendTime}ms
+          </div>
+          <div className="flex space-x-1">
+            <Button variant="ghost" size="icon" className="h-6 w-6 p-0" onClick={handleCopy} title="複製">
+              <Copy className="w-4 h-4" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-6 w-6 p-0" onClick={handleDelete} title="刪除">
+              <Trash className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      ) : (
+        message.content !== "......" && (
+          <div className="flex justify-end items-center mt-2">
+            <div className="flex space-x-1">
+              <Button variant="ghost" size="icon" className="h-6 w-6 p-0" onClick={handleCopy} title="複製">
+                <Copy className="w-4 h-4" />
+              </Button>
+              <Button variant="ghost" size="icon" className="h-6 w-6 p-0" onClick={handleDelete} title="刪除">
+                <Trash className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        )
+      )}
+
       {message.role === "assistant" && showRating && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -82,43 +148,6 @@ export function MessageBubble({ message, index, modelId, versionId, showRating =
           </motion.div>
         </motion.div>
       )}
-
-      <div
-        className={`p-3 rounded-lg ${
-          message.role === "user" ? "bg-blue-600 text-white" : "bg-gray-800 text-white border border-gray-700"
-        }`}
-      >
-        <div className="text-sm whitespace-pre-wrap">
-          {message.role === "assistant" && message.content == "......" ? (
-            <LoadingSpinner />
-          ) : (
-            <MarkdownText>
-              {message.content as string}
-            </MarkdownText>
-          )}
-        </div>
-      </div>
-
-	  {message.role === "assistant" && message.spendTime && (
-		<motion.div
-		  initial={{ opacity: 0, scale: 0.8 }}
-		  animate={{ opacity: 1, scale: 1 }}
-		  transition={{ delay: 0.3, duration: 0.3 }}
-		  className="flex justify-end mt-2"
-		>
-			 <div
-			  className={`text-xs font-mono px-2 py-1 rounded bg-gray-800 ${
-				message.spendTime <= 3000
-				  ? 'text-green-400'
-				  : message.spendTime <= 10000
-				  ? 'text-yellow-400'
-				  : 'text-red-400'
-			  }`}
-			>
-			  {message.spendTime}ms
-			</div>
-		</motion.div>
-	  )}
     </motion.div>
   )
 }
