@@ -54,30 +54,27 @@ import type { LocaleParam } from "@/types";
 
 // Metadata
 const url = "/";
-const author = "Outegral Studio";
+const author = "Outegral Studio, Senba";
 const keywords: string[] = [];  // TODO: SEO keywords
 export async function generateMetadata(
 	{ params }: { params: LocaleParam }
 ): Promise<Metadata> {
-	const { locale } = await params;
-	const t = await getTranslations({ locale, namespace: "layout.homepage" });
-
     return {
 		metadataBase: getBaseUrl(),
 		title: {
-			default: t("title"),
-			template: `%s｜${t("title")}`,
+			default: "TAI 工廠",
+			template: `%s｜TAI 工廠`,
 		},
-		description: t("description"),
-		applicationName: t("title"),
+		description: "TAI 工廠是一個專注於 AI 應用與技術分享的平台，提供最新的人工智慧工具與資源。",
+		applicationName: "TAI 工廠",
 		category: "technology",
 		keywords,
 		authors: [{ name: author }],
 		creator: author,
 		publisher: author,
 		...generatePreviewMetadata({
-			title: t("title"),
-			description: t("description"),
+			title: "TAI 工廠",
+			description: "TAI 工廠是一個專注於 AI 應用與技術分享的平台，提供最新的人工智慧工具與資源。",
 			url
 		}),
 		robots: {
@@ -87,8 +84,6 @@ export async function generateMetadata(
 		}
 	};
 };
-
-
 
 export default async function RootLayout({
 	children,
@@ -128,3 +123,4 @@ export default async function RootLayout({
 		</html>
 	);
 }
+
