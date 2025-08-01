@@ -29,10 +29,11 @@ import { WrapperLayout } from "../../../../../components/common/layouts";
 import {
 	Copy,
 	Download,
-	ExternalLink,
 	Plus,
 	Trash2,
 	User,
+	Upload,
+	Pencil,
 } from "lucide-react";
 
 // Types & Interfaces
@@ -43,7 +44,7 @@ export default function DashboardPage() {
 	const router = useRouter();
 
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
-	const {nickname, testAreas, addTestArea, deleteTestArea, duplicateTestArea, getTestArea, setNowTestAreaId, loadPromptBackup, setPromptBackup} = useLoginStore();
+	const {nickname, testAreas, addTestArea, addOldTestArea, deleteTestArea, duplicateTestArea, getTestArea, setNowTestAreaId, loadPromptBackup, setPromptBackup} = useLoginStore();
 	const promptStore = usePromptStore();
 
 	// 只負責判斷 nickname
@@ -132,6 +133,32 @@ export default function DashboardPage() {
 		}
 	};
 
+	// 上傳產線數據
+	const handleUploadTestArea = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
+		try {
+			const text = await file.text();
+			const area = JSON.parse(text);
+			if (!area || !area.id || !area.name || !area.data) throw new Error("格式錯誤");
+			// 檢查 id 是否已存在，若存在則給新 id
+			let newArea = { ...area };
+			if (testAreas.some(a => a.id === area.id)) {
+				newArea = { ...area, id: nanoid(), name: area.name + " (匯入)" };
+			}
+
+			const added = addOldTestArea({ ...newArea, data: area.data });
+			if (!added) throw new Error();
+			toast("上傳成功", { description: `產線 \"${newArea.name}\" 已匯入` });
+		} catch (error) {
+			console.error("上傳產線失敗:", error);
+			toast.error("上傳失敗", { description: "無法匯入產線，請確認檔案格式正確" });
+		} finally {
+			// 清空 input value 以便可重複上傳同一檔案
+			e.target.value = "";
+		}
+	};
+
 	// 打開產線
 	const handleOpenTestArea = (id: string) => {
 		setNowTestAreaId(id);
@@ -140,19 +167,52 @@ export default function DashboardPage() {
 		router.push(`assembly/${id}`);
 	}
 
+	// 改名產線
+	const handleRenameTestArea = (id: string, oldName: string) => {
+		const newName = prompt("請輸入新的產線名稱：", oldName);
+		if (!newName || newName.trim() === oldName) return;
+		try {
+			const updated = testAreas.map(area =>
+				area.id === id ? { ...area, name: newName.trim(), updatedAt: new Date().toISOString() } : area
+			);
+			useLoginStore.setState({ testAreas: updated });
+			toast("名稱已更新", { description: `產線名稱已改為 \"${newName.trim()}\"` });
+		} catch (error) {
+			toast.error("改名失敗", { description: "無法更改產線名稱" });
+		}
+	};
+
 	return (
 		<WrapperLayout className="py-8">
 		<DashboardHeader className="mb-6">
-		<Button className="w-fit" onClick={() => setIsDialogOpen(true)}>
-	<Plus />
-	新增產線
-	</Button>
-	</DashboardHeader>
+			<div className="flex gap-3">
+				<Button className="w-fit" onClick={() => setIsDialogOpen(true)}>
+					<Plus />
+					新增產線
+				</Button>
+				<Button className="w-fit" variant="secondary">
+					<label htmlFor="upload-test-area-json" className="cursor-pointer flex items-center">
+						<Upload className="mr-1" /> 上傳產線
+						<input
+							id="upload-test-area-json"
+							type="file"
+							accept="application/json"
+							className="hidden"
+							onChange={handleUploadTestArea}
+						/>
+					</label>
+				</Button>
+			</div>
+		</DashboardHeader>
 
 	<Card>
 	<CardHeader>
-		<CardTitle>產線列表</CardTitle>
-	<CardDescription>管理您的 OCR 產線</CardDescription>
+		<div className="flex items-center justify-between">
+			<div className="gap-2 flex flex-col">
+				<CardTitle>產線列表</CardTitle>
+				<CardDescription>管理您 Prompt 工廠的所有產線</CardDescription>
+			</div>
+		</div>
 	</CardHeader>
 	<CardContent>
 	{testAreas.length === 0 ? (
@@ -177,6 +237,9 @@ export default function DashboardPage() {
 					<div className="flex items-center gap-2">
 						<Button variant="ghost" size="icon" onClick={() => handleDuplicateTestArea(area.id)}>
 							<Copy />
+						</Button>
+						<Button variant="ghost" size="icon" onClick={() => handleRenameTestArea(area.id, area.name)}>
+							<Pencil />
 						</Button>
 						<Button variant="ghost" size="icon" onClick={() => handleDownloadTestArea(area.id)}>
 							<Download />

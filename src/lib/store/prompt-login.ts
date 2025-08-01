@@ -26,6 +26,7 @@ interface LoginStoreProps {
 	nowTestAreaId: string;
 	setNowTestAreaId: (id: string) => void;
 	addTestArea: (area: TestArea) => TestAreaWithData | undefined;
+	addOldTestArea: (area: TestAreaWithData) => TestAreaWithData | undefined;
 	deleteTestArea: (id: string) => void;
 	duplicateTestArea: (id: string) => TestAreaWithData | undefined;
 	getTestArea: (id: string) => TestAreaWithData | undefined;
@@ -111,6 +112,22 @@ export const useLoginStore = create<LoginStoreProps>()(
 						updatedAt: new Date().toISOString(),
 						author: nickname,
 						data: getDefaultPromptStoreData(get),
+					};
+					set(state => ({ testAreas: [...state.testAreas, newTestArea] }));
+					return newTestArea;
+				} catch {
+					return undefined;
+				}
+			},
+			addOldTestArea: (testArea: TestAreaWithData) => {
+				try {
+					const newTestArea: TestAreaWithData = {
+						...testArea,
+						id: nanoid(7),
+						createdAt: new Date().toISOString(),
+						updatedAt: new Date().toISOString(),
+						author: testArea.author,
+						data: testArea.data,
 					};
 					set(state => ({ testAreas: [...state.testAreas, newTestArea] }));
 					return newTestArea;
