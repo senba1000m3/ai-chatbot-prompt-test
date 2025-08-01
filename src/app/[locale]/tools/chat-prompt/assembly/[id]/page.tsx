@@ -12,8 +12,8 @@ import { SidebarContainer } from "../../../../../../components/chat-prompt/sideb
 import { ChatViewContainer } from "../../../../../../components/chat-prompt/chat/chat-view-container"
 
 // Compare Components
-import { VersionCompareSidebar } from "../../../../../../components/chat-prompt/compare/version-compare-sidebar"
-import { VersionCompareView } from "../../../../../../components/chat-prompt/compare/version-compare-view"
+import { VersionCompareSidebar } from "../../../../../../components/chat-prompt/advanced/version-compare-sidebar"
+import { VersionCompareView } from "../../../../../../components/chat-prompt/advanced/version-compare-view"
 
 // Chat Components
 import { RightPanelControls } from "../../../../../../components/chat-prompt/chat/right-panel-controls"
