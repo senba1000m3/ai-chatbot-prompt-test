@@ -294,7 +294,7 @@ export function RightPanelControls({
           </Dialog>
         </div>
 
-        <div className="flex space-x-1">
+        <div className="flex space-x-1 mr-3">
           <Tooltip>
             <TooltipTrigger asChild>
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>

@@ -145,7 +145,7 @@ export function ModelChatCard({
               </TooltipProvider>
             </div>
           </div>
-          <div className="border-b-1 border-gray-600 mb-5 w-[105.5%] relative left-1/2 -translate-x-1/2" />
+          <div className="border-b-1 border-gray-600 mb-5 w-[100%] relative left-1/2 -translate-x-1/2" />
           <div
             className="flex-1 overflow-y-auto"
             ref={scrollRef}

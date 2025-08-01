@@ -3,6 +3,7 @@
 import { useRouter, useParams } from "next/navigation"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { Home, User, Sun, Monitor, RotateCcw, ChevronRight } from "lucide-react"
 import { usePromptStore } from "@/lib/store/prompt"
 import { useLoginStore } from "@/lib/store/prompt-login"
@@ -53,23 +54,7 @@ export function Header() {
             <User className="w-4 h-4" />
             <span>{nickname}</span>
           </div>
-          <div className="flex items-center space-x-2">
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
-                <Sun className="w-4 h-4" />
-              </Button>
-            </motion.div>
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
-                <Monitor className="w-4 h-4" />
-              </Button>
-            </motion.div>
-            {/*<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>*/}
-            {/*  <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">*/}
-            {/*    <RotateCcw className="w-4 h-4" />*/}
-            {/*  </Button>*/}
-            {/*</motion.div>*/}
-          </div>
+			<ThemeToggle />
         </motion.div>
       </div>
     </motion.header>
