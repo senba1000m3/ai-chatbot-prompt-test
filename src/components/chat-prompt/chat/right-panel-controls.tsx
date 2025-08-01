@@ -44,7 +44,6 @@ interface RightPanelControlsProps {
   chatHeight: number
   setChatHeight: (height: number) => void
   colorMode?: number
-  onColorModeChange?: () => void
   isReadOnly?: boolean
   onUnifiedFullscreen?: () => void
 }
@@ -55,7 +54,6 @@ export function RightPanelControls({
   chatHeight,
   setChatHeight,
   colorMode = 0,
-  onColorModeChange,
   isReadOnly = false,
   onUnifiedFullscreen,
 }: RightPanelControlsProps) {
@@ -294,30 +292,6 @@ export function RightPanelControls({
               </motion.div>
             </DialogContent>
           </Dialog>
-
-          {isInCompareView && onColorModeChange && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={onColorModeChange}
-                    className={`transition-colors ${
-                      colorMode > 0
-                        ? "text-blue-400 hover:text-blue-300 hover:bg-blue-900/20"
-                        : "text-gray-300 hover:text-white hover:bg-gray-900"
-                    }`}
-                  >
-                    {getColorModeIcon()}
-                  </Button>
-                </motion.div>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="z-[9999] bg-gray-800 border-gray-700 text-white">
-                <p>{getColorModeTooltip()}</p>
-              </TooltipContent>
-            </Tooltip>
-          )}
         </div>
 
         <div className="flex space-x-1">

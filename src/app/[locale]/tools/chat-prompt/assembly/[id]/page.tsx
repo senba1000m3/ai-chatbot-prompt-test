@@ -12,8 +12,7 @@ import { SidebarContainer } from "../../../../../../components/chat-prompt/sideb
 import { ChatViewContainer } from "../../../../../../components/chat-prompt/chat/chat-view-container"
 
 // Compare Components
-import { VersionCompareSidebar } from "../../../../../../components/chat-prompt/advanced/version-compare-sidebar"
-import { VersionCompareView } from "../../../../../../components/chat-prompt/advanced/version-compare-view"
+import { AdvancedInterface } from "../../../../../../components/chat-prompt/advanced/advanced-interface"
 
 // Chat Components
 import { RightPanelControls } from "../../../../../../components/chat-prompt/chat/right-panel-controls"
@@ -1119,9 +1118,6 @@ export default function AIPromptTester() {
 		}
 	}
 
-	const handleColorModeChange = () => {
-		setColorMode((prev) => (prev + 1) % 3)
-	}
 
 	// 系統提示選項更新處理函數
 	const handleSystemPromptOptionsChange = (type: "characterSettings" | "usedTools", options: PromptOption[]) => {
@@ -1186,12 +1182,7 @@ export default function AIPromptTester() {
 
 					{/* 比較模式時顯示比較視圖，否則顯示正常的右側面板 */}
 					{isInCompareView ? (
-						<VersionCompareView
-							colorMode={colorMode}
-							onColorModeChange={handleColorModeChange}
-							initialVersionOrder={initialVersionOrder}
-							onUpdateVersions={handleUpdateCompareVersions}
-						/>
+						<AdvancedInterface />
 					) : (
 						<motion.div
 							initial={{ x: 20, opacity: 0 }}
@@ -1212,7 +1203,6 @@ export default function AIPromptTester() {
 								chatHeight={chatHeight}
 								setChatHeight={setChatHeight}
 								colorMode={colorMode}
-								onColorModeChange={handleColorModeChange}
 								isReadOnly={isReadOnly}
 							/>
 

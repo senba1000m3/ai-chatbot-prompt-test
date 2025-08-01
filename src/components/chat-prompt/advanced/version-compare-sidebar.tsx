@@ -39,8 +39,6 @@ interface VersionCompareSidebarProps {
   availableTools: Tool[]
   colorMode: number
   onColorModeChange: () => void
-  initialVersionOrder?: SavedVersion[]
-  onUpdateVersions: (updatedVersions: SavedVersion[]) => void
 }
 
 const versionColors = [
@@ -56,8 +54,6 @@ export function VersionCompareSidebar({
   availableTools,
   colorMode,
   onColorModeChange,
-  initialVersionOrder,
-  onUpdateVersions,
 }: VersionCompareSidebarProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [expandedVersions, setExpandedVersions] = useState<Set<string>>(new Set())
@@ -150,45 +146,45 @@ export function VersionCompareSidebar({
           {/* Sidebar 區塊 */}
           <motion.div
             initial={{ width: 60, opacity: 0 }}
-            animate={{ width: isExpanded ? 400 : 60, opacity: 1 }}
+            animate={{ width: isExpanded ? 320 : 60, opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="border-r border-gray-800 bg-black flex flex-col overflow-hidden h-full max-h-full"
-            style={{ minWidth: isExpanded ? 400 : 60 }}
+            style={{ minWidth: isExpanded ? 320 : 60 }}
           >
             {/* 標題區域 */}
             <motion.div
               initial={{ y: -20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.1, duration: 0.3 }}
-              className="p-4 border-b border-gray-800 flex items-center justify-between"
+              className="p-4 border-b border-gray-800 h-15 flex items-center justify-between"
             >
               {isExpanded ? (
                 <>
-                  <h2 className="text-lg font-semibold text-white">版本比較資訊</h2>
+                  <h2 className="text-base text-white">版本比較資訊</h2>
                   <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsExpanded(false)}
-                    className="text-gray-400 hover:text-white hover:bg-gray-800"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsExpanded(false)}
+                      className="text-gray-400 hover:text-white hover:bg-gray-800"
                   >
                     <ChevronRight className="w-4 h-4 rotate-180" />
                     收起
                   </Button>
                 </>
               ) : (
-                <div className="flex flex-col items-center space-y-2">
-                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setIsExpanded(true)}
-                      className="text-gray-400 hover:text-white hover:bg-gray-800 p-2"
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                    </Button>
-                  </motion.div>
-                </div>
+                  <div className="flex flex-col items-center justify-center space-y-2 h-full">
+                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                      <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setIsExpanded(true)}
+                          className="text-gray-400 hover:text-white hover:bg-gray-800 p-2 flex items-center justify-center"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </Button>
+                    </motion.div>
+                  </div>
               )}
             </motion.div>
 
@@ -218,7 +214,7 @@ export function VersionCompareSidebar({
                       </TooltipTrigger>
                       <TooltipContent
                         side="right"
-                        className="z-[999999] bg-gray-800 border-gray-700 text-white min-w-lg fixed"
+                        className="z-[999999] bg-gray-800 border-gray-700 text-white min-w-lg fixed max-h-[400px] overflow-y-auto"
                         sideOffset={15}
                         style={{
                           zIndex: 999999,
@@ -313,7 +309,7 @@ export function VersionCompareSidebar({
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.3 }}
                   className="flex-1 overflow-y-auto p-4 space-y-4"
-                  style={{ maxHeight: 'calc(100vh - 80px - 64px + 6px)' }} // 80px header + 64px sidebar header
+                  style={{ maxHeight: 'calc(100vh - 80px - 64px - 50px)' }} // 80px header + 64px sidebar header
                 >
                   <AnimatePresence>
                     {sortedVersions.map((version, index) => {
