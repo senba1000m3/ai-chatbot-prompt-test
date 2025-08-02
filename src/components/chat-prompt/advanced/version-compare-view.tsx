@@ -16,6 +16,7 @@ import { MessageBubble } from "../chat/message-bubble"
 import { usePromptStore, type SavedVersion, type ModelMessage, type ModelAccuracy, availableModels, availableTools } from "@/lib/store/prompt"
 import { useComparePromptChat } from "@/hooks/use-compare-prompt-chat"
 import { VersionCompareSidebar } from "./version-compare-sidebar"
+import { UploadButton } from "@/components/chat-prompt/upload-button"
 
 // 版本顏色配置
 const versionColors = [
@@ -80,7 +81,6 @@ export function VersionCompareView() {
 
 	// 聊天輸入相關狀態
 	const [inputMessage, setInputMessage] = useState("")
-	const [_selectedImage, _setSelectedImage] = useState<File | null>(null)
 
 	// 為每個版本分配固定的顏色索引，基於版本ID而不是當前位置
 	const versionColorMap = useMemo(() => {
@@ -133,47 +133,6 @@ export function VersionCompareView() {
 		handleSubmit(inputMessage);
 		setInputMessage("")
 	}
-
-	const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-		if (e.target.files && e.target.files[0]) {
-			const img = e.target.files[0];
-
-			if (img.type === "image/jpeg" || img.type === "image/png") {
-				const formData = new FormData();
-				formData.append("file", img);
-
-				try {
-					const res = await fetch("/api/upload/images", {
-						method: "POST",
-						body: formData,
-					});
-
-					if (!res.ok) {
-						const errorData = await res.json();
-						alert(`上傳失敗: ${errorData.error || "未知錯誤"}`);
-						return;
-					}
-
-					const data = await res.json();
-					const imageUrl = data.url;
-					const fullUrl = `${window.location.origin}${imageUrl}`;
-
-					_setSelectedImage(img);
-					addSelectedImage(fullUrl);
-					console.log("圖片網址:", fullUrl);
-				} catch (error) {
-					console.error("上傳圖片時發生錯誤:", error);
-					alert("上傳失敗，請稍後再試。");
-				}
-			} else {
-				alert("請選擇 jpg 或 png 格式的圖片。");
-				_setSelectedImage(null);
-				removeSelectedImage();
-			}
-		}
-
-		e.target.value = '';
-	};
 
 	const handleMessageRating = (versionId: string, modelId: string, messageId: string, rating: "good" | "bad") => {
 
@@ -668,26 +627,7 @@ export function VersionCompareView() {
 						</div>
 						{/* 輸入框區塊 */}
 						<div className="border-t border-gray-800 bg-black/95 backdrop-blur-md py-4 flex space-x-3 flex-shrink-0" style={{height: '70px'}}>
-							<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-								<Button
-									size="sm"
-									className="h-12 w-15 px-4 bg-blue-600 hover:bg-blue-700 transition-colors"
-									onClick={() => {
-										const fileInput = document.getElementById("image-upload") as HTMLInputElement;
-										if (fileInput) fileInput.click();
-									}}
-								>
-									<Paperclip className="w-6 h-6" />
-								</Button>
-								<input
-									type="file"
-									accept="image/jpeg, image/png"
-									onChange={handleImageChange}
-									className="hidden"
-									id="image-upload"
-									multiple
-								/>
-							</motion.div>
+							<UploadButton />
 							<Input
 								value={inputMessage}
 								onChange={(e) => setInputMessage(e.target.value)}

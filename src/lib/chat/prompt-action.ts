@@ -30,23 +30,32 @@ export async function generate({ modelName, messages = [], systemPrompt, paramet
 	}
 
 	const startTime = Date.now();
+	// console.log(messages);
 
 	const processedMessages: CoreMessage[] = [];
-	let images: string[] = [];
 	messages.forEach(msg => {
-		if ((msg.role === "user" || msg.role === "assistant")) {
+		if (msg.role === "user") {
 			if (Array.isArray(msg.content)) {
-				const textParts = msg.content.filter(c => c.type === "text").map(c => c.text).join("\n");
-				const imageParts = msg.content
-					.filter((c): c is { type: "image"; image: string } => c.type === "image" && typeof (c as any).image === "string")
-					.map(c => c.image);
-				if (textParts) {
-					processedMessages.push({ ...msg, content: textParts });
+				const contentParts = msg.content.filter(c => {
+					if (c.type === "text" && c.text.trim() !== "") return true;
+					if (c.type === "image" && (c as any).image) return true;
+					return false;
+				}) as ({ type: "text"; text: string } | { type: "image"; image: string | URL | Buffer | Uint8Array })[];
+
+				if (contentParts.length > 0) {
+					processedMessages.push({ ...msg, content: contentParts });
 				}
-				if (imageParts.length > 0 && msg.role === "user") {
-					images = images.concat(imageParts);
+			} else if (typeof msg.content === "string" && msg.content.trim() !== "") {
+				processedMessages.push(msg);
+			}
+		}
+		else if (msg.role === "assistant") {
+			if (Array.isArray(msg.content)) {
+				const contentParts = msg.content.filter(c => c.type === "text" && c.text.trim() !== "");
+				if (contentParts.length > 0) {
+					processedMessages.push({ ...msg, content: contentParts });
 				}
-			} else if (typeof msg.content === "string") {
+			} else if (typeof msg.content === "string" && msg.content.trim() !== "") {
 				processedMessages.push(msg);
 			}
 		}
@@ -68,9 +77,6 @@ export async function generate({ modelName, messages = [], systemPrompt, paramet
 		messages: messagesWithSystem as CoreMessage[],
 		providerOptions,
 	};
-	if (images.length > 0) {
-		genTextParams.images = images;
-	}
 
 	const { text } = await generateText(genTextParams);
 
@@ -79,3 +85,5 @@ export async function generate({ modelName, messages = [], systemPrompt, paramet
 
 	return { text, spendTime };
 }
+
+
