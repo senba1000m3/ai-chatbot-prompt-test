@@ -237,7 +237,7 @@ export function UnifiedChatView({
   return (
     <TooltipProvider>
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-        <Card className="bg-gray-900 border-gray-800 flex flex-col" style={{ height: "calc(100vh - 80px - 170px)" }}>
+        <Card className="bg-gray-900 border-gray-800 flex rounded flex-col" style={{ height: "calc(100vh - 80px - 210px)" }}>
           <div className="p-3 border-b border-gray-800 bg-gray-800 flex justify-between items-center flex-shrink-0">
             <h3 className="font-medium text-white">統一對話框</h3>
             <div className="flex space-x-1">

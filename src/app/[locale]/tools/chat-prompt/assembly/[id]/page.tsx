@@ -1145,8 +1145,8 @@ export default function AIPromptTester() {
 			<div className="min-h-screen bg-black text-white flex flex-col">
 				<Header />
 
-				<div className="flex flex-1 overflow-hidden pt-[70px]">
-					{/* 比較模式時顯示比較側邊欄 */}
+				<div className="flex flex-1 overflow-hidden pt-[65px]">
+					{/* 非比較模式時顯示比較側邊欄 */}
 					{!isInCompareView && (
 						<SidebarContainer
 							getFilteredModelAccuracy={getFilteredModelAccuracy}

@@ -74,6 +74,7 @@ function getDefaultPromptStoreData(get: () => LoginStoreProps): PromptStoreData 
 		inputMessage: "",
 		inputSendTimes: 0,
 		ifInputDisabled: false,
+		selectedImage: [],
 		selectedModels: ["gpt-4o", "gemini-2.0-flash"],
 		selectedTools: [],
 		modelMessages: {},

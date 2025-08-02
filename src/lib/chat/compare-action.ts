@@ -24,7 +24,7 @@ export async function generate({
 	systemPrompt,
 	originalAccuracy,
 }: {
-	messages: (CoreMessage & { rating?: "good" | "bad" | null })[];
+	messages: (CoreMessage & { rating?: "good" | "bad" | null, content?: any })[];
 	systemPrompt: string;
 	originalAccuracy: number;
 }) {
@@ -37,7 +37,22 @@ export async function generate({
 		`${systemPrompt}\n` +
 		"--- 原始系統提示結束 ---";
 
-	const messagesWithSystem = [{ role: "system", content: fullSystemPrompt }, ...messages];
+	// 將 MessageContent 轉換為文字
+	const messagesWithSystem = [
+		{ role: "system", content: fullSystemPrompt },
+		...messages.map(msg => {
+			let text = "";
+			if (Array.isArray(msg.content)) {
+				text = msg.content
+					.filter(c => c.type === "text")
+					.map(c => c.text)
+					.join("\n");
+			} else if (typeof msg.content === "string") {
+				text = msg.content;
+			}
+			return { ...msg, content: text };
+		})
+	];
 
 	const { object: evaluation } = await generateObject({
 		model: openai("gpt-4o"),

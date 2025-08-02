@@ -356,7 +356,7 @@ export function SidebarContainer({
         transition={{ duration: 0.3, delay: 0.1 }}
         className="w-96 border-r border-gray-800 flex flex-col bg-black h-screen"
       >
-        <div className="flex-1 p-6 overflow-y-auto custom-scrollbar">
+        <div className="flex-1 p-5 overflow-y-auto custom-scrollbar">
           <div className="space-y-8">
             <ReadOnlyIndicator
               isReadOnly={isReadOnly}
@@ -482,7 +482,7 @@ export function SidebarContainer({
             />
           </div>
         </div>
-		<div style={{marginBottom: "70px"}} />
+		<div style={{marginBottom: "65px"}} />
       </motion.div>
     </>
   )

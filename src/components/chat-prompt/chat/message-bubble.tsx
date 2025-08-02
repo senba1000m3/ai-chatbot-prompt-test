@@ -59,18 +59,28 @@ export function MessageBubble({ message, index, modelId, versionId, showRating =
     >
       <div
         className={`relative p-3 rounded-lg ${
-          message.role === "user" ? "bg-blue-600 text-white" : "bg-gray-800 text-white border border-gray-700"
+          message.role === "user" ? "bg-blue-600 text-white mr-2" : "bg-gray-800 text-white border border-gray-700"
         }`}
       >
-        <div className="text-sm">
-          {message.role === "assistant" && message.content == "......" ? (
-            <LoadingSpinner />
-          ) : (
-            <MarkdownText>
-              {message.content as string}
-            </MarkdownText>
-          )}
-        </div>
+		  <div className="text-sm">
+			  {message.role === "assistant" &&  message.content === "......" ? (
+				  <LoadingSpinner />
+			  ) : Array.isArray(message.content) ? (
+				  message.content.map((item, idx) => {
+					  if (item.type === "text") {
+						  return <MarkdownText key={idx}>{item.text}</MarkdownText>;
+					  }
+					  if (item.type === "image") {
+						  return (
+							  <div key={idx} className="my-2">
+								  <img src={item.image} alt="image" className="max-w-xs max-h-40 rounded border" />
+							  </div>
+						  );
+					  }
+					  return null;
+				  })
+			  ) : null}
+		  </div>
       </div>
 
       {/* spendTime 與 ICON 區塊（spinner 時不顯示 ICON） */}

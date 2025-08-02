@@ -23,7 +23,7 @@ export function HintMessageButtons() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.3 }}
-          className="flex flex-wrap gap-2 mb-4"
+          className="flex flex-wrap gap-3 mb-4"
         >
           {hintMessage.map((message, index) => (
             <motion.div

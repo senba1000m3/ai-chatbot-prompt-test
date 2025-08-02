@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useTransition } from "react";
-import { usePromptStore } from "@/lib/store/prompt";
+import { usePromptStore, type MessageContent } from "@/lib/store/prompt";
 import { ensureError } from "@/lib/response";
 import { generate } from "@/lib/chat/prompt-action";
 import { nanoid } from "@/lib/utils";
@@ -46,7 +46,6 @@ export function usePromptChat() {
 	const sendMessage = useCallback(
 		async ({ modelNames, input, sendTimes, assistantMessageIds }: { modelNames: string[], input?: string, sendTimes?: number, assistantMessageIds: string[] }) => {
 			startChatTransition(async () => {
-
 				modelNames.forEach(modelName => {
 					setModelIsLoading(modelName, true);
 				});
@@ -54,8 +53,16 @@ export function usePromptChat() {
 				try {
 					const totalPrompts = mergeSystemPrompts();
 					const currentSendTimes = sendTimes || usePromptStore.getState().inputSendTimes;
+					const selectedImages = usePromptStore.getState().selectedImage;
 
 					for (let i = 0; i < currentSendTimes; i++) {
+						// 先 append 一個 user message，內容暫時為空陣列
+						const userMessageIds = modelNames.map(modelName =>
+							appendModelMessage(modelName, {
+								role: "user",
+								content: undefined,
+							})
+						);
 
 						const newAssistantMessageIds = modelNames.map(modelName =>
 							appendModelMessage(modelName, {
@@ -65,8 +72,24 @@ export function usePromptChat() {
 						);
 
 						const messagePromises = modelNames.map(async (modelName, idx) => {
-							const historyMessages = getModelMessages(modelName);
 							const parameters = usePromptStore.getState().parameters;
+							const userContent: MessageContent = [];
+							if (input) {
+								userContent.push({ type: "text", text: input });
+							}
+							if (selectedImages && selectedImages.length > 0) {
+								selectedImages.forEach(img => {
+									userContent.push({ type: "image", image: img });
+								});
+							}
+
+							console.log(userContent);
+							// update user message，把 text/image update 進去
+							updateModelMessage(modelName, userMessageIds[idx], {
+								content: userContent,
+							});
+
+							const historyMessages = getModelMessages(modelName);
 
 							try {
 								const result = await generate({
@@ -94,12 +117,12 @@ export function usePromptChat() {
 						results.forEach(({ modelName, success, result, error, spendTime, assistantMessageId }) => {
 							if (success) {
 								updateModelMessage(modelName, assistantMessageId, {
-									content: result,
+									content: [{ type: "text", text: result as string }],
 									spendTime,
 								});
 							} else {
 								updateModelMessage(modelName, assistantMessageId, {
-									content: `Error: ${error || "Unknown error"}`,
+									content: [{ type: "text", text: `Error: ${error || "Unknown error"}` }],
 								});
 							}
 						});
@@ -127,26 +150,17 @@ export function usePromptChat() {
 				return;
 			}
 
-			currentSelectedModels.forEach(modelName => {
-				appendModelMessage(modelName, {
-					role: "user",
-					content: input,
-				});
-			});
-
-
 			await sendMessage({
 				modelNames: currentSelectedModels,
 				input: input,
 				assistantMessageIds: [],
 			});
 		},
-		[appendModelMessage, sendMessage]
+		[sendMessage]
 	);
 
 	return {
 		handleSubmit,
 	};
 }
-
 

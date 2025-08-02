@@ -7,13 +7,18 @@ import { useLoginStore } from "@/lib/store/prompt-login";
 import type { CoreMessage } from "ai";
 import type { SourcePart } from "@/types/chat";
 
+export type MessageContent = (
+	| { type: "text"; text: string }
+	| { type: "image"; image: string }
+	)[] | "......" | undefined;
+
 export type ModelMessage = {
 	spendTime?: number;
 	rating?: "good" | "bad" | null;
 	id?: string;
 	model?: string;
 	role: "user" | "assistant" | "system";
-	content: string | undefined;
+	content: MessageContent
 };
 
 export interface HintMessage {
@@ -81,6 +86,7 @@ export const availableModels = [
 	{ id: "gemini-2.0-flash-lite", name: "Gemini 2.0 Flash Lite", category: "Google", webSearch: false, isThinking: false },
 ];
 
+// 所有工具
 export const availableTools = [
 	{ id: "sticker", name: "Sticker" },
 	{ id: "plot", name: "Plot" },
@@ -106,6 +112,9 @@ export interface PromptStoreProps {
 	setInputSendTimes: (times: number) => void;
 	ifInputDisabled: boolean;
 	setIfInputDisabled: (disabled: boolean) => void;
+	selectedImage: string[] | null;
+	addSelectedImage: (image: string) => void;
+	removeSelectedImage: (image?: string) => void;
 
 	selectedModels: string[];
 	setSelectedModels: (models: string[]) => void;
@@ -229,6 +238,16 @@ export const usePromptStore = create<PromptStoreProps>()(
 			setInputSendTimes: (times: number) => set({ inputSendTimes: times }),
 			ifInputDisabled: false,
 			setIfInputDisabled: (disabled: boolean) => set({ ifInputDisabled: disabled }),
+			selectedImage: null,
+			addSelectedImage: (image: string) => set(state => ({
+				selectedImage: state.selectedImage ? [...state.selectedImage, image] : [image]
+			})),
+			removeSelectedImage: (image?: string) => set(state => {
+				if (!state.selectedImage) return { selectedImage: null };
+				if (!image) return { selectedImage: null };
+				const filtered = state.selectedImage.filter(img => img !== image);
+				return { selectedImage: filtered.length ? filtered : null };
+			}),
 
 			selectedModels: [],
 			setSelectedModels: (models: string[]) => set({ selectedModels: models }),
@@ -681,6 +700,8 @@ export type PromptStoreData = Omit<PromptStoreProps,
 	| "setInputMessage"
 	| "setInputSendTimes"
 	| "setIfInputDisabled"
+	| "addSelectedImage"
+	| "removeSelectedImage"
 	| "setSelectedModels"
 	| "setSelectedTools"
 	| "appendModelMessage"

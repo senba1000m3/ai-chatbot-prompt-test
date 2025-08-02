@@ -22,8 +22,8 @@ const items = [
     "icon": () => <GitCompare />,
   },
   {
-    "title": "訊息瀏覽",
-    "content": "訊息瀏覽內容",
+    "title": "訊息設定",
+    "content": "訊息設定內容",
     "key": "messages",
     "icon": () => <MessageCircle />,
   },
@@ -34,7 +34,8 @@ const items = [
     "icon": () => <ChartLine />,
     "dropdown": [
       { "title": "總覽", "content": "數據分析總覽內容", "key": "overview" },
-      { "title": "圖表", "content": "數據分析圖表內容", "key": "charts" },
+	  { "title": "量表", "content": "數據分析總覽內容", "key": "scale" },
+      { "title": "報表", "content": "數據分析圖表內容", "key": "charts" },
     ],
   },
 ];

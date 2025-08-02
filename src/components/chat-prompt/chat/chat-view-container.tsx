@@ -240,7 +240,7 @@ export function ChatViewContainer({
                 <div
                   className="absolute"
                   style={{
-                    top: "calc((100vh - 80px - 48px - 120px) / 2)",
+                    top: "calc((100vh - 80px - 48px - 160px) / 2)",
                     left: "50%",
                     transform: "translate(-50%, -50%)",
                     zIndex: 10,
@@ -382,7 +382,7 @@ export function ChatViewContainer({
           </div>
 
           {/* 输入框部分，确保它始终在可见区域内 */}
-          <div className="relative bottom-22 left-0 right-0 z-10 bg-black">
+          <div className="relative bottom-18 left-0 right-0 z-10 bg-black">
             <ChatInputSection
               onHintMessageClick={onHintMessageClick}
               showHintButtons={showHintButtons}

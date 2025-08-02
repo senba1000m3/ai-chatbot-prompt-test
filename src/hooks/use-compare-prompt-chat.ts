@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useTransition } from "react";
-import { usePromptStore } from "@/lib/store/prompt";
+import { usePromptStore, type MessageContent } from "@/lib/store/prompt";
 import { ensureError } from "@/lib/response";
 import { generate } from "@/lib/chat/prompt-action";
 import { generate as generateAccuracy } from "@/lib/chat/compare-action";
@@ -30,13 +30,38 @@ export function useComparePromptChat() {
 		compareSelectedModel,
 		compareModelMessages,
 		updateVersionAccuracy,
+		removeSelectedImage
 	} = usePromptStore();
 
 	const sendMessage = async ({ modelName, userMessage }: { modelName: string, userMessage: ModelMessage }) => {
-		compareVersions.forEach(version => {
-			appendCompareModelMessage(version.id, modelName, userMessage);
-		});
+		const selectedImages = usePromptStore.getState().selectedImage;
 
+		// 構建 userContent，包含文字和圖片
+		const userContent: MessageContent = [];
+		if (userMessage.content) {
+			if (typeof userMessage.content === "string") {
+				userContent.push({ type: "text", text: userMessage.content });
+			} else if (Array.isArray(userMessage.content)) {
+				userContent.push(...userMessage.content);
+			}
+		}
+		if (selectedImages && selectedImages.length > 0) {
+			selectedImages.forEach(img => {
+				userContent.push({ type: "image", image: img });
+			});
+		}
+
+		console.log(userContent);
+		// 每個版本都 append 一個新的 user message
+		const userMessageIds = compareVersions.map(version =>
+			appendCompareModelMessage(version.id, modelName, {
+				role: "user",
+				content: userContent,
+				id: nanoid(),
+			})
+		);
+
+		// 每個版本都 append 一個新的 assistant message
 		const assistantMessageIds = compareVersions.map(version =>
 			appendCompareModelMessage(version.id, modelName, {
 				role: "assistant",
@@ -54,10 +79,10 @@ export function useComparePromptChat() {
 						currentPrompts.push(prompt);
 					});
 
-					try {
-						const history = usePromptStore.getState().compareModelMessages[version.id]?.[modelName] || {};
-						const historyMessages = Object.values(history);
+					const history = usePromptStore.getState().compareModelMessages[version.id]?.[modelName] || {};
+					const historyMessages = Object.values(history);
 
+					try {
 						const result = await generate({
 							modelName: modelName,
 							messages: historyMessages as CoreMessage[],
@@ -92,14 +117,14 @@ export function useComparePromptChat() {
 						appendCompareModelMessage(versionId, modelName, {
 							id: assistantMessageId,
 							role: "assistant",
-							content: result,
+							content: [{ type: "text", text: result as string }],
 							spendTime: spendTime,
 						});
 					} else {
 						appendCompareModelMessage(versionId, modelName, {
 							id: assistantMessageId,
 							role: "assistant",
-							content: `Error: ${error || "Unknown error"}`,
+							content: [{ type: "text", text: `Error: ${error || "Unknown error"}` }],
 						});
 					}
 				});
@@ -164,7 +189,7 @@ export function useComparePromptChat() {
 
 		const userMessage: ModelMessage = {
 			role: "user",
-			content: input,
+			content: input as MessageContent,
 			id: nanoid(),
 		};
 
@@ -172,6 +197,8 @@ export function useComparePromptChat() {
 			modelName: compareSelectedModel,
 			userMessage: userMessage,
 		});
+
+		removeSelectedImage();
 	};
 
 	return {

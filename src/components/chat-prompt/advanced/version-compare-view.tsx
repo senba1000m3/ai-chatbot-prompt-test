@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Slider } from "@/components/ui/slider"
-import { ExternalLink, ChevronDown, GripVertical, Palette, PaintBucket, Eye, Filter, Search, Send } from "lucide-react"
+import { ExternalLink, ChevronDown, GripVertical, Palette, PaintBucket, Eye, Filter, Search, Send, Paperclip, X } from "lucide-react"
 import { useState, useMemo, useRef, useEffect, createRef } from "react"
 import { MessageBubble } from "../chat/message-bubble"
 import { usePromptStore, type SavedVersion, type ModelMessage, type ModelAccuracy, availableModels, availableTools } from "@/lib/store/prompt"
@@ -39,7 +39,7 @@ const getModelsByCategory = (models: any[] = []) => {
 
 export function VersionCompareView() {
 	const {
-		compareVersions, compareVersionsOrder, onVersionReorder, compareModelMessages, compareSelectedModel, setCompareSelectedModel,
+		compareVersions, compareVersionsOrder, onVersionReorder, compareModelMessages, compareSelectedModel, setCompareSelectedModel, selectedImage, addSelectedImage, removeSelectedImage
 	} = usePromptStore()
 	const { handleSubmit } = useComparePromptChat();
 	const [colorMode, setColorMode] = useState(0)
@@ -80,6 +80,7 @@ export function VersionCompareView() {
 
 	// 聊天輸入相關狀態
 	const [inputMessage, setInputMessage] = useState("")
+	const [_selectedImage, _setSelectedImage] = useState<File | null>(null)
 
 	// 為每個版本分配固定的顏色索引，基於版本ID而不是當前位置
 	const versionColorMap = useMemo(() => {
@@ -132,6 +133,47 @@ export function VersionCompareView() {
 		handleSubmit(inputMessage);
 		setInputMessage("")
 	}
+
+	const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		if (e.target.files && e.target.files[0]) {
+			const img = e.target.files[0];
+
+			if (img.type === "image/jpeg" || img.type === "image/png") {
+				const formData = new FormData();
+				formData.append("file", img);
+
+				try {
+					const res = await fetch("/api/upload/images", {
+						method: "POST",
+						body: formData,
+					});
+
+					if (!res.ok) {
+						const errorData = await res.json();
+						alert(`上傳失敗: ${errorData.error || "未知錯誤"}`);
+						return;
+					}
+
+					const data = await res.json();
+					const imageUrl = data.url;
+					const fullUrl = `${window.location.origin}${imageUrl}`;
+
+					_setSelectedImage(img);
+					addSelectedImage(fullUrl);
+					console.log("圖片網址:", fullUrl);
+				} catch (error) {
+					console.error("上傳圖片時發生錯誤:", error);
+					alert("上傳失敗，請稍後再試。");
+				}
+			} else {
+				alert("請選擇 jpg 或 png 格式的圖片。");
+				_setSelectedImage(null);
+				removeSelectedImage();
+			}
+		}
+
+		e.target.value = '';
+	};
 
 	const handleMessageRating = (versionId: string, modelId: string, messageId: string, rating: "good" | "bad") => {
 
@@ -358,7 +400,7 @@ export function VersionCompareView() {
 							  <span className="text-red-500">✗</span>
 						  )}
                         </span>
-											</Button>
+							</Button>
 										</div>
 										{/* 搜尋框 */}
 										<div className="p-2 border-b border-gray-700">
@@ -568,7 +610,7 @@ export function VersionCompareView() {
 											<div
 												ref={scrollRefs[versionIndex]}
 												className="flex-1 p-3 overflow-y-auto space-y-3"
-												style={{ minHeight: 'calc(100vh - 80px - 160px - 70px - 65px)', maxHeight: 'calc(100vh - 80px - 160px - 70px - 65px)' }}
+												style={{ minHeight: 'calc(100vh - 80px - 160px - 70px - 140px)', maxHeight: 'calc(100vh - 80px - 160px - 70px - 140px)' }}
 											>
 												{(() => {
 													if (messageList.length === 0) {
@@ -600,30 +642,75 @@ export function VersionCompareView() {
 						</div>
 					</div>
 
-					{/* 輸入框區塊，非 fixed，直接放在 flex 容器底部 */}
-					<div className="border-t border-gray-800 bg-black/95 backdrop-blur-md p-4 flex space-x-3 flex-shrink-0" style={{height: '70px'}}>
-						<Input
-							value={inputMessage}
-							onChange={(e) => setInputMessage(e.target.value)}
-							placeholder="輸入訊息進行比較測試..."
-							className="flex-1 bg-gray-900/90 border-gray-600 text-white h-12 text-base focus:border-blue-500 focus:ring-blue-500 transition-colors backdrop-blur-sm"
-							onKeyPress={(e) => {
-								if (e.key === "Enter" && !e.shiftKey) {
-									e.preventDefault()
-									handleSendMessage()
-								}
-							}}
-						/>
-						<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-							<Button
-								onClick={handleSendMessage}
-								size="lg"
-								className="h-12 px-6 bg-blue-600 hover:bg-blue-700 transition-colors shadow-lg"
-								disabled={!inputMessage.trim() || !compareSelectedModel || compareSelectedModel === 'all'}
-							>
-								<Send className="w-5 h-5" />
-							</Button>
-						</motion.div>
+					{/* 輸入區塊和圖片預覽固定在底部，預留圖片空間，輸入框始終在最下方 */}
+					<div className="border-t border-gray-800 bg-black relative w-full">
+						{/* 預留圖片預覽空間，無論有無圖片都佔位 */}
+						<div className="flex items-center pt-1 gap-4" style={{ minHeight: '72px' }}>
+							{selectedImage && selectedImage.length > 0 ? (
+								<div className="inline-flex align-top max-w-xs relative py-2 gap-4" style={{ paddingLeft: '8px', paddingRight: '8px' }}>
+									{selectedImage.map((img, idx) => (
+										<div key={img} className="relative inline-block">
+											<img src={img} alt={`預覽圖片${idx+1}`} className="max-h-13 rounded border-5 border-red" style={{ display: 'block' }} />
+											<button
+												className="absolute top-1 right-0 text-red-600 rounded-full flex items-center justify-center shadow-lg z-10 transition-transform duration-150 hover:scale-105 hover:bg-red-100"
+												style={{ fontWeight: 'bold', fontSize: '1rem', lineHeight: '1rem', transform: 'translate(50%,-50%)' }}
+												onClick={() => removeSelectedImage(img)}
+												aria-label="關閉圖片預覽"
+											>
+												<X className="w-5 h-5" />
+											</button>
+										</div>
+									))}
+								</div>
+							) : (
+								<div style={{ width: '100%', minHeight: '68px' }} />
+							)}
+						</div>
+						{/* 輸入框區塊 */}
+						<div className="border-t border-gray-800 bg-black/95 backdrop-blur-md py-4 flex space-x-3 flex-shrink-0" style={{height: '70px'}}>
+							<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+								<Button
+									size="sm"
+									className="h-12 w-15 px-4 bg-blue-600 hover:bg-blue-700 transition-colors"
+									onClick={() => {
+										const fileInput = document.getElementById("image-upload") as HTMLInputElement;
+										if (fileInput) fileInput.click();
+									}}
+								>
+									<Paperclip className="w-6 h-6" />
+								</Button>
+								<input
+									type="file"
+									accept="image/jpeg, image/png"
+									onChange={handleImageChange}
+									className="hidden"
+									id="image-upload"
+									multiple
+								/>
+							</motion.div>
+							<Input
+								value={inputMessage}
+								onChange={(e) => setInputMessage(e.target.value)}
+								placeholder="輸入訊息進行比較測試..."
+								className="flex-1 bg-gray-900/90 border-gray-600 text-white h-12 text-base focus:border-blue-500 focus:ring-blue-500 transition-colors backdrop-blur-sm"
+								onKeyPress={(e) => {
+									if (e.key === "Enter" && !e.shiftKey) {
+										e.preventDefault()
+										handleSendMessage()
+									}
+								}}
+							/>
+							<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+								<Button
+									onClick={handleSendMessage}
+									size="lg"
+									className="h-12 px-6 bg-blue-600 hover:bg-blue-700 transition-colors shadow-lg"
+									disabled={!inputMessage.trim() || !compareSelectedModel || compareSelectedModel === 'all'}
+								>
+									<Send className="w-5 h-5" />
+								</Button>
+							</motion.div>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -717,3 +804,4 @@ export function VersionCompareView() {
 		</TooltipProvider>
 	)
 }
+
