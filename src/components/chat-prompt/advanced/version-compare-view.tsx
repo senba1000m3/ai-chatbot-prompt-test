@@ -10,7 +10,18 @@ import { Input } from "@/components/ui/input"
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Slider } from "@/components/ui/slider"
-import { ExternalLink, ChevronDown, GripVertical, Palette, PaintBucket, Eye, Filter, Search, Send, Paperclip, X } from "lucide-react"
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { ExternalLink, ChevronDown, GripVertical, Palette, PaintBucket, Eye, Filter, Search, Send, Paperclip, X, Trash2 } from "lucide-react"
 import { useState, useMemo, useRef, useEffect, createRef } from "react"
 import { MessageBubble } from "../chat/message-bubble"
 import { usePromptStore, type SavedVersion, type ModelMessage, type ModelAccuracy, availableModels, availableTools } from "@/lib/store/prompt"
@@ -40,7 +51,8 @@ const getModelsByCategory = (models: any[] = []) => {
 
 export function VersionCompareView() {
 	const {
-		compareVersions, compareVersionsOrder, onVersionReorder, compareModelMessages, compareSelectedModel, setCompareSelectedModel, selectedImage, addSelectedImage, removeSelectedImage
+		compareVersions, compareVersionsOrder, onVersionReorder, compareModelMessages, compareSelectedModel, setCompareSelectedModel, selectedImage, addSelectedImage, removeSelectedImage,
+		clearCompareModelMessages
 	} = usePromptStore()
 	const { handleSubmit } = useComparePromptChat();
 	const [colorMode, setColorMode] = useState(0)
@@ -412,6 +424,52 @@ export function VersionCompareView() {
 										})}
 									</DropdownMenuContent>
 								</DropdownMenu>
+
+								<AlertDialog>
+									<Tooltip>
+										<TooltipTrigger asChild>
+											<AlertDialogTrigger asChild>
+												<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+													<Button
+														variant="ghost"
+														size="sm"
+														className="text-gray-300 hover:text-white hover:bg-gray-900"
+													>
+														<Trash2 className="w-4 h-4" />清除對話
+													</Button>
+												</motion.div>
+											</AlertDialogTrigger>
+										</TooltipTrigger>
+										<TooltipContent side="bottom" className="z-[9999] bg-gray-800 border-gray-700 text-white">
+											<p>清除所有對話</p>
+										</TooltipContent>
+									</Tooltip>
+									<AlertDialogContent
+										className="bg-black border-gray-800"
+										onEscapeKeyDown={(event) => {
+											event.preventDefault()
+										}}
+									>
+										<AlertDialogHeader>
+											<AlertDialogTitle className="text-white">清除對話</AlertDialogTitle>
+											<AlertDialogDescription className="text-gray-300">
+												確定要清除所有對話記錄嗎？此操作無法復原。
+											</AlertDialogDescription>
+										</AlertDialogHeader>
+										<AlertDialogFooter className="flex justify-center space-x-4">
+											<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+												<AlertDialogAction onClick={clearCompareModelMessages} className="bg-red-600 hover:bg-red-700">
+													確認
+												</AlertDialogAction>
+											</motion.div>
+											<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+												<AlertDialogCancel className="text-gray-300 border-gray-800 hover:bg-gray-900">
+													取消
+												</AlertDialogCancel>
+											</motion.div>
+										</AlertDialogFooter>
+									</AlertDialogContent>
+								</AlertDialog>
 
 								<Tooltip>
 									<TooltipTrigger asChild>

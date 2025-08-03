@@ -18,7 +18,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
-import { X, ChevronRight, GripVertical } from "lucide-react"
+import { X, ChevronRight, GripVertical, LogOut } from "lucide-react"
 import { useState, useMemo, useEffect } from "react"
 import { usePromptStore, type SavedVersion } from "@/lib/store/prompt"
 import { CompareVersionCard } from "./compare-version-card"
@@ -301,6 +301,42 @@ export function VersionCompareSidebar({
             )}
 
             {/* 展開狀態的詳細內容 */}
+            <div className="mt-auto p-4 border-t border-gray-800">
+              <AnimatePresence>
+                {isExpanded ? (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 20 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                      <Button onClick={handleExitCompare} className="w-full">
+                        <LogOut className="w-4 h-4 mr-2" />
+                        退出比較模式
+                      </Button>
+                    </motion.div>
+                ) : (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.5 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.5 }}
+                        transition={{ duration: 0.2 }}
+                        className="flex justify-center"
+                    >
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="icon" onClick={handleExitCompare}>
+                            <LogOut className="w-5 h-5" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="right">
+                          <p>退出比較模式</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
             <AnimatePresence>
               {isExpanded && (
                 <motion.div

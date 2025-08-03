@@ -55,15 +55,35 @@ export function usePromptChat() {
 					const currentSendTimes = sendTimes || usePromptStore.getState().inputSendTimes;
 					const selectedImages = usePromptStore.getState().selectedImage;
 
-					for (let i = 0; i < currentSendTimes; i++) {
-						// 先 append 一個 user message，內容暫時為空陣列
-						const userMessageIds = modelNames.map(modelName =>
-							appendModelMessage(modelName, {
-								role: "user",
-								content: undefined,
-							})
-						);
+					// 先 append 一個 user message，內容暫時為空陣列
+					const userMessageIds = modelNames.map(modelName =>
+						appendModelMessage(modelName, {
+							role: "user",
+							content: undefined,
+						})
+					);
 
+					// update user message，把 text/image update 進去
+					modelNames.forEach((modelName, idx) => {
+						const userContent: MessageContent = [];
+						if (input) {
+							userContent.push({ type: "text", text: input });
+						}
+						if (selectedImages && selectedImages.length > 0) {
+							selectedImages.forEach(img => {
+								userContent.push({ type: "image", image: img });
+							});
+						}
+						updateModelMessage(modelName, userMessageIds[idx], {
+							content: userContent,
+						});
+					});
+
+					const initialHistories = Object.fromEntries(
+						modelNames.map(modelName => [modelName, getModelMessages(modelName)])
+					);
+
+					for (let i = 0; i < currentSendTimes; i++) {
 						const newAssistantMessageIds = modelNames.map(modelName =>
 							appendModelMessage(modelName, {
 								role: "assistant",
@@ -73,23 +93,7 @@ export function usePromptChat() {
 
 						const messagePromises = modelNames.map(async (modelName, idx) => {
 							const parameters = usePromptStore.getState().parameters;
-							const userContent: MessageContent = [];
-							if (input) {
-								userContent.push({ type: "text", text: input });
-							}
-							if (selectedImages && selectedImages.length > 0) {
-								selectedImages.forEach(img => {
-									userContent.push({ type: "image", image: img });
-								});
-							}
-
-							console.log(userContent);
-							// update user message，把 text/image update 進去
-							updateModelMessage(modelName, userMessageIds[idx], {
-								content: userContent,
-							});
-
-							const historyMessages = getModelMessages(modelName);
+							const historyMessages = initialHistories[modelName];
 
 							try {
 								const result = await generate({

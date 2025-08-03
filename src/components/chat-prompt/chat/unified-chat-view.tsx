@@ -9,7 +9,7 @@ import { LoadingSpinner } from "./loading-spinner"
 import type { RefObject } from "react"
 import { type ModelMessage } from "@/lib/store/prompt"
 import React, { useState } from "react"
-
+import { MessageBubble } from "./message-bubble"
 
 interface ModelResponse {
   id: string
@@ -33,7 +33,7 @@ export function UnifiedChatView({
 
   const conversationFlow: Array<{
     type: "user" | "assistant"
-    content: string
+    message: ModelMessage
     model?: string
     responseTime?: number
   }> = []
@@ -45,7 +45,7 @@ export function UnifiedChatView({
     if (userMessage && userMessage.role === "user") {
       conversationFlow.push({
         type: "user",
-        content: userMessage.content as string,
+        message: userMessage,
       })
     }
 
@@ -54,12 +54,29 @@ export function UnifiedChatView({
       if (assistantMessage && assistantMessage.role === "assistant") {
         conversationFlow.push({
           type: "assistant",
-          content: assistantMessage.content as string,
+          message: assistantMessage,
           model: model.name,
         })
       }
     })
   }
+
+  const renderContent = (content: string | { type: string; text: string } | Array<{ type: "text"; text: string } | { type: "image"; image: string }> | undefined | null) => {
+    if (!content) {
+      return '';
+    }
+    if (typeof content === 'string') {
+      return content;
+    }
+    if (Array.isArray(content)) {
+      const textItem = content.find(item => item.type === 'text');
+      return textItem ? (textItem as { text: string }).text : '';
+    }
+    if (content && typeof content === 'object' && 'text' in content) {
+      return content.text;
+    }
+    return null;
+  };
 
   // 將彈窗邏輯整合到這裡
   const handlePopupWindow = () => {
@@ -143,7 +160,7 @@ export function UnifiedChatView({
                   (item) => `
             <div class="message ${item.type === "user" ? "user-message" : "assistant-message"}">
               ${item.type === "assistant" && item.model ? `<div class="model-label">${item.model}</div>` : ""}
-              <div class="message-content">${item.content}</div>
+              <div class="message-content">${renderContent(item.message.content)}</div>
             </div>
           `,
                 )
@@ -201,30 +218,14 @@ export function UnifiedChatView({
             </div>
             <div className="flex-1 p-3 overflow-y-auto space-y-3 min-h-0">
               {conversationFlow.map((item, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: item.type === "user" ? 20 : -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.05, duration: 0.3 }}
-                >
-                  {item.type === "assistant" && <div className="text-xs text-gray-400 mb-1">{item.model}</div>}
-                  {item.type === "assistant" && item.responseTime && (
-                    <div className="flex justify-start mb-1">
-                      <div className="text-xs text-gray-500 font-mono bg-gray-800 px-2 py-1 rounded mr-8">
-                        {item.responseTime}ms
-                      </div>
-                    </div>
-                  )}
-                  <div
-                    className={`p-3 rounded-lg ${
-                      item.type === "user"
-                        ? "bg-blue-600 text-white ml-8"
-                        : "bg-gray-800 text-white mr-8 border border-gray-700"
-                    }`}
-                  >
-                    <div className="text-sm whitespace-pre-wrap">{item.content}</div>
-                  </div>
-                </motion.div>
+                <div key={index}>
+                  {item.type === "assistant" && <div className="text-xs text-gray-400 mb-1 ml-2">{item.model}</div>}
+                  <MessageBubble
+                    message={item.message}
+                    index={index}
+                    modelId={item.model || "user"}
+                  />
+                </div>
               ))}
               {modelResponses.some((m) => m.isLoading) && <LoadingSpinner />}
             </div>
@@ -285,30 +286,14 @@ export function UnifiedChatView({
           </div>
           <div className="flex-1 p-3 overflow-y-auto space-y-3 min-h-0">
             {conversationFlow.map((item, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: item.type === "user" ? 20 : -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.05, duration: 0.3 }}
-              >
-                {item.type === "assistant" && <div className="text-xs text-gray-400 mb-1">{item.model}</div>}
-                {item.type === "assistant" && item.responseTime && (
-                  <div className="flex justify-start mb-1">
-                    <div className="text-xs text-gray-500 font-mono bg-gray-800 px-2 py-1 rounded mr-8">
-                      {item.responseTime}ms
-                    </div>
-                  </div>
-                )}
-                <div
-                  className={`p-3 rounded-lg ${
-                    item.type === "user"
-                      ? "bg-blue-600 text-white ml-8"
-                      : "bg-gray-800 text-white mr-8 border border-gray-700"
-                  }`}
-                >
-                  <div className="text-sm whitespace-pre-wrap">{item.content}</div>
-                </div>
-              </motion.div>
+              <div key={index}>
+                {item.type === "assistant" && <div className="text-xs text-gray-400 mb-1 ml-2">{item.model}</div>}
+                <MessageBubble
+                  message={item.message}
+                  index={index}
+                  modelId={item.model || "user"}
+                />
+              </div>
             ))}
             {modelResponses.some((m) => m.isLoading) && <LoadingSpinner />}
           </div>
