@@ -321,7 +321,7 @@ export function VersionCompareView() {
 
 	return (
 		<TooltipProvider>
-			<div className="flex w-full">
+			<div className="flex w-full flex-1">
 				{/* 側邊 sidebar */}
 				<div className="h-full">
 					<VersionCompareSidebar
@@ -663,7 +663,7 @@ export function VersionCompareView() {
 					<div className="border-t border-gray-800 bg-black relative w-full">
 						{/* 預留圖片預覽空間，無論有無圖片都佔位 */}
 						<div className="flex items-center pt-1 gap-4" style={{ minHeight: '72px' }}>
-							{selectedImage && selectedImage.length > 0 ? (
+							{selectedImage && selectedImage.length > 0 && (
 								<div className="inline-flex align-top max-w-xs relative py-2 gap-4" style={{ paddingLeft: '8px', paddingRight: '8px' }}>
 									{selectedImage.map((img, idx) => (
 										<div key={img} className="relative inline-block">
@@ -679,8 +679,6 @@ export function VersionCompareView() {
 										</div>
 									))}
 								</div>
-							) : (
-								<div style={{ width: '100%', minHeight: '68px' }} />
 							)}
 						</div>
 						{/* 輸入框區塊 */}

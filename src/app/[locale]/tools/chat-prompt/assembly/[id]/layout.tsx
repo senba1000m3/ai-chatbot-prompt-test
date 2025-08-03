@@ -6,9 +6,8 @@ import { extractRouterConfig } from "uploadthing/server";
 import { ourFileRouter } from "@/app/api/uploadthing/core";
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.dev',
+  title: '產線測試區',
+  description: '用於組合和測試聊天提示詞的頁面。',
 }
 
 export default function RootLayout({

@@ -63,7 +63,7 @@ export async function generateMetadata(
 		metadataBase: getBaseUrl(),
 		title: {
 			default: "TAI 工廠",
-			template: `%s｜TAI 工廠`,
+			template: `TAI 工廠｜%s`,
 		},
 		description: "TAI 工廠是一個專注於 AI 應用與技術分享的平台，提供最新的人工智慧工具與資源。",
 		applicationName: "TAI 工廠",

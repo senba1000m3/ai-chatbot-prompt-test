@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useUploadThing } from "@/utils/uploadthing";
-import { Paperclip } from "lucide-react";
+import { Paperclip, Loader2 } from "lucide-react";
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input"
@@ -57,18 +57,19 @@ export const UploadButton = () =>{
 								disabled={isUploading}
 							>
 								{_isUploading ? (
-									<svg className="animate-spin w-5 h-5 text-white" viewBox="0 0 50 50">
-										<circle className="opacity-25" cx="25" cy="25" r="20" stroke="currentColor" strokeWidth="5" fill="none" />
-										<path className="opacity-75" fill="currentColor" d="M25 5a20 20 0 0 1 0 40" />
-									</svg>
+										<Loader2 className="animate-spin w-5 h-5" />
 								) : (
 									<Paperclip className="w-4 h-4" />
 								)}
 							</Button>
 						</TooltipTrigger>
-						{_isUploading && (
+						{_isUploading ? (
 							<TooltipContent>
 								<span>圖片上傳中...</span>
+							</TooltipContent>
+						) : (
+							<TooltipContent>
+								<span>上傳圖片</span>
 							</TooltipContent>
 						)}
 					</Tooltip>
