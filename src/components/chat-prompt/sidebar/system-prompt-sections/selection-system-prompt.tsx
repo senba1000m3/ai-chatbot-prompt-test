@@ -231,15 +231,15 @@ export function SelectionSystemPrompt({
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
-                                <AlertDialogCancel className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700">
-                                  取消
-                                </AlertDialogCancel>
                                 <AlertDialogAction
                                   onClick={() => handleDeleteOption(option)}
                                   className="bg-red-600 hover:bg-red-700"
                                 >
                                   刪除
                                 </AlertDialogAction>
+								<AlertDialogCancel className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700">
+								  取消
+							    </AlertDialogCancel>
                               </AlertDialogFooter>
                             </AlertDialogContent>
                           </AlertDialog>
@@ -304,23 +304,23 @@ export function SelectionSystemPrompt({
             </div>
             <div className="flex justify-end space-x-3 mt-6">
               <Button
-                variant="outline"
-                onClick={() => {
-                  setIsEditing(false)
-                  setNewOptionTitle("")
-                  setNewOptionContent("")
-                }}
-                className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700"
-              >
-                取消
-              </Button>
-              <Button
                 onClick={handleAddOption}
                 disabled={!newOptionTitle.trim() || !newOptionContent.trim()}
                 className="bg-blue-600 hover:bg-blue-700"
               >
                 新增
               </Button>
+			  <Button
+				variant="outline"
+				onClick={() => {
+					setIsEditing(false)
+					setNewOptionTitle("")
+					setNewOptionContent("")
+				}}
+				className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700"
+			  >
+				取消
+			  </Button>
             </div>
           </div>
         </div>

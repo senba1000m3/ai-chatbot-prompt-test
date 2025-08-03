@@ -5,27 +5,7 @@ import { Card } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ChevronRight } from "lucide-react"
 import { Badge } from "@/components/ui/badge" // 新增 Badge 導入
-import { usePromptStore, type SavedVersion } from "@/lib/store/prompt" // 導入共享的類型
-
-// 定義可用的模型和工具 (與 version-card.tsx 相同)
-const availableModels = [
-  { id: "o4-mini", name: "o4-mini" },
-  { id: "o3-mini", name: "o3-mini" },
-  { id: "gpt-4.1", name: "GPT-4.1" },
-  { id: "gpt-4.1-mini", name: "GPT-4.1 mini" },
-  { id: "gpt-4.1-nano", name: "GPT-4.1 nano" },
-  { id: "gpt-4o", name: "GPT-4o" },
-  { id: "gpt-4o-mini", name: "GPT-4o mini" },
-  { id: "gemini-2.5-flash", name: "Gemini 2.5 Flash" },
-  { id: "gemini-2.5-flash-lite", name: "Gemini 2.5 Flash Lite" },
-  { id: "gemini-2.0-flash", name: "Gemini 2.0 Flash" },
-  { id: "gemini-2.0-flash-lite", name: "Gemini 2.0 Flash Lite" },
-]
-
-const availableTools = [
-  { id: "sticker", name: "Sticker" },
-  { id: "plot", name: "Plot" },
-]
+import { usePromptStore, availableModels, availableTools, type SavedVersion } from "@/lib/store/prompt" // 導入共享的類型
 
 interface VersionCardCompareProps {
   version: SavedVersion
@@ -99,7 +79,7 @@ export function VersionCardCompare({ version, onToggleExpanded }: VersionCardCom
       whileHover={{ scale: 1.02 }}
     >
       <Card className={`bg-gray-900 border-gray-800 ${compareSelectedVersions.includes(version.id) ? "ring-2 ring-blue-500" : ""}`}>
-        <div className="p-3">
+        <div className="px-3 pt-3 pb-2">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center space-x-3">
               <Checkbox
@@ -109,7 +89,7 @@ export function VersionCardCompare({ version, onToggleExpanded }: VersionCardCom
               />
               <div>
                 <h3 className="font-medium text-white">{version.name}</h3>
-                <p className="text-xs text-gray-400">{version.savedAt.toLocaleString()}</p>
+                <p className="text-xs text-gray-400" style={{whiteSpace: "pre"}}>{version.savedAt.toLocaleString().split(".")[0].replace("T","  ")}</p>
               </div>
             </div>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>

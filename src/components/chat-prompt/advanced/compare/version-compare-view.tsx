@@ -3,13 +3,13 @@
 import type React from "react"
 
 import { motion } from "framer-motion"
-import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Slider } from "@/components/ui/slider"
+import { Card } from "../../../ui/card"
+import { Badge } from "../../../ui/badge"
+import { Button } from "../../../ui/button"
+import { Input } from "../../../ui/input"
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "../../../ui/tooltip"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../../../ui/dropdown-menu"
+import { Slider } from "../../../ui/slider"
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -20,14 +20,14 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 	AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "../../../ui/alert-dialog"
 import { ExternalLink, ChevronDown, GripVertical, Palette, PaintBucket, Eye, Filter, Search, Send, Paperclip, X, Trash2 } from "lucide-react"
 import { useState, useMemo, useRef, useEffect, createRef } from "react"
-import { MessageBubble } from "../chat/message-bubble"
-import { usePromptStore, type SavedVersion, type ModelMessage, type ModelAccuracy, availableModels, availableTools } from "@/lib/store/prompt"
-import { useComparePromptChat } from "@/hooks/use-compare-prompt-chat"
+import { MessageBubble } from "../../chat/message-bubble"
+import { usePromptStore, type SavedVersion, type ModelMessage, type ModelAccuracy, availableModels, availableTools } from "../../../../lib/store/prompt"
+import { useComparePromptChat } from "../../../../hooks/use-compare-prompt-chat"
 import { VersionCompareSidebar } from "./version-compare-sidebar"
-import { UploadButton } from "@/components/chat-prompt/upload-button"
+import { UploadButton } from "../../upload-button"
 
 // 版本顏色配置
 const versionColors = [

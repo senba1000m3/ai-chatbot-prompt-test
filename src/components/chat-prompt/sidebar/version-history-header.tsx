@@ -71,7 +71,9 @@ export function VersionHistoryHeader({
 		}
 		else {
 			savedVersions.map((v) => {
-				setCompareSelectedVersions(v.id);
+				if (!compareSelectedVersions.includes(v.id)) {
+					setCompareSelectedVersions(v.id);
+				}
 			})
 		}
 	}

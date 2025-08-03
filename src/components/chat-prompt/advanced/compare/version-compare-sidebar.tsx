@@ -3,9 +3,9 @@
 import type React from "react"
 
 import { motion, AnimatePresence } from "framer-motion"
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { Card } from "../../../ui/card"
+import { Button } from "../../../ui/button"
+import { Badge } from "../../../ui/badge"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,12 +16,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
+} from "../../../ui/alert-dialog"
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "../../../ui/tooltip"
 import { X, ChevronRight, GripVertical, LogOut, Settings } from "lucide-react"
 import { useState, useMemo, useEffect } from "react"
-import { usePromptStore, type SavedVersion } from "@/lib/store/prompt"
+import { usePromptStore, type SavedVersion } from "../../../../lib/store/prompt"
 import { CompareVersionCard } from "./compare-version-card"
+import { CompareVersionSelectDialog } from "./compare-version-select-dialog"
 
 interface Model {
   id: string
@@ -59,6 +60,7 @@ export function VersionCompareSidebar({
   const [expandedVersions, setExpandedVersions] = useState<Set<string>>(new Set())
   const [draggedItem, setDraggedItem] = useState<SavedVersion | null>(null)
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
+  const [isSelectDialogOpen, setIsSelectDialogOpen] = useState(false)
 
 	const { compareVersions, setCompareVersions, setIsInCompareView, setIsCompareMode, clearCompareSelectedVersions, setShowVersionHistory,
 		compareVersionsOrder, setInitialVersionOrder, onVersionReorder, clearCompareModelMessages } = usePromptStore();
@@ -72,16 +74,6 @@ export function VersionCompareSidebar({
 			.map((id) => versionMap.get(id))
 			.filter((v): v is SavedVersion => !!v)
 	}, [compareVersions, compareVersionsOrder])
-
-	const handleExitCompare = () => {
-		setIsInCompareView(false);
-		setIsCompareMode(false);
-		clearCompareSelectedVersions();
-		clearCompareModelMessages();
-		setCompareVersions([]);
-		setInitialVersionOrder([]);
-		setShowVersionHistory(true);
-	}
 
   const versionColorMap = useMemo(() => {
     const colorMap: { [versionId: string]: number } = {}
@@ -142,18 +134,18 @@ export function VersionCompareSidebar({
   return (
     <TooltipProvider>
       <div
-        className="flex flex-col w-full"
+        className={`flex flex-col w-full${!isExpanded ? " -ml-3" : ""}`}
         style={{ height: "calc(100vh - 80px - 55px)" }}
       >
         <div className="flex flex-1 min-h-0">
           {/* Sidebar 區塊 */}
           <motion.div
             initial={{ width: 60, opacity: 0 }}
-            animate={{ width: isExpanded ? 320 : 60, opacity: 1 }}
+            animate={{ width: isExpanded ? 270 : 60, opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="border-r border-gray-800 bg-black flex flex-col overflow-hidden h-full"
-            style={{ minWidth: isExpanded ? 320 : 60 }}
+            style={{ minWidth: isExpanded ? 270 : 60 }}
           >
             <div className="flex-1 grid grid-rows-[9fr_10fr] min-h-0">
               {/* 上半部：版本比較資訊 */}
@@ -163,41 +155,48 @@ export function VersionCompareSidebar({
                   initial={{ y: -20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.1, duration: 0.3 }}
-                  className="p-4 border-b border-gray-800 h-15 flex items-center justify-between flex-shrink-0"
+                  className={`px-3 pl-4 border-b border-gray-800 h-12 flex items-center ${isExpanded ? "justify-between" : "justify-center"} flex-shrink-0 w-full`}
                 >
                   {isExpanded ? (
                     <>
                       <h2 className="text-base text-white">版本比較資訊</h2>
+					  <Button
+						variant="ghost"
+						size="sm"
+						onClick={() =>{setIsSelectDialogOpen(true)}}
+						className="text-xs text-gray-400 hover:text-white hover:bg-gray-800 -mr-4 p-2"
+					  >
+						<Settings className="w-3 h-3" />
+						調整
+					  </Button>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => setIsExpanded(false)}
-                        className="text-gray-400 hover:text-white hover:bg-gray-800"
+                        className="text-xs text-gray-400 hover:text-white hover:bg-gray-800 p-2"
                       >
-                        <ChevronRight className="w-4 h-4 rotate-180" />
+                        <ChevronRight className="w-3 h-3 rotate-180" />
                         收起
                       </Button>
                     </>
                   ) : (
-                    <div className="flex flex-col items-center justify-center space-y-2 h-full">
-                      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setIsExpanded(true)}
-                          className="text-gray-400 hover:text-white hover:bg-gray-800 p-2 flex items-center justify-center"
-                        >
-                          <ChevronRight className="w-4 h-4" />
-                        </Button>
-                      </motion.div>
-                    </div>
+                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setIsExpanded(true)}
+                        className="text-gray-400 hover:text-white hover:bg-gray-800 p-2"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </Button>
+                    </motion.div>
                   )}
                 </motion.div>
 
                 <div className="flex-1 overflow-y-auto">
                   {/* 收起狀態的版本指示器 */}
                   {!isExpanded && (
-                    <div className="p-2 space-y-2">
+                    <div className="p-2 space-y-2 flex flex-col items-center">
                       <AnimatePresence>
                         {sortedVersions.map((version, index) => {
                           const colorConfig = versionColors[versionColorMap[version.id]]
@@ -236,7 +235,7 @@ export function VersionCompareSidebar({
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.3 }}
-                        className="p-4 space-y-3"
+                        className="p-3 space-y-3"
                       >
                         <AnimatePresence>
                           {sortedVersions.map((version, index) => {
@@ -272,36 +271,34 @@ export function VersionCompareSidebar({
 
               {/* 下半部：預設測試集 */}
               <div className="flex flex-col border-t-2 border-gray-700 min-h-0">
-                <div className="p-4 border-b border-gray-800 h-15 flex items-center justify-between flex-shrink-0">
+                <div className={`px-3 pl-4 border-b border-gray-800 h-12 flex items-center ${isExpanded ? "justify-between" : "justify-center"} flex-shrink-0`}>
                   {isExpanded ? (
                     <>
                       <h2 className="text-base text-white">預設測試集</h2>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-gray-400 hover:text-white hover:bg-gray-800"
+                        className="text-xs text-gray-400 hover:text-white hover:bg-gray-800 p-2"
                       >
-                        <Settings className="w-4 h-4" />
+                        <Settings className="w-3 h-3" />
                         設定
                       </Button>
                     </>
                   ) : (
-                    <div className="w-full flex justify-center">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-gray-400 hover:text-white hover:bg-gray-800 p-2 flex items-center justify-center"
-                          >
-                            <Settings className="w-4 h-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="right">
-                          <p>設定預設測試集</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-gray-400 hover:text-white hover:bg-gray-800"
+                        >
+                          <Settings className="w-5 h-5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="right">
+                        <p>設定預設測試集</p>
+                      </TooltipContent>
+                    </Tooltip>
                   )}
                 </div>
                 <div className="flex-1 p-4 overflow-y-auto">
@@ -313,47 +310,10 @@ export function VersionCompareSidebar({
                 </div>
               </div>
             </div>
-
-            {/* 退出按鈕 */}
-            <div className="p-3 border-t border-gray-800 flex-shrink-0">
-              <AnimatePresence>
-                {isExpanded ? (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 20 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <Button onClick={handleExitCompare} className="w-full">
-                      <LogOut className="w-4 h-4 mr-2" />
-                      退出比較模式
-                    </Button>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.5 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.5 }}
-                    transition={{ duration: 0.2 }}
-                    className="flex justify-center"
-                  >
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" onClick={handleExitCompare}>
-                          <LogOut className="w-5 h-5" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent side="right">
-                        <p>退出比較模式</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
           </motion.div>
         </div>
       </div>
+      <CompareVersionSelectDialog isOpen={isSelectDialogOpen} onOpenChange={setIsSelectDialogOpen} />
     </TooltipProvider>
   )
 }

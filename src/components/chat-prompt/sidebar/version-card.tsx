@@ -124,7 +124,7 @@ export function VersionCard({version, onDownloadVersion, filteredModelAccuracy, 
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.3, ease: "easeInOut" }}
-      className="bg-gray-900 border border-gray-700 rounded-lg p-4 hover:border-gray-600 transition-colors"
+      className="bg-gray-900 border border-gray-700 rounded-lg px-2 pt-3 pb-1 hover:border-gray-600 transition-colors"
     >
       {/* 版本標題和操作按鈕 */}
       <div className="flex items-center justify-between mb-3">
@@ -142,25 +142,25 @@ export function VersionCard({version, onDownloadVersion, filteredModelAccuracy, 
               <ChevronRight className="h-4 w-4" />
             </motion.div>
           </Button>
-          <h3 className="font-medium text-white truncate flex-1">{version.name}</h3>
+          <h3 className="font-medium text-base text-white truncate flex-1 -ml-1">{version.name}</h3>
         </div>
 
-        <div className="flex items-center space-x-1">
+        <div className="flex items-center -space-x-[1px]">
           {/* 複製按鈕 */}
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="sm" className="p-1 h-8 w-8 hover:bg-gray-800">
+              <Button variant="ghost" size="sm" className="p-1 h-7 w-7 hover:bg-gray-800">
                 <GitFork className="h-4 w-4 text-blue-400" />
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>複製版本</AlertDialogTitle>
-                <AlertDialogDescription>確定要複製版本「{version.name}」的設定到當前工作區嗎？</AlertDialogDescription>
+                <AlertDialogDescription>確定要複製版本 「{version.name}」 的設定到當前工作區嗎？</AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>取消</AlertDialogCancel>
                 <AlertDialogAction onClick={() => copyVersion(version)}>複製</AlertDialogAction>
+                <AlertDialogCancel>取消</AlertDialogCancel>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
@@ -168,18 +168,18 @@ export function VersionCard({version, onDownloadVersion, filteredModelAccuracy, 
           {/* 下載按鈕 */}
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="sm" className="p-1 h-8 w-8 hover:bg-gray-800">
+              <Button variant="ghost" size="sm" className="p-1 h-7 w-7 hover:bg-gray-800">
                 <Download className="h-4 w-4 text-yellow-400" />
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>下載版本</AlertDialogTitle>
-                <AlertDialogDescription>確定要下載版本「{version.name}」為 JSON 檔案嗎？</AlertDialogDescription>
+                <AlertDialogDescription>確定要下載版本 「{version.name}」 為 JSON 檔案嗎？</AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>取消</AlertDialogCancel>
                 <AlertDialogAction onClick={() => onDownloadVersion(version)}>下載</AlertDialogAction>
+                <AlertDialogCancel>取消</AlertDialogCancel>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
@@ -187,7 +187,7 @@ export function VersionCard({version, onDownloadVersion, filteredModelAccuracy, 
 			{/* 查看按鈕 */}
 			<AlertDialog>
 				<AlertDialogTrigger asChild>
-					<Button variant="ghost" size="sm" className="p-1 h-8 w-8 hover:bg-gray-800">
+					<Button variant="ghost" size="sm" className="p-1 h-7 w-7 hover:bg-gray-800">
 						<Eye className="h-4 w-4 text-green-400" />
 					</Button>
 				</AlertDialogTrigger>
@@ -199,12 +199,12 @@ export function VersionCard({version, onDownloadVersion, filteredModelAccuracy, 
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
-						<AlertDialogCancel>取消</AlertDialogCancel>
 						<AlertDialogAction onClick={() => {
 							loadVersion(version);
 							setEditingVersionID(version.id);
 							setIsReadOnly(true);
 						}}>查看</AlertDialogAction>
+						<AlertDialogCancel>取消</AlertDialogCancel>
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
@@ -212,7 +212,7 @@ export function VersionCard({version, onDownloadVersion, filteredModelAccuracy, 
           {/* 刪除按鈕 */}
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="sm" className="p-1 h-8 w-8 hover:bg-gray-800" disabled={isDeleting}>
+              <Button variant="ghost" size="sm" className="p-1 h-7 w-7 hover:bg-gray-800" disabled={isDeleting}>
                 <Trash2 className="h-4 w-4 text-red-400" />
               </Button>
             </AlertDialogTrigger>
@@ -222,10 +222,10 @@ export function VersionCard({version, onDownloadVersion, filteredModelAccuracy, 
                 <AlertDialogDescription>確定要刪除版本「{version.name}」嗎？此操作無法復原。</AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>取消</AlertDialogCancel>
                 <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
                   刪除
                 </AlertDialogAction>
+                <AlertDialogCancel>取消</AlertDialogCancel>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
@@ -233,7 +233,7 @@ export function VersionCard({version, onDownloadVersion, filteredModelAccuracy, 
       </div>
 
       {/* 模型準確率顯示 */}
-      <div className="mb-3">
+      <div className="ml-1 mb-3">
         <div className="flex flex-wrap gap-2">
           {displayModelAccuracy.length > 0 ? (
             displayModelAccuracy.map((acc) => (
@@ -254,8 +254,8 @@ export function VersionCard({version, onDownloadVersion, filteredModelAccuracy, 
       </div>
 
       {/* 基本信息 */}
-      <div className="text-xs text-gray-400 mb-3">
-        <div>儲存時間: {version.savedAt.toLocaleString()}</div>
+      <div className="text-xs text-gray-400 ml-2 mb-3">
+        <div style={{whiteSpace: "pre"}}>儲存時間: {version.savedAt.toLocaleString().split(".")[0].replace("T", "  ")}</div>
       </div>
 
       {/* 展開的詳細信息 */}
@@ -352,6 +352,7 @@ export function VersionCard({version, onDownloadVersion, filteredModelAccuracy, 
                 )}
               </div>
             </div>
+			<div className="mb-1" />
           </motion.div>
         )}
       </AnimatePresence>

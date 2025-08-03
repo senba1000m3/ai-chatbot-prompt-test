@@ -162,6 +162,7 @@ export interface PromptStoreProps {
 	setIsInCompareView: (isInCompareView: boolean) => void;
 	compareVersions: SavedVersion[];
 	setCompareVersions: (versions: SavedVersion[]) => void;
+	updateCompareVersions: (selectedIds: string[]) => void;
 	compareVersionsOrder: string[];
 	setInitialVersionOrder: (versionsOrder: string[]) => void;
 	onVersionReorder: (oldIndex: number, newIndex: number) => void;
@@ -529,6 +530,23 @@ export const usePromptStore = create<PromptStoreProps>()(
 			setIsInCompareView: (isInCompareView: boolean) => set({ isInCompareView }),
 			compareVersions: [],
 			setCompareVersions: (versions: SavedVersion[]) => set({ compareVersions: versions }),
+			updateCompareVersions: (selectedIds: string[]) => {
+				set(state => {
+					const selectedVersions = state.savedVersions.filter(v => selectedIds.includes(v.id));
+
+					// Preserve order for existing versions, add new ones at the end
+					const oldOrder = state.compareVersionsOrder;
+					const newOrder = oldOrder.filter(id => selectedIds.includes(id));
+					const newIds = selectedIds.filter(id => !oldOrder.includes(id));
+					const finalOrder = [...newOrder, ...newIds];
+
+					return {
+						compareSelectedVersions: selectedIds,
+						compareVersions: selectedVersions,
+						compareVersionsOrder: finalOrder,
+					}
+				})
+			},
 			compareVersionsOrder: [],
 			setInitialVersionOrder: (versionsOrder: string[]) => set({ compareVersionsOrder: versionsOrder }),
 			onVersionReorder: (oldIndex: number, newIndex: number) => {
@@ -730,6 +748,7 @@ export type PromptStoreData = Omit<PromptStoreProps,
 	| "setIsCompareMode"
 	| "setIsInCompareView"
 	| "setCompareVersions"
+	| "updateCompareVersions"
 	| "setInitialVersionOrder"
 	| "onVersionReorder"
 	| "appendCompareModelMessage"

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { VersionCompareView } from './version-compare-view';
+import { VersionCompareView } from './compare/version-compare-view';
+import { MessageDatasetView } from './dataset/message-dataset-view';
 import { AdvancedSidebar } from './advanced-sidebar';
 import {
   SidebarGroup,
@@ -11,45 +12,68 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
-import { ChevronRight, GitCompare, MessageCircle, ChartLine} from 'lucide-react';
+import { ChevronRight, GitCompare, MessageCircle, Star, ChartLine, LogOut } from 'lucide-react';
 import Link from "next/link";
+import { AnimatePresence, motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { usePromptStore } from '@/lib/store/prompt';
 
-const items = [
-  {
-    "title": "版本比對",
-    "content": "版本比較對話框",
-    "key": "version",
-    "icon": () => <GitCompare />,
-  },
-  {
-    "title": "訊息設定",
-    "content": "訊息設定內容",
-    "key": "messages",
-    "icon": () => <MessageCircle />,
-  },
-  {
-    "title": "數據分析",
-    "content": "數據分析內容",
-    "key": "analytics",
-    "icon": () => <ChartLine />,
-    "dropdown": [
-      { "title": "總覽", "content": "數據分析總覽內容", "key": "overview" },
-	  { "title": "量表", "content": "數據分析總覽內容", "key": "scale" },
-      { "title": "報表", "content": "數據分析圖表內容", "key": "charts" },
-    ],
-  },
+const sidebarItems = [
+	{
+		item: "版本比對",
+		title: "版本比較對話框",
+		key: "version",
+		icon: () => <GitCompare />,
+		component: <VersionCompareView />
+	},
+	{
+		item: "訊息測試集",
+		title: "訊息測試集設定介面",
+		key: "messages",
+		icon: () => <MessageCircle />,
+		component: <MessageDatasetView />
+	},
+	{
+		item: "量表設定",
+		title: "量表設定內容",
+		key: "rating",
+		icon: () => <Star />,
+		component: <div>量表設定內容</div>
+	},
+	{
+		item: "數據分析",
+		title: "數據分析內容",
+		key: "analytics",
+		icon: () => <ChartLine />,
+		dropdown: [
+			{ item: "總覽", title: "數據分析總覽內容", key: "overview", component: <div>數據分析總覽內容</div> },
+			{ item: "量表", title: "數據分析總覽內容", key: "scale", component: <div>訊息量表內容</div>},
+			{ item: "報表", title: "數據分析圖表內容", key: "charts", component: <div>訊息報表內容</div>},
+		],
+	},
 ];
 
 export const AdvancedInterface = () => {
   const [selected, setSelected] = useState('version');
   const [analyticsDropdown, setAnalyticsDropdown] = useState('overview');
+  const { setIsInCompareView, setIsCompareMode, clearCompareSelectedVersions, clearCompareModelMessages, setCompareVersions, setInitialVersionOrder, setShowVersionHistory } = usePromptStore();
+
+	const handleExitCompare = () => {
+		setIsInCompareView(false);
+		setIsCompareMode(false);
+		clearCompareSelectedVersions();
+		clearCompareModelMessages();
+		setCompareVersions([]);
+		setInitialVersionOrder([]);
+		setShowVersionHistory(false);
+	}
 
   const sidebarMenu = (
     <SidebarGroup className="mt-[65px]">
       <SidebarGroupLabel>QC 區項目選單</SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu>
-          {items.map((item) =>
+          {sidebarItems.map((item) =>
             item.dropdown ? (
               <SidebarMenuItem key={item.key} className="-ml-3 -mt-2">
                 <Collapsible defaultOpen className="group/collapsible">
@@ -58,8 +82,8 @@ export const AdvancedInterface = () => {
                       <CollapsibleTrigger>
                         <span className="flex items-center justify-between text-base font-medium w-full">
                           <span className="flex items-center gap-2">
-                            <div className="w-5 h-5 flex items-center justify-center text-white ml-1" style={{ transform: 'scale(0.95)' }}>{item.icon()}</div>
-                            <span className="text-white ml-1">{item.title}</span>
+                            <div className="w-5 h-5 flex items-center justify-center text-white ml-1 pb-1" style={{ transform: 'scale(0.95)' }}>{item.icon()}</div>
+                            <span className="text-white ml-1">{item.item}</span>
                           </span>
                           <ChevronRight className="transition-transform group-data-[state=open]/collapsible:rotate-90" />
                         </span>
@@ -77,7 +101,7 @@ export const AdvancedInterface = () => {
                                 }}
                                 className={`pl-8 text-md h-7 ${selected === item.key && analyticsDropdown === sub.key ? 'bg-muted font-semibold' : ''}`}
                               >
-                                <span>{sub.title}</span>
+                                <span>{sub.item}</span>
                               </SidebarMenuButton>
                             </SidebarMenuItem>
                           ))}
@@ -94,7 +118,7 @@ export const AdvancedInterface = () => {
                   className={`text-base font-medium ${selected === item.key ? 'bg-muted' : ''}`}
                 >
                   <div className="w-5 h-5 flex items-center justify-center text-white" style={{ transform: 'scale(0.9)' }}>{item.icon()}</div>
-                  <span className="ml-1">{item.title}</span>
+                  <span className="ml-1">{item.item}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             )
@@ -110,19 +134,42 @@ export const AdvancedInterface = () => {
         <SidebarTrigger className="w-12 h-12" />
         <div className="flex items-center h-full text-xl font-semibold ml-2">
           {selected === "analytics"
-            ? items.find(v => v.key === "analytics")?.dropdown?.find(sub => sub.key === analyticsDropdown)?.content
-            : items.find(v => v.key === selected)?.content}
+            ? sidebarItems.find(v => v.key === "analytics")?.dropdown?.find(sub => sub.key === analyticsDropdown)?.title
+            : sidebarItems.find(v => v.key === selected)?.title}
         </div>
+		{/* 退出按鈕 */}
+		<div className="pt-1 flex-shrink-0 ml-auto mr-3">
+			<AnimatePresence>
+				<motion.div
+					initial={{ opacity: 0, y: 20 }}
+					animate={{ opacity: 1, y: 0 }}
+					exit={{ opacity: 0, y: 20 }}
+					transition={{ duration: 0.2 }}
+				>
+					<Button onClick={handleExitCompare} className="w-full">
+						<LogOut className="w-4 h-4 mr-2" />
+						退出比較模式
+					</Button>
+				</motion.div>
+			</AnimatePresence>
+		</div>
       </div>
+
       <div className="w-full border-b border-2 border-gray-900" />
 
 	  {/* 顯示內容 */}
       <div className="flex-1 w-full h-full">
-        {selected === 'version' && <VersionCompareView />}
-        {selected === 'messages' && <div>訊息瀏覽內容</div>}
-        {selected === 'analytics' && (
-          analyticsDropdown === 'overview' ? <div>數據分析總覽內容</div> : <div>數據分析圖表內容</div>
-        )}
+		  {(() => {
+			  const selectedItem = sidebarItems.find(v => v.key === selected);
+			  if (!selectedItem) return null;
+
+			  if (selectedItem.dropdown) {
+				  const subItem = selectedItem.dropdown.find(sub => sub.key === analyticsDropdown);
+				  return subItem ? subItem.component : null;
+			  } else {
+				  return selectedItem.component;
+			  }
+		  })()}
       </div>
     </AdvancedSidebar>
   );

@@ -3,7 +3,6 @@ import {
   Sidebar,
   SidebarContent,
   SidebarProvider,
-  SidebarTrigger,
   SidebarFooter,
   SidebarMenu,
   SidebarMenuItem,
@@ -20,9 +19,9 @@ interface AdvancedSidebarProps {
 export const AdvancedSidebar = ({ sidebar, children }: AdvancedSidebarProps) => {
   return (
     <SidebarProvider>
-      <div className="flex w-full h-full">
+      <div className="flex w-full h-full" style={{ '--sidebar-width': '260px' } as React.CSSProperties}>
         <Sidebar>
-			<SidebarContent>
+			<SidebarContent >
 			  {sidebar}
 			</SidebarContent>
 			<SidebarFooter>
@@ -61,4 +60,3 @@ export const AdvancedSidebar = ({ sidebar, children }: AdvancedSidebarProps) => 
     </SidebarProvider>
   );
 };
-
