@@ -18,7 +18,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
-import { X, ChevronRight, GripVertical, LogOut } from "lucide-react"
+import { X, ChevronRight, GripVertical, LogOut, Settings } from "lucide-react"
 import { useState, useMemo, useEffect } from "react"
 import { usePromptStore, type SavedVersion } from "@/lib/store/prompt"
 import { CompareVersionCard } from "./compare-version-card"
@@ -141,7 +141,10 @@ export function VersionCompareSidebar({
 
   return (
     <TooltipProvider>
-      <div className="flex flex-col h-full w-full">
+      <div
+        className="flex flex-col w-full"
+        style={{ height: "calc(100vh - 80px - 55px)" }}
+      >
         <div className="flex flex-1 min-h-0">
           {/* Sidebar 區塊 */}
           <motion.div
@@ -149,236 +152,330 @@ export function VersionCompareSidebar({
             animate={{ width: isExpanded ? 320 : 60, opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="border-r border-gray-800 bg-black flex flex-col overflow-hidden h-full max-h-full"
+            className="border-r border-gray-800 bg-black flex flex-col overflow-hidden h-full"
             style={{ minWidth: isExpanded ? 320 : 60 }}
           >
-            {/* 標題區域 */}
-            <motion.div
-              initial={{ y: -20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.1, duration: 0.3 }}
-              className="p-4 border-b border-gray-800 h-15 flex items-center justify-between"
-            >
-              {isExpanded ? (
-                <>
-                  <h2 className="text-base text-white">版本比較資訊</h2>
-                  <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setIsExpanded(false)}
-                      className="text-gray-400 hover:text-white hover:bg-gray-800"
-                  >
-                    <ChevronRight className="w-4 h-4 rotate-180" />
-                    收起
-                  </Button>
-                </>
-              ) : (
-                  <div className="flex flex-col items-center justify-center space-y-2 h-full">
-                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <div className="flex-1 grid grid-rows-[9fr_10fr] min-h-0">
+              {/* 上半部：版本比較資訊 */}
+              <div className="flex flex-col min-h-0">
+                {/* 標題區域 */}
+                <motion.div
+                  initial={{ y: -20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.1, duration: 0.3 }}
+                  className="p-4 border-b border-gray-800 h-15 flex items-center justify-between flex-shrink-0"
+                >
+                  {isExpanded ? (
+                    <>
+                      <h2 className="text-base text-white">版本比較資訊</h2>
                       <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setIsExpanded(false)}
+                        className="text-gray-400 hover:text-white hover:bg-gray-800"
+                      >
+                        <ChevronRight className="w-4 h-4 rotate-180" />
+                        收起
+                      </Button>
+                    </>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center space-y-2 h-full">
+                      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                        <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => setIsExpanded(true)}
                           className="text-gray-400 hover:text-white hover:bg-gray-800 p-2 flex items-center justify-center"
-                      >
-                        <ChevronRight className="w-4 h-4" />
-                      </Button>
-                    </motion.div>
-                  </div>
-              )}
-            </motion.div>
-
-            {/* 收起狀態的版本指示器 */}
-            {!isExpanded && (
-              <div className="flex-1 p-2 space-y-2">
-                {sortedVersions.map((version, index) => {
-                  const colorConfig = versionColors[versionColorMap[version.id]]
-
-                  return (
-                    <Tooltip key={version.id}>
-                      <TooltipTrigger asChild>
-                        <motion.div
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          transition={{ delay: index * 0.1, duration: 0.3 }}
-                          className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white ${colorConfig.badge} cursor-pointer hover:scale-110 transition-transform`}
-                          draggable
-                          onDragStart={(e) => handleDragStart(e, version)}
-                          onDragOver={(e) => handleDragOver(e, index)}
-                          onDragLeave={handleDragLeave}
-                          onDrop={(e) => handleDrop(e, index)}
-                          onDragEnd={handleDragEnd}
                         >
-                          {version.name.charAt(0)}
-                        </motion.div>
-                      </TooltipTrigger>
-                      <TooltipContent
-                        side="right"
-                        className="z-[999999] bg-gray-800 border-gray-700 text-white min-w-lg fixed max-h-[400px] overflow-y-auto"
-                        sideOffset={15}
-                        style={{
-                          zIndex: 999999,
-                          position: "fixed",
-                        }}
+                          <ChevronRight className="w-4 h-4" />
+                        </Button>
+                      </motion.div>
+                    </div>
+                  )}
+                </motion.div>
+
+                <div className="flex-1 overflow-y-auto">
+                  {/* 收起狀態的版本指示器 */}
+                  {!isExpanded && (
+                    <div className="p-2 space-y-2">
+                      <AnimatePresence>
+                        {sortedVersions.map((version, index) => {
+                          const colorConfig = versionColors[versionColorMap[version.id]]
+
+                          return (
+                            <motion.div
+                              key={version.id}
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              exit={{ scale: 0 }}
+                              transition={{ delay: index * 0.1, duration: 0.3 }}
+                              layout
+                            >
+                              <CollapsedVersionTooltip
+                                version={version}
+                                colorConfig={colorConfig}
+                                index={index}
+                                onDragStart={handleDragStart}
+                                onDragOver={handleDragOver}
+                                onDragLeave={handleDragLeave}
+                                onDrop={handleDrop}
+                                onDragEnd={handleDragEnd}
+                              />
+                            </motion.div>
+                          )
+                        })}
+                      </AnimatePresence>
+                    </div>
+                  )}
+
+                  {/* 展開狀態的詳細內容 */}
+                  <AnimatePresence>
+                    {isExpanded && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="p-4 space-y-3"
                       >
-                        <div className="space-y-2">
-                          <div className="font-medium">{version.name}</div>
-                          <div className="text-xs text-gray-300">{version.savedAt.toLocaleString()}</div>
+                        <AnimatePresence>
+                          {sortedVersions.map((version, index) => {
+                            const colorConfig = versionColors[versionColorMap[version.id]]
+                            const isVersionExpanded = expandedVersions.has(version.id)
+                            const isDragOver = dragOverIndex === index
+                            const isDragging = draggedItem?.id === version.id
 
-                          <div>
-                            <div className="text-xs text-gray-400 mb-1">System Prompt:</div>
-                            <div className="text-xs text-gray-300 space-y-1">
-                              {version.data?.systemPrompt ? (
-                                <>
-                                  <div>
-                                    <span className="text-gray-400">角色設定:</span>{" "}
-                                    {version.data.systemPrompt.characterSettings || "無"}
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-400">自我認知:</span>{" "}
-                                    {version.data.systemPrompt.selfAwareness || "無"}
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-400">任務流程:</span>{" "}
-                                    {version.data.systemPrompt.workflow || "無"}
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-400">格式限制:</span>{" "}
-                                    {version.data.systemPrompt.formatLimits || "無"}
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-400">工具使用:</span>{" "}
-                                    {version.data.systemPrompt.usedTools || "無"}
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-400">回覆限制:</span>{" "}
-                                    {version.data.systemPrompt.repliesLimits || "無"}
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-400">防洩漏:</span>{" "}
-                                    {version.data.systemPrompt.preventLeaks || "無"}
-                                  </div>
-                                </>
-                              ) : (
-                                <div className="text-gray-500">舊版本格式</div>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Default Hint Messages */}
-                          <div>
-                            <div className="text-xs text-gray-400 mb-1">Default Hint Messages:</div>
-                            <div className="text-xs text-gray-300 max-h-20 overflow-y-auto bg-gray-900 p-2 rounded border border-gray-700">
-                              {version.data.hintMessage.length > 0 ? (
-                                version.data.hintMessage.map((msg, idx) => (
-                                  <div key={msg.id || idx}>
-                                    {idx + 1}. {msg.content || "無內容"}
-                                  </div>
-                                ))
-                              ) : (
-                                <div className="text-gray-500">無數據</div>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-2 text-xs">
-                            <div>
-                              <span className="text-gray-400">Temperature:</span>
-                              <span className="text-white ml-1">{version.data.parameters.temperature}</span>
-                            </div>
-                          </div>
-
-                          <div className="text-xs">
-                            <span className="text-gray-400">Models:</span>
-                            <span className="text-white ml-1">{version.data.models.join(", ") || "無"}</span>
-                          </div>
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  )
-                })}
+                            return (
+                              <CompareVersionCard
+                                key={version.id}
+                                version={version}
+                                colorConfig={colorConfig}
+                                isExpanded={isVersionExpanded}
+                                isDragOver={isDragOver}
+                                isDragging={isDragging}
+                                onToggleExpand={toggleVersionExpanded}
+                                onDragStart={handleDragStart}
+                                onDragOver={handleDragOver}
+                                onDragLeave={handleDragLeave}
+                                onDrop={handleDrop}
+                                onDragEnd={handleDragEnd}
+                                index={index}
+                              />
+                            )
+                          })}
+                        </AnimatePresence>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
-            )}
 
-            {/* 展開狀態的詳細內容 */}
-            <div className="mt-auto p-4 border-t border-gray-800">
-              <AnimatePresence>
-                {isExpanded ? (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 20 }}
-                        transition={{ duration: 0.2 }}
-                    >
-                      <Button onClick={handleExitCompare} className="w-full">
-                        <LogOut className="w-4 h-4 mr-2" />
-                        退出比較模式
+              {/* 下半部：預設測試集 */}
+              <div className="flex flex-col border-t-2 border-gray-700 min-h-0">
+                <div className="p-4 border-b border-gray-800 h-15 flex items-center justify-between flex-shrink-0">
+                  {isExpanded ? (
+                    <>
+                      <h2 className="text-base text-white">預設測試集</h2>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-gray-400 hover:text-white hover:bg-gray-800"
+                      >
+                        <Settings className="w-4 h-4" />
+                        設定
                       </Button>
-                    </motion.div>
-                ) : (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.5 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.5 }}
-                        transition={{ duration: 0.2 }}
-                        className="flex justify-center"
-                    >
+                    </>
+                  ) : (
+                    <div className="w-full flex justify-center">
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Button variant="ghost" size="icon" onClick={handleExitCompare}>
-                            <LogOut className="w-5 h-5" />
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-gray-400 hover:text-white hover:bg-gray-800 p-2 flex items-center justify-center"
+                          >
+                            <Settings className="w-4 h-4" />
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent side="right">
-                          <p>退出比較模式</p>
+                          <p>設定預設測試集</p>
                         </TooltipContent>
                       </Tooltip>
-                    </motion.div>
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 p-4 overflow-y-auto">
+                  {isExpanded ? (
+                    <p className="text-gray-400">這裡是預設測試集的內容。</p>
+                  ) : (
+                    <div className="text-gray-400 text-center">...</div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* 退出按鈕 */}
+            <div className="p-3 border-t border-gray-800 flex-shrink-0">
+              <AnimatePresence>
+                {isExpanded ? (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 20 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Button onClick={handleExitCompare} className="w-full">
+                      <LogOut className="w-4 h-4 mr-2" />
+                      退出比較模式
+                    </Button>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.5 }}
+                    transition={{ duration: 0.2 }}
+                    className="flex justify-center"
+                  >
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" onClick={handleExitCompare}>
+                          <LogOut className="w-5 h-5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="right">
+                        <p>退出比較模式</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </motion.div>
                 )}
               </AnimatePresence>
             </div>
-            <AnimatePresence>
-              {isExpanded && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="flex-1 overflow-y-auto p-4 space-y-4"
-                  style={{ maxHeight: 'calc(100vh - 80px - 64px - 50px)' }} // 80px header + 64px sidebar header
-                >
-                  <AnimatePresence>
-                    {sortedVersions.map((version, index) => {
-                      const colorConfig = versionColors[versionColorMap[version.id]]
-                      const isVersionExpanded = expandedVersions.has(version.id)
-                      const isDragOver = dragOverIndex === index
-                      const isDragging = draggedItem?.id === version.id
-
-                      return (
-                        <CompareVersionCard
-                          key={version.id}
-                          version={version}
-                          colorConfig={colorConfig}
-                          isExpanded={isVersionExpanded}
-                          isDragOver={isDragOver}
-                          isDragging={isDragging}
-                          onToggleExpand={toggleVersionExpanded}
-                          onDragStart={handleDragStart}
-                          onDragOver={handleDragOver}
-                          onDragLeave={handleDragLeave}
-                          onDrop={handleDrop}
-                          onDragEnd={handleDragEnd}
-                          index={index}
-                        />
-                      )
-                    })}
-                  </AnimatePresence>
-                </motion.div>
-              )}
-            </AnimatePresence>
           </motion.div>
         </div>
       </div>
     </TooltipProvider>
+  )
+}
+
+interface CollapsedVersionTooltipProps {
+  version: SavedVersion
+  colorConfig: { badge: string }
+  index: number
+  onDragStart: (e: React.DragEvent, version: SavedVersion) => void
+  onDragOver: (e: React.DragEvent, index: number) => void
+  onDragLeave: (e: React.DragEvent) => void
+  onDrop: (e: React.DragEvent, index: number) => void
+  onDragEnd: (e: React.DragEvent) => void
+}
+
+const CollapsedVersionTooltip: React.FC<CollapsedVersionTooltipProps> = ({
+                                                                           version,
+                                                                           colorConfig,
+                                                                           index,
+                                                                           onDragStart,
+                                                                           onDragOver,
+                                                                           onDragLeave,
+                                                                           onDrop,
+                                                                           onDragEnd,
+                                                                         }) => {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div
+          className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white ${colorConfig.badge} cursor-pointer hover:scale-110 transition-transform`}
+          draggable
+          onDragStart={(e) => onDragStart(e, version)}
+          onDragOver={(e) => onDragOver(e, index)}
+          onDragLeave={onDragLeave}
+          onDrop={(e) => onDrop(e, index)}
+          onDragEnd={onDragEnd}
+        >
+          {version.name.charAt(0)}
+        </div>
+      </TooltipTrigger>
+      <TooltipContent
+        side="right"
+        className="z-[999999] bg-gray-800 border-gray-700 text-white min-w-lg fixed max-h-[400px] overflow-y-auto"
+        sideOffset={15}
+        style={{
+          zIndex: 999999,
+          position: "fixed",
+        }}
+      >
+        <div className="space-y-2">
+          <div className="font-medium">{version.name}</div>
+          <div className="text-xs text-gray-300">{version.savedAt.toLocaleString()}</div>
+
+          <div>
+            <div className="text-xs text-gray-400 mb-1">System Prompt:</div>
+            <div className="text-xs text-gray-300 space-y-1">
+              {version.data?.systemPrompt ? (
+                  <>
+                    <div>
+                      <span className="text-gray-400">角色設定:</span>{" "}
+                      {version.data.systemPrompt.characterSettings || "無"}
+                    </div>
+                    <div>
+                      <span className="text-gray-400">自我認知:</span>{" "}
+                      {version.data.systemPrompt.selfAwareness || "無"}
+                    </div>
+                    <div>
+                      <span className="text-gray-400">任務流程:</span>{" "}
+                      {version.data.systemPrompt.workflow || "無"}
+                    </div>
+                    <div>
+                      <span className="text-gray-400">格式限制:</span>{" "}
+                      {version.data.systemPrompt.formatLimits || "無"}
+                    </div>
+                    <div>
+                      <span className="text-gray-400">工具使用:</span>{" "}
+                      {version.data.systemPrompt.usedTools || "無"}
+                    </div>
+                    <div>
+                      <span className="text-gray-400">回覆限制:</span>{" "}
+                      {version.data.systemPrompt.repliesLimits || "無"}
+                    </div>
+                    <div>
+                      <span className="text-gray-400">防洩漏:</span>{" "}
+                      {version.data.systemPrompt.preventLeaks || "無"}
+                    </div>
+                  </>
+              ) : (
+                  <div className="text-gray-500">舊版本格式</div>
+              )}
+            </div>
+          </div>
+
+          {/* Default Hint Messages */}
+          <div>
+            <div className="text-xs text-gray-400 mb-1">Default Hint Messages:</div>
+            <div className="text-xs text-gray-300 max-h-20 overflow-y-auto bg-gray-900 p-2 rounded border border-gray-700">
+              {version.data.hintMessage.length > 0 ? (
+                  version.data.hintMessage.map((msg, idx) => (
+                      <div key={msg.id || idx}>
+                        {idx + 1}. {msg.content || "無內容"}
+                      </div>
+                  ))
+              ) : (
+                  <div className="text-gray-500">無數據</div>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <div>
+              <span className="text-gray-400">Temperature:</span>
+              <span className="text-white ml-1">{version.data.parameters.temperature}</span>
+            </div>
+          </div>
+
+          <div className="text-xs">
+            <span className="text-gray-400">Models:</span>
+            <span className="text-white ml-1">{version.data.models.join(", ") || "無"}</span>
+          </div>
+        </div>
+      </TooltipContent>
+    </Tooltip>
   )
 }

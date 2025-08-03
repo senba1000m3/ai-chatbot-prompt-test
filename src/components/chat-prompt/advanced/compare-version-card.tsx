@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import { ChevronRight, GripVertical } from "lucide-react"
-import type { SavedVersion } from "@/lib/store/prompt"
+import { usePromptStore, type SavedVersion } from "@/lib/store/prompt"
 import { useMemo } from "react"
 
 interface CompareVersionCardProps {
@@ -36,6 +36,14 @@ export function CompareVersionCard({
   onDragEnd,
   index,
 }: CompareVersionCardProps) {
+  const { compareVersions } = usePromptStore()
+
+  const versionNumber = useMemo(() => {
+    const sortedForNumbering = [...compareVersions].sort((a, b) => a.id.localeCompare(b.id))
+    const foundIndex = sortedForNumbering.findIndex(v => v.id === version.id)
+    return foundIndex > -1 ? foundIndex + 1 : 0
+  }, [compareVersions, version.id])
+
   // 安全處理資料
   const safeVersionData = useMemo(() => ({
     systemPrompt: {
@@ -100,7 +108,7 @@ export function CompareVersionCard({
       onDragEnd={onDragEnd}
     >
       <Card
-        className={`bg-gray-900 border border-gray-700 rounded-lg p-4 cursor-pointer transition-all duration-200 ${colorConfig.border} ${isDragOver ? "ring-2 ring-blue-500" : ""}`}
+        className={`bg-gray-900 border border-gray-700 rounded-lg px-4 pt-4 pb-1 cursor-pointer transition-all duration-200 ${colorConfig.border} ${isDragOver ? "ring-2 ring-blue-500" : ""}`}
         onClick={() => onToggleExpand(version.id)}
       >
         {/* 標題與時間 */}
@@ -110,7 +118,7 @@ export function CompareVersionCard({
             <h3 className="font-medium text-white truncate flex-1">{version.name}</h3>
           </div>
           <div className="flex items-center space-x-2">
-            <Badge variant="outline" className={`text-xs text-white border-gray-600 ${colorConfig.badge}`}>{version.name}</Badge>
+            <Badge variant="outline" className={`text-xs text-white border-gray-600 ${colorConfig.badge}`}>{`版本 ${versionNumber}`}</Badge>
             <motion.div animate={{ rotate: isExpanded ? 90 : 0 }} transition={{ duration: 0.2 }}>
               <ChevronRight className="w-4 h-4 text-gray-400" />
             </motion.div>
@@ -124,12 +132,12 @@ export function CompareVersionCard({
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="space-y-4 pt-3 border-t border-gray-700 overflow-hidden"
+              className="space-y-3 pt-3 border-t border-gray-700 overflow-hidden"
             >
               {/* System Prompt 詳情 */}
               <div>
                 <h4 className="text-sm font-medium text-white mb-2">System Prompt</h4>
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {systemPromptItems.map((item) => (
                     <div key={item.key}>
                       <div className="text-xs font-semibold text-gray-400 mb-1">{item.label}</div>
@@ -141,7 +149,7 @@ export function CompareVersionCard({
               {/* Default Hint Message 詳情 */}
               <div>
                 <h4 className="text-sm font-medium text-white mb-2">Default Hint Message ({safeVersionData.hintMessage.length})</h4>
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {safeVersionData.hintMessage.map((prompt: any, index: number) => (
                     <div key={prompt.id ? String(prompt.id) : `hint-${index}`}>
                       <div className="text-xs font-semibold text-gray-400 mb-1">訊息 {index + 1}</div>
@@ -193,6 +201,7 @@ export function CompareVersionCard({
                   </div>
                 </div>
               )}
+			  <div className="mb-3" />
             </motion.div>
           )}
         </AnimatePresence>

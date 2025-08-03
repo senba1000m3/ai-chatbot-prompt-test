@@ -185,3 +185,21 @@
  * Why not glow the inner part too?
  * Because it breaks the button :)
  */
+
+/* -------------------------- SCROLLBAR ------------------------- */
+::-webkit-scrollbar {
+	@apply w-2 h-3;
+}
+
+::-webkit-scrollbar-track {
+	@apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+	@apply bg-zinc-400/50 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	@apply bg-zinc-400;
+}
+

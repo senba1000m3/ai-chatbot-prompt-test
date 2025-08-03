@@ -512,7 +512,7 @@ export function VersionCompareView() {
 								</div>
 							</div>
 							<p className="text-sm mt-[10px] text-gray-400">
-								比較 {sortedVersions.length} 個版本的設定（{sortedVersions.map((version) =>{return version.name}).join("、")}）
+								比較 {sortedVersions.length} 個版本的設定（{compareVersions.map((version) =>{return version.name}).join("、")}）
 							</p>
 						</div>
 					</div>
@@ -627,7 +627,7 @@ export function VersionCompareView() {
 											<div
 												ref={scrollRefs[versionIndex]}
 												className="flex-1 p-3 overflow-y-auto space-y-3"
-												style={{ minHeight: 'calc(100vh - 80px - 160px - 70px - 140px)', maxHeight: 'calc(100vh - 80px - 160px - 70px - 140px)' }}
+												style={{ minHeight: 'calc(100vh - 80px - 160px - 70px - 160px)', maxHeight: 'calc(100vh - 80px - 160px - 70px - 160px)' }}
 											>
 												{(() => {
 													if (messageList.length === 0) {

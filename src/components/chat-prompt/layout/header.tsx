@@ -12,7 +12,7 @@ export function Header() {
 	const router = useRouter();
 	const params = useParams();
 	const assemblyId = params?.id;
-	const { isCompareMode } = usePromptStore();
+	const { isInCompareView } = usePromptStore();
 	const { nickname, testAreas } = useLoginStore();
 
 	const currentTestAreaName = testAreas.find(area => area.id === assemblyId)?.name || "未知";
@@ -40,7 +40,7 @@ export function Header() {
 				  router.push(`./${assemblyId}`)
 			  }}>{`【${currentTestAreaName}】 產線`}</button>
 			  <ChevronRight className="w-4 h-4" />
-			  <span> {isCompareMode ? "QC 區" : "RD 區"} </span>
+			  <span> {isInCompareView ? "QC 區" : "RD 區"} </span>
             {/*<span>中文直書作文</span>*/}
           </div>
         </motion.div>
