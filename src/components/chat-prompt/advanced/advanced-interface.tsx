@@ -64,7 +64,7 @@ const sidebarItems = [
 		dropdown: [
 			{ item: "總覽", title: "數據分析總覽內容", key: "overview", component: <AnalyticsOverview /> },
 			{ item: "量表", title: "數據分析量表", key: "scale", component: <AnalyticsScaleView />},
-			{ item: "數據比較", title: "比較不同版本之間的數據", key: "charts", component: <AnalyticsCompareView />},
+			// { item: "數據比較", title: "比較不同版本之間的數據", key: "charts", component: <AnalyticsCompareView />},
 		],
 	},
 ];
