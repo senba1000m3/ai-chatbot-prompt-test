@@ -30,7 +30,7 @@ interface TestResultRatingsViewProps {
 
 export const TestResultRatingsView = ({ result, isOpen, onClose }: TestResultRatingsViewProps) => {
   const { savedVersions } = usePromptStore()
-  const { rubrics, ratingCategories } = useAdvancedStore()
+  const { rubrics, historyRubrics, ratingCategories } = useAdvancedStore()
 
   if (!result) return null
 
@@ -40,11 +40,24 @@ export const TestResultRatingsView = ({ result, isOpen, onClose }: TestResultRat
   }
 
   const getRubricDetails = (rubricId: string) => {
-    const rubric = rubrics.find(r => r.rubric_id === rubricId)
-    if (!rubric) return { content: "未知評分項", category: "未知類別", category_id: "" }
-    const category = ratingCategories.find(c => c.category_id === rubric.category_id)
+    let rubric = rubrics.find(r => r.rubric_id === rubricId)
+    let isDeprecated = false
+
+    if (!rubric) {
+      rubric = (historyRubrics || []).find(r => r.rubric_id === rubricId)
+      if (rubric) {
+        isDeprecated = true
+      }
+    }
+
+    if (!rubric)
+      return { content: "未知評分項", category: "未知類別", category_id: "" }
+
+    const category = ratingCategories.find(
+      c => c.category_id === rubric!.category_id
+    )
     return {
-      content: rubric.content,
+      content: isDeprecated ? `${rubric.content} (已棄用)` : rubric.content,
       category: category ? category.name : "未知類別",
       category_id: category ? category.category_id : "",
     }
@@ -102,7 +115,7 @@ export const TestResultRatingsView = ({ result, isOpen, onClose }: TestResultRat
                 ratingItems.map(item => (
                   <TableRow key={item.rubricId}>
                     <TableCell>{item.category}</TableCell>
-                    <TableCell>{item.content}</TableCell>
+                    <TableCell className={item.content.includes("已棄用") ? "text-red-500" : ""}>{item.content}</TableCell>
                     <TableCell className="text-right pr-15">
                       <div className="flex items-center justify-end">
 						  {item.score}

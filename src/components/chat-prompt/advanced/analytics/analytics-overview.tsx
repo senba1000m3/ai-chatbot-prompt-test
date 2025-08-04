@@ -26,12 +26,12 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
-import { Eye, ChartNoAxesColumn, Trash2 } from "lucide-react"
+import { Eye, ChartNoAxesColumn, Trash2, Download } from "lucide-react"
 import { TestResultDetailView } from "./test-result-detail-view"
 import { TestResultRatingsView } from "./test-result-ratings-view"
 
 export const AnalyticsOverview = () => {
-  const { testResults, deleteTestResult } = useAdvancedStore()
+  const { testResults, deleteTestResult, rubrics, historyRubrics } = useAdvancedStore()
   const { savedVersions } = usePromptStore()
   const [selectedResult, setSelectedResult] = useState<TestResult | null>(null)
   const [isDetailViewOpen, setIsDetailViewOpen] = useState(false)
@@ -51,6 +51,63 @@ export const AnalyticsOverview = () => {
     deleteTestResult(resultId)
   }
 
+  const getVersionName = (versionId: string) => {
+    const version = savedVersions.find(v => v.id === versionId)
+    return version ? version.name : "未知版本"
+  }
+
+  const handleDownloadResult = (result: TestResult) => {
+    const versionName = getVersionName(result.versionId)
+    const allRubrics = [...rubrics, ...historyRubrics]
+    const rubricIdToNameMap = allRubrics.reduce(
+      (acc, rubric) => {
+        if (!acc[rubric.rubric_id]) {
+          acc[rubric.rubric_id] = rubric.content
+        }
+        return acc
+      },
+      {} as Record<string, string>
+    )
+
+    const originalRatings = result.ratings[result.versionId]?.[result.modelId]
+    const transformedRatings = originalRatings
+      ? Object.entries(originalRatings).reduce(
+          (acc, [rubricId, score]) => {
+            const rubricName = rubricIdToNameMap[rubricId] || "未知評分項"
+            acc[rubricName] = score
+            return acc
+          },
+          {} as Record<string, number>
+        )
+      : {}
+
+    const downloadableResult = {
+      id: result.id,
+      timestamp: result.timestamp,
+      versionName: versionName,
+      modelId: result.modelId,
+      messages: {
+        [versionName]: result.messages[result.versionId],
+      },
+      ratings: {
+        [versionName]: {
+          [result.modelId]: transformedRatings,
+        },
+      },
+    }
+
+    const jsonString = JSON.stringify(downloadableResult, null, 2)
+    const blob = new Blob([jsonString], { type: "application/json" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `test-result-${result.id}.json`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
   const calculateAverageScore = (ratings: any, versionId: string, modelId: string) => {
     const modelRatings = ratings[versionId]?.[modelId]
     if (!modelRatings) return "N/A"
@@ -61,11 +118,6 @@ export const AnalyticsOverview = () => {
     const total = scores.reduce((acc, score) => acc + score, 0)
     const average = total / scores.length
     return average.toFixed(2)
-  }
-
-  const getVersionName = (versionId: string) => {
-    const version = savedVersions.find(v => v.id === versionId)
-    return version ? version.name : "未知版本"
   }
 
   return (
@@ -122,6 +174,16 @@ export const AnalyticsOverview = () => {
                               <p>查看評分細項</p>
                             </TooltipContent>
                           </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" onClick={() => handleDownloadResult(result)}>
+                                <Download className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>下載 JSON</p>
+                            </TooltipContent>
+                          </Tooltip>
                           <AlertDialog>
                             <Tooltip>
                               <TooltipTrigger asChild>
@@ -143,7 +205,7 @@ export const AnalyticsOverview = () => {
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
-								<AlertDialogAction onClick={() => handleDeleteResult(result.id)}>刪除</AlertDialogAction>
+                                <AlertDialogAction onClick={() => handleDeleteResult(result.id)}>刪除</AlertDialogAction>
                                 <AlertDialogCancel>取消</AlertDialogCancel>
                               </AlertDialogFooter>
                             </AlertDialogContent>

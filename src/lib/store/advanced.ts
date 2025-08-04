@@ -66,7 +66,9 @@ export interface AdvancedStoreProps {
 	ratingCategories: RatingCategory[];
 	setRatingCategories: (categories: RatingCategory[]) => void;
 	rubrics: Rubric[];
+	historyRubrics: Rubric[];
 	setRubrics: (rubrics: Rubric[]) => void;
+	deleteRubric: (rubricId: string) => void;
 
     versionRatings: VersionRating;
     setVersionRating: (versionId: string, modelId: string, rubric_id: string, score: number) => void;
@@ -146,7 +148,19 @@ export const useAdvancedStore = create<AdvancedStoreProps>()(
 			ratingCategories: [],
 			setRatingCategories: (categories: RatingCategory[]) => set({ ratingCategories: categories }),
 			rubrics: [],
+			historyRubrics: [],
 			setRubrics: (rubrics: Rubric[]) => set({ rubrics: rubrics }),
+			deleteRubric: rubricId => {
+				const { rubrics, historyRubrics } = get()
+				const rubricToDelete = rubrics.find(r => r.rubric_id === rubricId)
+				if (!rubricToDelete) {
+					return
+				}
+				const newRubrics = rubrics.filter(r => r.rubric_id !== rubricId)
+				const newHistoryRubrics = [...historyRubrics, rubricToDelete]
+				console.log(newHistoryRubrics)
+				set({ rubrics: newRubrics, historyRubrics: newHistoryRubrics })
+			},
             versionRatings: {},
             setVersionRating: (versionId, modelId, rubric_id, score) =>
                 set(state => ({
@@ -196,6 +210,7 @@ export const useAdvancedStore = create<AdvancedStoreProps>()(
 				visibleTestSetIds: state.visibleTestSetIds,
 				ratingCategories: state.ratingCategories,
 				rubrics: state.rubrics,
+				historyRubrics: state.historyRubrics,
                 versionRatings: state.versionRatings,
 				testResults: state.testResults,
                 isRatingInProgress: state.isRatingInProgress,

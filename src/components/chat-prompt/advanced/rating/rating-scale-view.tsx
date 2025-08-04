@@ -7,6 +7,17 @@ import { Input } from "@/components/ui/input";
 import { nanoid } from "nanoid";
 import { Plus, Trash2, X, Pencil } from "lucide-react";
 import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
     Dialog,
     DialogContent,
     DialogHeader,
@@ -16,7 +27,7 @@ import {
 } from "@/components/ui/dialog";
 
 export const RatingScaleView = () => {
-    const { ratingCategories, setRatingCategories, rubrics, setRubrics } = useAdvancedStore();
+    const { ratingCategories, setRatingCategories, rubrics, setRubrics, deleteRubric } = useAdvancedStore();
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [editingCategory, setEditingCategory] = useState<RatingCategory | null>(null);
     const [tempCategoryName, setTempCategoryName] = useState("");
@@ -50,10 +61,12 @@ export const RatingScaleView = () => {
     };
 
     const deleteCategory = (categoryId: string) => {
+        const rubricsInCategory = rubrics.filter(r => r.category_id === categoryId);
+        rubricsInCategory.forEach(r => deleteRubric(r.rubric_id));
+
         setRatingCategories(
             ratingCategories.filter(c => c.category_id !== categoryId)
         );
-        setRubrics(rubrics.filter(r => r.category_id !== categoryId));
     };
 
     const addRubric = (categoryId: string) => {
@@ -71,10 +84,6 @@ export const RatingScaleView = () => {
                 r.rubric_id === rubricId ? { ...r, content } : r
             )
         );
-    };
-
-    const deleteRubric = (rubricId: string) => {
-        setRubrics(rubrics.filter(r => r.rubric_id !== rubricId));
     };
 
     return (
@@ -118,9 +127,28 @@ export const RatingScaleView = () => {
 									<Button variant="ghost" size="icon" onClick={() => handleEditClick(category)}>
 										<Pencil className="h-4 w-4" />
 									</Button>
-									<Button variant="ghost" size="icon" onClick={() => deleteCategory(category.category_id)}>
-										<X className="h-4 w-4" />
-									</Button>
+									<AlertDialog>
+										<AlertDialogTrigger asChild>
+											<Button variant="ghost" size="icon">
+												<X className="h-4 w-4" />
+											</Button>
+										</AlertDialogTrigger>
+										<AlertDialogContent>
+											<AlertDialogHeader>
+												<AlertDialogTitle>確定要刪除嗎？</AlertDialogTitle>
+												<AlertDialogDescription>
+													此操作無法復原。<br />
+													這將會永久刪除此評分項目類別及其下的所有評分標準，可能會影響到已經儲存的評分結果。
+												</AlertDialogDescription>
+											</AlertDialogHeader>
+											<AlertDialogFooter>
+												<AlertDialogAction onClick={() => deleteCategory(category.category_id)}>
+													刪除
+												</AlertDialogAction>
+												<AlertDialogCancel>取消</AlertDialogCancel>
+											</AlertDialogFooter>
+										</AlertDialogContent>
+									</AlertDialog>
 								</div>
                             </div>
                         </legend>
@@ -133,9 +161,28 @@ export const RatingScaleView = () => {
                                             value={rubric.content}
                                             onChange={e => updateRubricContent(rubric.rubric_id, e.target.value)}
                                         />
-                                        <Button variant="ghost" size="icon" onClick={() => deleteRubric(rubric.rubric_id)}>
-                                            <Trash2 className="h-5 w-5" />
-                                        </Button>
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Button variant="ghost" size="icon">
+                                                    <Trash2 className="h-5 w-5" />
+                                                </Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>確定要刪除嗎？</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        此操作無法復原。<br />
+														可能會影響到已經儲存的評分結果。
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogAction onClick={() => deleteRubric(rubric.rubric_id)}>
+                                                        刪除
+                                                    </AlertDialogAction>
+                                                    <AlertDialogCancel>取消</AlertDialogCancel>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
                                     </div>
                                 ))}
                         </div>
