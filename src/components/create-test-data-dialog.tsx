@@ -46,12 +46,73 @@ const DEFAULT_EXAMPLES = [
 	{
 		name: "數學理論推導",
 		text: "暫無內容",
-		defaultHintMessage: ["請幫我分析這個問題", "能否提供更詳細的說明？"]
+		defaultHintMessage: ["請幫我分析這個問題", "能否提供更詳細的說明？"],
+		defaultTestMessageDatasets: [
+			{
+				name: "基本問題",
+				messages: [
+					{ message: "請問怎麼積分x^3", require: "答案是 1/4x^4，但 ai 不應該寫出這樣完整的表達式，ai 需要提供引導，而不是給出答案。" },
+					{ message: "sin(pi/2)", require: "1" },
+				]
+			}
+		],
+		defaultRatingCategories: [
+            {
+                name: "基本題",
+                rubrics: [
+                    "ＡＩ回答的回答就是我要問的問題",
+                    "摘要時沒有將最終答案顯示出來",
+                    "計算是正確的",
+                    "回答的段落跟設定相同",
+                    "數學的格式正確顯示",
+                    "不會一直跳針，重複類似的句子"
+                ]
+            },
+            {
+                name: "易用性",
+                rubrics: [
+                    "我不用花費辛勞就能得到解題引導",
+                    "使用這個情境時我感受到輕鬆自在"
+                ]
+            },
+            {
+                name: "接受、同理度",
+                rubrics: [
+                    "我看得懂這個ＡＩ助教給的答案",
+                    "整體而言我可以接受這樣的推導方法",
+                    "我可以接受這樣的回答段落順序",
+                    "我可以接受這樣的錯誤率"
+                ]
+            },
+            {
+                name: "有用、幫助感",
+                rubrics: [
+                    "這樣的回答對我學習計算有幫助",
+                    "這樣的協助比我自己計算還快速",
+                    "這樣的協助能讓我更理解計算過程",
+                    "以學習而言比其他ＡＩ聊天機器人好用"
+                ]
+            },
+            {
+                name: "使用意圖",
+                rubrics: [
+                    "我以後會繼續使用這個情境來幫助我解決推導問題"
+                ]
+            },
+            {
+                name: "使用體驗",
+                rubrics: [
+                    "我覺得模型回覆花費的時間很快速"
+                ]
+            }
+        ]
 	},
 	{
 		name: "聊天貼圖測試",
 		text: "暫無內容",
-		defaultHintMessage: ["跟我說說你現在的心情如何？", "你看到這個的心情如何？"]
+		defaultHintMessage: ["跟我說說你現在的心情如何？", "你看到這個的心情如何？"],
+		defaultTestMessageDatasets: [],
+		defaultRatingCategories: []
 	}
 ];
 
@@ -69,7 +130,7 @@ export function CreateTestDataDialog({ open, onOpenChange, onSubmit }: CreateTes
 	const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
 	const [isCsvDialogOpen, setIsCsvDialogOpen] = useState(false);
 
-	const { setDefaultHintMessage } = useLoginStore();
+	const { setDefaultHintMessage, setDefaultRatingCategories, setDefaultTestMessageDatasets } = useLoginStore();
 
 	// 處理選擇 CSV 行
 	const handleSelectCsvRow = useCallback(() => {
@@ -128,7 +189,15 @@ export function CreateTestDataDialog({ open, onOpenChange, onSubmit }: CreateTes
 
 		setTestAreaName(example.name)
 		setGroundTruth(example.text);
-		setDefaultHintMessage(example.defaultHintMessage);
+		if (example.defaultHintMessage) {
+			setDefaultHintMessage(example.defaultHintMessage);
+		}
+		if (example.defaultRatingCategories) {
+			setDefaultRatingCategories(example.defaultRatingCategories);
+		}
+		if (example.defaultTestMessageDatasets) {
+			setDefaultTestMessageDatasets(example.defaultTestMessageDatasets);
+		}
 	}
 
 	return (
@@ -325,3 +394,4 @@ export function CreateTestDataDialog({ open, onOpenChange, onSubmit }: CreateTes
 		</Dialog>
 	)
 }
+

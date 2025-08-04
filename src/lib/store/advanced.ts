@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { type SavedVersion, type ModelMessage } from "./prompt";
+import { useLoginStore } from "./prompt-login";
 
 export interface RatingCategory {
 	category_id: string;
@@ -80,6 +81,27 @@ export interface AdvancedStoreProps {
     isRatingInProgress: boolean;
     setIsRatingInProgress: (isRating: boolean) => void;
 }
+
+export type AdvancedStoreData = Omit<AdvancedStoreProps,
+	| "setSelectedView"
+	| "setTestMessageDatasets"
+	| "setVisibleTestSetIds"
+	| "addTestMessageSet"
+	| "deleteTestMessageSet"
+	| "updateTestMessageSetName"
+	| "addMessageToSet"
+	| "updateMessageInSet"
+	| "deleteMessageFromSet"
+	| "setRatingCategories"
+	| "setRubrics"
+	| "deleteRubric"
+	| "setVersionRating"
+	| "clearVersionRatings"
+	| "addTestResult"
+	| "deleteTestResult"
+	| "clearTestResults"
+	| "setIsRatingInProgress"
+>;
 
 export const useAdvancedStore = create<AdvancedStoreProps>()(
 	persist(
@@ -220,3 +242,23 @@ export const useAdvancedStore = create<AdvancedStoreProps>()(
 	)
 );
 
+const keysToWatch: (keyof AdvancedStoreData)[] = [
+	'selectedView',
+	'testMessageDatasets',
+	'visibleTestSetIds',
+	'ratingCategories',
+	'rubrics',
+	'historyRubrics',
+	'versionRatings',
+	'testResults',
+	'isRatingInProgress',
+];
+
+useAdvancedStore.subscribe((state, prevState) => {
+	for (const key of keysToWatch) {
+		if ((state as any)[key] !== (prevState as any)[key]) {
+			useLoginStore.getState().setAdvancedBackup({ ...state });
+			break;
+		}
+	}
+});

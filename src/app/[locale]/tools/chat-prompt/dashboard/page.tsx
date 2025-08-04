@@ -44,7 +44,7 @@ export default function DashboardPage() {
 	const router = useRouter();
 
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
-	const {nickname, testAreas, addTestArea, addOldTestArea, deleteTestArea, duplicateTestArea, getTestArea, setNowTestAreaId, loadPromptBackup, setPromptBackup} = useLoginStore();
+	const {nickname, testAreas, addTestArea, addOldTestArea, deleteTestArea, duplicateTestArea, getTestArea, setNowTestAreaId, loadPromptBackup, loadAdvancedBackup, setPromptBackup} = useLoginStore();
 	const promptStore = usePromptStore();
 
 	// 只負責判斷 nickname
@@ -82,6 +82,7 @@ export default function DashboardPage() {
 			setNowTestAreaId(newTestArea.id);
 			// console.log(newTestArea.data);
 			loadPromptBackup(newTestArea.data);
+			loadAdvancedBackup(newTestArea.advancedData);
 			router.push(`assembly/${newTestArea.id}`);
 		} catch (error) {
 			console.error("創建產線失敗:", error);
@@ -147,7 +148,7 @@ export default function DashboardPage() {
 				newArea = { ...area, id: nanoid(), name: area.name + " (匯入)" };
 			}
 
-			const added = addOldTestArea({ ...newArea, data: area.data });
+			const added = addOldTestArea({ ...newArea, data: area.data, advancedData: area.advancedData });
 			if (!added) throw new Error();
 			toast("上傳成功", { description: `產線 \"${newArea.name}\" 已匯入` });
 		} catch (error) {
@@ -162,8 +163,11 @@ export default function DashboardPage() {
 	// 打開產線
 	const handleOpenTestArea = (id: string) => {
 		setNowTestAreaId(id);
-		const oldBackup = (testAreas.find(area => area.id === id)?.data || {} as PromptStoreProps);
-		loadPromptBackup(oldBackup);
+		const testArea = getTestArea(id);
+		if (testArea) {
+			loadPromptBackup(testArea.data);
+			loadAdvancedBackup(testArea.advancedData);
+		}
 		router.push(`assembly/${id}`);
 	}
 

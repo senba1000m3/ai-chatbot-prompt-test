@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { nanoid } from "@/lib/utils";
 import { usePromptStore, type HintMessage, type PromptStoreData } from "@/lib/store/prompt";
+import { useAdvancedStore, type AdvancedStoreData, type RatingCategory, type Rubric, type TestMessageSet } from "@/lib/store/advanced";
 
 // Types & Interfaces
 export interface TestArea {
@@ -14,6 +15,7 @@ export interface TestAreaWithData extends TestArea {
 	updatedAt: string
 	author: string
 	data: PromptStoreData
+	advancedData: AdvancedStoreData
 }
 
 interface LoginStoreProps {
@@ -34,10 +36,58 @@ interface LoginStoreProps {
 	// 預設參數
 	defaultHintMessage: HintMessage[];
 	setDefaultHintMessage: (messages: string[]) => void;
+	defaultTestMessageDatasets: { name: string, messages: { message: string, require: string }[] }[];
+	setDefaultTestMessageDatasets: (datasets: { name: string, messages: { message: string, require: string }[] }[]) => void;
+	defaultRatingCategories: { name: string, rubrics: string[] }[];
+	setDefaultRatingCategories: (categories: { name: string, rubrics: string[] }[]) => void;
 
 	// 備份與載入
 	setPromptBackup: (backup: PromptStoreData) => void;
 	loadPromptBackup: (backup: PromptStoreData) => void;
+	setAdvancedBackup: (backup: AdvancedStoreData) => void;
+	loadAdvancedBackup: (backup: AdvancedStoreData) => void;
+}
+
+// 取得 AdvancedStoreProps 的純資料預設值
+function getDefaultAdvancedStoreData(get: () => LoginStoreProps): AdvancedStoreData {
+	const defaultCategories = get().defaultRatingCategories || [];
+	const defaultRatingCategories: RatingCategory[] = [];
+	const defaultRubrics: Rubric[] = [];
+
+	defaultCategories.forEach(cat => {
+		const categoryId = `cat-${nanoid(5)}`;
+		defaultRatingCategories.push({ category_id: categoryId, name: cat.name });
+		cat.rubrics.forEach(rubricContent => {
+			defaultRubrics.push({
+				rubric_id: `rub-${nanoid(5)}`,
+				category_id: categoryId,
+				content: rubricContent,
+			});
+		});
+	});
+
+	const defaultDatasets = get().defaultTestMessageDatasets || [];
+	const defaultTestMessageDatasets: TestMessageSet[] = defaultDatasets.map(d => ({
+		id: `set-${nanoid(5)}`,
+		name: d.name,
+		messages: d.messages.map(m => ({
+			id: `msg-${nanoid(5)}`,
+			message: m.message,
+			require: m.require,
+		})),
+	}));
+
+	return {
+		selectedView: "version",
+		testMessageDatasets: defaultTestMessageDatasets,
+		visibleTestSetIds: defaultTestMessageDatasets.map(d => d.id),
+		ratingCategories: defaultRatingCategories,
+		rubrics: defaultRubrics,
+		historyRubrics: [],
+		versionRatings: {},
+		testResults: [],
+		isRatingInProgress: false,
+	}
 }
 
 // 取得 PromptStoreProps 的純資料預設值
@@ -113,6 +163,7 @@ export const useLoginStore = create<LoginStoreProps>()(
 						updatedAt: new Date().toISOString(),
 						author: nickname,
 						data: getDefaultPromptStoreData(get),
+						advancedData: getDefaultAdvancedStoreData(get),
 					};
 					set(state => ({ testAreas: [...state.testAreas, newTestArea] }));
 					return newTestArea;
@@ -129,6 +180,7 @@ export const useLoginStore = create<LoginStoreProps>()(
 						updatedAt: new Date().toISOString(),
 						author: testArea.author,
 						data: testArea.data,
+						advancedData: testArea.advancedData,
 					};
 					set(state => ({ testAreas: [...state.testAreas, newTestArea] }));
 					return newTestArea;
@@ -150,6 +202,7 @@ export const useLoginStore = create<LoginStoreProps>()(
 						createdAt: new Date().toISOString(),
 						updatedAt: new Date().toISOString(),
 						data: originalArea.data ?? ({} as PromptStoreData),
+						advancedData: originalArea.advancedData ?? getDefaultAdvancedStoreData(get),
 					};
 					set(state => ({ testAreas: [...state.testAreas, duplicatedArea] }));
 					return duplicatedArea;
@@ -169,6 +222,14 @@ export const useLoginStore = create<LoginStoreProps>()(
 				}));
 				return { defaultHintMessage: messagesWithId };
 			}),
+			defaultTestMessageDatasets: [],
+			setDefaultTestMessageDatasets: (datasets) => {
+				set({ defaultTestMessageDatasets: datasets });
+			},
+			defaultRatingCategories: [],
+			setDefaultRatingCategories: (defaultCategories) => {
+				set({ defaultRatingCategories: defaultCategories });
+			},
 			setPromptBackup: (backup: PromptStoreData) => {
 				const { nowTestAreaId, testAreas } = get();
 				const updatedTestAreas = testAreas.map(area =>
@@ -183,6 +244,18 @@ export const useLoginStore = create<LoginStoreProps>()(
 					...backup
 				});
 			},
+			setAdvancedBackup: (backup: AdvancedStoreData) => {
+				const { nowTestAreaId, testAreas } = get();
+				const updatedTestAreas = testAreas.map(area =>
+					area.id === nowTestAreaId ? { ...area, advancedData: backup } : area
+				);
+				set({ testAreas: updatedTestAreas });
+			},
+			loadAdvancedBackup: (backup: AdvancedStoreData) => {
+				useAdvancedStore.setState({
+					...backup
+				});
+			},
 		}),
 		{
 			name: "user-nickname",
@@ -193,4 +266,3 @@ export const useLoginStore = create<LoginStoreProps>()(
 		}
 	)
 );
-
