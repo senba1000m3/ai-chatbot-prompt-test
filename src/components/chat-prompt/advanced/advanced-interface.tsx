@@ -4,6 +4,8 @@ import { MessageDatasetView } from './dataset/message-dataset-view';
 import { AdvancedSidebar } from './advanced-sidebar';
 import { RatingScaleView } from "./rating/rating-scale-view";
 import { AnalyticsOverview } from "./analytics/analytics-overview";
+import { AnalyticsScaleView } from "./analytics/analytics-scale-view";
+import { AnalyticsCompareView } from "./analytics/analytics-compare-view";
 
 import {
   SidebarGroup,
@@ -61,8 +63,8 @@ const sidebarItems = [
 		icon: () => <ChartLine />,
 		dropdown: [
 			{ item: "總覽", title: "數據分析總覽內容", key: "overview", component: <AnalyticsOverview /> },
-			{ item: "量表", title: "數據分析總覽內容", key: "scale", component: <div>訊息量表內容</div>},
-			{ item: "報表", title: "數據分析圖表內容", key: "charts", component: <div>訊息報表內容</div>},
+			{ item: "量表", title: "數據分析量表", key: "scale", component: <AnalyticsScaleView />},
+			{ item: "數據比較", title: "比較不同版本之間的數據", key: "charts", component: <AnalyticsCompareView />},
 		],
 	},
 ];
