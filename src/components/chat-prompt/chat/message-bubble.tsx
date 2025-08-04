@@ -34,8 +34,15 @@ export function MessageBubble({ message, index, modelId, versionId, showRating =
   }
 
   const handleCopy = () => {
-    if (message.content) {
-      navigator.clipboard.writeText(String(message.content))
+    if (Array.isArray(message.content)) {
+      const textToCopy = message.content
+        .filter(item => item.type === 'text')
+        .map(item => item.text)
+        .join('\n');
+      navigator.clipboard.writeText(textToCopy);
+    }
+	else if (message.content) {
+      navigator.clipboard.writeText(String(message.content));
     }
   }
 
