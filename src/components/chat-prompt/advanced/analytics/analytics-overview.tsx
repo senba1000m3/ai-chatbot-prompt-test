@@ -11,16 +11,27 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
-import { Eye, ChartNoAxesColumn } from "lucide-react"
+import { Eye, ChartNoAxesColumn, Trash2 } from "lucide-react"
 import { TestResultDetailView } from "./test-result-detail-view"
 import { TestResultRatingsView } from "./test-result-ratings-view"
 
 export const AnalyticsOverview = () => {
-  const { testResults } = useAdvancedStore()
+  const { testResults, deleteTestResult } = useAdvancedStore()
   const { savedVersions } = usePromptStore()
   const [selectedResult, setSelectedResult] = useState<TestResult | null>(null)
   const [isDetailViewOpen, setIsDetailViewOpen] = useState(false)
@@ -34,6 +45,10 @@ export const AnalyticsOverview = () => {
   const handleViewRatings = (result: TestResult) => {
     setSelectedResult(result)
     setIsRatingsViewOpen(true)
+  }
+
+  const handleDeleteResult = (resultId: string) => {
+    deleteTestResult(resultId)
   }
 
   const calculateAverageScore = (ratings: any, versionId: string, modelId: string) => {
@@ -87,16 +102,16 @@ export const AnalyticsOverview = () => {
                       </TableCell>
                       <TableCell className="text-left">
                         <div className="flex space-x-1 -ml-2">
-						 <Tooltip>
-							<TooltipTrigger asChild>
-								<Button variant="ghost" size="icon" onClick={() => handleViewDetails(result)}>
-									<Eye className="h-4 w-4" />
-								</Button>
-							</TooltipTrigger>
-							<TooltipContent>
-								<p>查看對話紀錄</p>
-							</TooltipContent>
-						  </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" onClick={() => handleViewDetails(result)}>
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>查看對話紀錄</p>
+                            </TooltipContent>
+                          </Tooltip>
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button variant="ghost" size="icon" onClick={() => handleViewRatings(result)}>
@@ -107,6 +122,32 @@ export const AnalyticsOverview = () => {
                               <p>查看評分細項</p>
                             </TooltipContent>
                           </Tooltip>
+                          <AlertDialog>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <AlertDialogTrigger asChild>
+                                  <Button variant="ghost" size="icon">
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>刪除此測試結果</p>
+                              </TooltipContent>
+                            </Tooltip>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>確定要刪除嗎？</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  此操作無法復原。這將永久刪除此筆測試結果。
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+								<AlertDialogAction onClick={() => handleDeleteResult(result.id)}>刪除</AlertDialogAction>
+                                <AlertDialogCancel>取消</AlertDialogCancel>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       </TableCell>
                     </TableRow>

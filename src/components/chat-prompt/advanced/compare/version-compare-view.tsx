@@ -56,7 +56,7 @@ export function VersionCompareView() {
 		compareVersions, compareVersionsOrder, onVersionReorder, compareModelMessages, compareSelectedModel, setCompareSelectedModel, selectedImage, addSelectedImage, removeSelectedImage,
 		clearCompareModelMessages
 	} = usePromptStore()
-	const { addTestResult, versionRatings } = useAdvancedStore()
+	const { addTestResult, versionRatings, setIsRatingInProgress } = useAdvancedStore()
 	const { handleSubmit } = useComparePromptChat();
 	const [colorMode, setColorMode] = useState(0)
 
@@ -93,6 +93,11 @@ export function VersionCompareView() {
 	const [columnWidth, setColumnWidth] = useState(() => {return sortedVersions.length === 2 ? 125 : 85})
 
 	const [ratingStates, setRatingStates] = useState<{ [versionId: string]: boolean }>({})
+
+	useEffect(() => {
+		const isAnyRating = Object.values(ratingStates).some(Boolean)
+		setIsRatingInProgress(isAnyRating)
+	}, [ratingStates, setIsRatingInProgress])
 
 	const [inputMessage, setInputMessage] = useState("")
 
@@ -620,22 +625,64 @@ export function VersionCompareView() {
 													</Badge>
 												</div>
 												<div className="flex items-center space-x-1">
-													<Tooltip>
-														<TooltipTrigger asChild>
-															<Button
-																variant="ghost"
-																size="icon"
-																className="mr-1 h-8 w-16 text-gray-400 hover:text-white hover:bg-yellow-500/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-																onClick={() => setRatingStates(prev => ({ ...prev, [version.id]: true }))}
-																disabled={ratingStates[version.id]}
-															>
-																<Star className="w-4 h-4" />評分
-															</Button>
-														</TooltipTrigger>
-														<TooltipContent side="bottom" className="z-[9999] bg-gray-800 border-gray-700 text-white">
-															<p>對此版本進行評分</p>
-														</TooltipContent>
-													</Tooltip>
+													{ratingStates[version.id] ? (
+														<AlertDialog>
+															<Tooltip>
+																<TooltipTrigger asChild>
+																	<AlertDialogTrigger asChild>
+																		<Button
+																			variant="ghost"
+																			size="icon"
+																			className="mr-3 h-8 w-24 text-gray-400 hover:text-white hover:bg-red-500/50 transition-colors"
+																		>
+																			<X className="w-4 h-4" />
+																			取消評分
+																		</Button>
+																	</AlertDialogTrigger>
+																</TooltipTrigger>
+																<TooltipContent side="bottom" className="z-[9999] bg-gray-800 border-gray-700 text-white">
+																	<p>取消對此版本的評分</p>
+																</TooltipContent>
+															</Tooltip>
+															<AlertDialogContent className="bg-black border-gray-800">
+																<AlertDialogHeader>
+																	<AlertDialogTitle className="text-white">確定要退出評分嗎？</AlertDialogTitle>
+																	<AlertDialogDescription className="text-gray-300">
+																		如果您退出，所有未儲存的評分資料將會遺失。
+																	</AlertDialogDescription>
+																</AlertDialogHeader>
+																<AlertDialogFooter>
+																	<AlertDialogAction
+																		onClick={() => setRatingStates((prev) => ({ ...prev, [version.id]: false }))}
+																		className="bg-red-600 hover:bg-red-700"
+																	>
+																		確認
+																	</AlertDialogAction>
+																	<AlertDialogCancel className="text-gray-300 border-gray-800 hover:bg-gray-900">
+																		關閉
+																	</AlertDialogCancel>
+																</AlertDialogFooter>
+															</AlertDialogContent>
+														</AlertDialog>
+													) : (
+														<Tooltip>
+															<TooltipTrigger asChild>
+																<Button
+																	variant="ghost"
+																	size="icon"
+																	className="mr-3 h-8 w-16 text-gray-400 hover:text-white hover:bg-yellow-500/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+																	onClick={() => setRatingStates((prev) => ({ ...prev, [version.id]: true }))}
+																	disabled={Object.values(ratingStates).some(Boolean)}
+																>
+																	<Star className="w-4 h-4" />
+																	評分
+																</Button>
+															</TooltipTrigger>
+															<TooltipContent side="bottom" className="z-[9999] bg-gray-800 border-gray-700 text-white">
+																<p>對此版本進行評分</p>
+															</TooltipContent>
+														</Tooltip>
+													)}
 													<Tooltip>
 														<TooltipTrigger asChild>
 															<motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
@@ -698,7 +745,7 @@ export function VersionCompareView() {
 													}
 
 													return (
-														<>
+														<div className="pt-3">
 															{messageList.map((message, msgIndex) => (
 																<MessageBubble
 																	key={message.id || msgIndex}
@@ -711,6 +758,9 @@ export function VersionCompareView() {
 																/>
 															))}
 															{ratingStates[version.id] && (
+																<div className="border-t-4 border-gray-700 my-10" />
+															)}
+															{ratingStates[version.id] && (
 																<RatingScaleMessage
 																	versionId={version.id}
 																	modelId={compareSelectedModel}
@@ -720,7 +770,7 @@ export function VersionCompareView() {
 																	onStartNewConversation={handleClearConversation}
 																/>
 															)}
-														</>
+														</div>
 													)
 												})()}
 											</div>
@@ -873,4 +923,3 @@ export function VersionCompareView() {
 		</TooltipProvider>
 	)
 }
-

@@ -5,7 +5,7 @@ import { useState, useEffect, useMemo } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "../../../ui/dialog"
 import { Button } from "../../../ui/button"
 import { usePromptStore, type SavedVersion } from "../../../../lib/store/prompt"
-import { CompareVersionCard } from "./compare-version-card"
+import { CompareVersionCard } from "../compare/compare-version-card"
 import { ScrollArea } from "../../../ui/scroll-area"
 import { Checkbox } from "@/components/ui/checkbox"
 

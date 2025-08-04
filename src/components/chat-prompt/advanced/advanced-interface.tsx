@@ -20,6 +20,17 @@ import Link from "next/link";
 import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { usePromptStore } from '@/lib/store/prompt';
+import { useAdvancedStore } from '@/lib/store/advanced';
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 const sidebarItems = [
 	{
@@ -60,6 +71,10 @@ export const AdvancedInterface = () => {
   const [selected, setSelected] = useState('version');
   const [analyticsDropdown, setAnalyticsDropdown] = useState('overview');
   const { setIsInCompareView, setIsCompareMode, clearCompareSelectedVersions, clearCompareModelMessages, setCompareVersions, setInitialVersionOrder, setShowVersionHistory } = usePromptStore();
+	const { isRatingInProgress, setIsRatingInProgress } = useAdvancedStore();
+
+	const [isAlertOpen, setIsAlertOpen] = useState(false);
+	const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null);
 
 	const handleExitCompare = () => {
 		setIsInCompareView(false);
@@ -70,6 +85,30 @@ export const AdvancedInterface = () => {
 		setInitialVersionOrder([]);
 		setShowVersionHistory(false);
 	}
+
+	const handleNavigation = (navigationAction: () => void) => {
+		if (isRatingInProgress) {
+			setPendingNavigation(() => navigationAction);
+			setIsAlertOpen(true);
+		}
+		else {
+			navigationAction();
+		}
+	};
+
+	const confirmNavigation = () => {
+		if (pendingNavigation) {
+			pendingNavigation();
+		}
+		setIsAlertOpen(false);
+		setPendingNavigation(null);
+		setIsRatingInProgress(false); // Forcefully reset the state
+	};
+
+	const cancelNavigation = () => {
+		setIsAlertOpen(false);
+		setPendingNavigation(null);
+	};
 
   const sidebarMenu = (
     <SidebarGroup className="mt-[65px]">
@@ -98,10 +137,10 @@ export const AdvancedInterface = () => {
                           {item.dropdown.map((sub) => (
                             <SidebarMenuItem key={sub.key}>
                               <SidebarMenuButton
-                                onClick={() => {
+                                onClick={() => handleNavigation(() => {
                                   setSelected(item.key);
                                   setAnalyticsDropdown(sub.key);
-                                }}
+                                })}
                                 className={`pl-8 text-md h-7 ${selected === item.key && analyticsDropdown === sub.key ? 'bg-muted font-semibold' : ''}`}
                               >
                                 <span>{sub.item}</span>
@@ -117,7 +156,14 @@ export const AdvancedInterface = () => {
             ) : (
               <SidebarMenuItem key={item.key}>
                 <SidebarMenuButton
-                  onClick={() => setSelected(item.key)}
+                  onClick={() => {
+                    if (item.key === 'version') {
+                      setSelected(item.key);
+                    }
+					else {
+                      handleNavigation(() => setSelected(item.key));
+                    }
+                  }}
                   className={`text-base font-medium ${selected === item.key ? 'bg-muted' : ''}`}
                 >
                   <div className="w-5 h-5 flex items-center justify-center text-white" style={{ transform: 'scale(0.9)' }}>{item.icon()}</div>
@@ -149,8 +195,8 @@ export const AdvancedInterface = () => {
 					exit={{ opacity: 0, y: 20 }}
 					transition={{ duration: 0.2 }}
 				>
-					<Button onClick={handleExitCompare} className="w-full">
-						<Undo2  className="w-4 h-4" />
+					<Button onClick={() => handleNavigation(handleExitCompare)} className="w-26 h-9 text-xs">
+						<Undo2  className="w-4 h-4 pb-[2px]" />
 						返回 RD 區
 					</Button>
 				</motion.div>
@@ -174,6 +220,25 @@ export const AdvancedInterface = () => {
 			  }
 		  })()}
       </div>
+
+			<AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+				<AlertDialogContent className="bg-black border-gray-800">
+					<AlertDialogHeader>
+						<AlertDialogTitle className="text-white">警告：評分正在進行中</AlertDialogTitle>
+						<AlertDialogDescription className="text-gray-300">
+							您正在對一個或多個版本進行評分。<br />如果現在離開，所有未儲存的評分資料將會遺失，你確定要離開嗎？
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogAction onClick={confirmNavigation} className="bg-red-600 hover:bg-red-700">
+							離開
+						</AlertDialogAction>
+						<AlertDialogCancel onClick={cancelNavigation} className="text-gray-300 border-gray-800 hover:bg-gray-900">
+							取消
+						</AlertDialogCancel>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
     </AdvancedSidebar>
   );
 };

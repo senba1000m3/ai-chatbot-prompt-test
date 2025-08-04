@@ -103,8 +103,8 @@ export const RatingScaleView = () => {
             </Dialog>
 
             <div className="flex justify-between items-center mb-4 ml-2">
-                <Button onClick={addCategory} className="bg-blue-600 hover:bg-blue-700 transition-colors shadow-lg">
-                    <Plus className="mr-2 h-4 w-4" />
+                <Button onClick={addCategory} className="pr-5 bg-blue-600 hover:bg-blue-700 transition-colors shadow-lg">
+                    <Plus className="h-4 w-4" />
                     新增評分項目類別
                 </Button>
             </div>
@@ -139,8 +139,8 @@ export const RatingScaleView = () => {
                                     </div>
                                 ))}
                         </div>
-                        <Button variant="outline" size="sm" className="mb-6" onClick={() => addRubric(category.category_id)}>
-                            <Plus className="mr-2 h-4 w-4" />
+                        <Button variant="outline" size="sm" className="pr-4 h-10 mb-6" onClick={() => addRubric(category.category_id)}>
+                            <Plus className="h-4 w-4" />
                             新增評分標準
                         </Button>
                     </fieldset>

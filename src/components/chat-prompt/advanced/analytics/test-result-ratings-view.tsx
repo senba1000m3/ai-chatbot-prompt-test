@@ -94,7 +94,7 @@ export const TestResultRatingsView = ({ result, isOpen, onClose }: TestResultRat
               <TableRow>
                 <TableHead className="text-base">類別</TableHead>
                 <TableHead className="text-base">評分項</TableHead>
-                <TableHead className="w-[80px] text-left text-base">分數</TableHead>
+                <TableHead className="w-[100px] text-left text-base">分數</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -103,10 +103,10 @@ export const TestResultRatingsView = ({ result, isOpen, onClose }: TestResultRat
                   <TableRow key={item.rubricId}>
                     <TableCell>{item.category}</TableCell>
                     <TableCell>{item.content}</TableCell>
-                    <TableCell className="text-left">
-                      <div className="flex items-center justify-start">
-                        <Star className="w-4 h-4 mr-1 text-yellow-400 fill-yellow-400" />
-                        {item.score}
+                    <TableCell className="text-right pr-15">
+                      <div className="flex items-center justify-end">
+						  {item.score}
+						  <Star className="w-4 h-4 ml-1 text-yellow-400 fill-yellow-400" />
                       </div>
                     </TableCell>
                   </TableRow>

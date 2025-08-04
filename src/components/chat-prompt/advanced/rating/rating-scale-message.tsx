@@ -109,7 +109,7 @@ export const RatingScaleMessage = ({ versionId, modelId, onComplete, onUpdate, o
 	}
 
 	return (
-		<div className="space-y-4 my-4">
+		<div className="space-y-4 my-4 px-2">
 			{answeredQuestions.map((item, index) => (
 				<motion.div
 					key={index}
@@ -119,7 +119,7 @@ export const RatingScaleMessage = ({ versionId, modelId, onComplete, onUpdate, o
 					className=""
 				>
 					<div className="relative p-3 rounded-lg bg-gray-900 text-gray-400 border border-gray-800">
-						{!isSaved && (
+						{!isSaved && editingIndex !== index && (
 							<div className="absolute top-2 right-2">
 								<Button
 									variant="ghost"
@@ -142,7 +142,7 @@ export const RatingScaleMessage = ({ versionId, modelId, onComplete, onUpdate, o
 							<motion.div
 								initial={{ opacity: 0, y: 10 }}
 								animate={{ opacity: 1, y: 0 }}
-								className="flex justify-center space-x-2 pt-3 mt-2 border-t border-gray-700"
+								className="flex justify-center space-x-2 pt-3 mt-2 border-t border-gray-700 gap-2"
 							>
 								{[1, 2, 3, 4, 5].map((score) => (
 									<Button
@@ -150,7 +150,7 @@ export const RatingScaleMessage = ({ versionId, modelId, onComplete, onUpdate, o
 										size="sm"
 										variant={item.score === score ? "default" : "outline"}
 										onClick={() => handleUpdateRating(index, score)}
-										className="bg-gray-700 border-gray-600 hover:bg-blue-600 hover:text-white transition-colors"
+										className="w-10 bg-gray-700 border-gray-600 hover:bg-blue-600 hover:text-white transition-colors"
 									>
 										{score}
 									</Button>
@@ -220,7 +220,7 @@ export const RatingScaleMessage = ({ versionId, modelId, onComplete, onUpdate, o
 								<div className="mb-2 border-b border-gray-700 pb-1">
 									<span className="text-base font-semibold text-blue-400">{currentItem.category}</span>
 								</div>
-								<p className="mt-1">{currentItem.content}</p>
+								<p className="mt-1 mb-7">{currentItem.content}</p>
 							</div>
 						</div>
 					</motion.div>
@@ -229,7 +229,7 @@ export const RatingScaleMessage = ({ versionId, modelId, onComplete, onUpdate, o
 						initial={{ opacity: 0, y: 20 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ delay: 0.2, duration: 0.3 }}
-						className="flex justify-center space-x-2 pt-2"
+						className="flex justify-center space-x-2 pt-2 gap-2"
 					>
 						{[1, 2, 3, 4, 5].map((score) => (
 							<motion.div key={score} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
@@ -237,7 +237,7 @@ export const RatingScaleMessage = ({ versionId, modelId, onComplete, onUpdate, o
 									size="sm"
 									variant="outline"
 									onClick={() => handleRating(score)}
-									className="bg-gray-700 border-gray-600 hover:bg-blue-600 hover:text-white transition-colors"
+									className="w-10 bg-gray-700 border-gray-600 hover:bg-blue-600 hover:text-white transition-colors"
 								>
 									{score}
 								</Button>

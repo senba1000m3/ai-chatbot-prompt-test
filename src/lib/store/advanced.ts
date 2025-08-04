@@ -33,16 +33,22 @@ export interface TestResult {
 export interface AdvancedStoreProps {
 	testMessageDataset: string[];
 	setTestMessageDataset: (dataset: string[]) => void;
+
+	// 評分量表
 	ratingCategories: RatingCategory[];
 	setRatingCategories: (categories: RatingCategory[]) => void;
 	rubrics: Rubric[];
 	setRubrics: (rubrics: Rubric[]) => void;
+
     versionRatings: VersionRating;
     setVersionRating: (versionId: string, modelId: string, rubric_id: string, score: number) => void;
     clearVersionRatings: (versionId: string, modelId: string) => void;
 	testResults: TestResult[];
 	addTestResult: (result: Omit<TestResult, "id" | "timestamp">) => void;
+	deleteTestResult: (id: string) => void;
 	clearTestResults: () => void;
+    isRatingInProgress: boolean;
+    setIsRatingInProgress: (isRating: boolean) => void;
 }
 
 export const useAdvancedStore = create<AdvancedStoreProps>()(
@@ -88,7 +94,13 @@ export const useAdvancedStore = create<AdvancedStoreProps>()(
 				};
 				set(state => ({ testResults: [...state.testResults, newTestResult] }));
 			},
+			deleteTestResult: (id) =>
+				set((state) => ({
+					testResults: state.testResults.filter((result) => result.id !== id),
+				})),
 			clearTestResults: () => set({ testResults: [] }),
+            isRatingInProgress: false,
+            setIsRatingInProgress: (isRating) => set({ isRatingInProgress: isRating }),
 		}),
 		{
 			name: "tai-factory-advanced",
@@ -98,6 +110,7 @@ export const useAdvancedStore = create<AdvancedStoreProps>()(
 				rubrics: state.rubrics,
                 versionRatings: state.versionRatings,
 				testResults: state.testResults,
+                isRatingInProgress: state.isRatingInProgress,
 			}),
 		}
 	)
