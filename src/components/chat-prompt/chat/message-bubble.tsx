@@ -61,7 +61,7 @@ export function MessageBubble({ message, index, modelId, versionId, showRating =
     >
       <div
         className={`relative p-3 rounded-lg ${
-          message.role === "user" ? "bg-blue-600 text-white mr-2" : "bg-gray-800 text-white border border-gray-700"
+          message.role === "user" ? "bg-blue-600 text-white mr-2" : "bg-gray-800 text-white border border-gray-700 ml-2"
         }`}
       >
 		  <div className="text-sm">

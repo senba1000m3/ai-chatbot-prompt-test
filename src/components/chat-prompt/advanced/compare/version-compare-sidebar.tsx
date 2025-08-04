@@ -18,11 +18,14 @@ import {
   AlertDialogTrigger,
 } from "../../../ui/alert-dialog"
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "../../../ui/tooltip"
-import { X, ChevronRight, GripVertical, LogOut, Settings } from "lucide-react"
+import { X, ChevronRight, GripVertical, LogOut, Settings, ChevronLeft } from "lucide-react"
 import { useState, useMemo, useEffect } from "react"
 import { usePromptStore, type SavedVersion } from "../../../../lib/store/prompt"
+import { useComparePromptChat } from "@/hooks/use-compare-prompt-chat"
+import { useAdvancedStore } from "../../../../lib/store/advanced"
 import { CompareVersionCard } from "./compare-version-card"
 import { CompareVersionSelectDialog } from "./compare-version-select-dialog"
+import { DatasetSelectDialog } from "./dataset-select-dialog"
 
 interface Model {
   id: string
@@ -56,14 +59,18 @@ export function VersionCompareSidebar({
   colorMode,
   onColorModeChange,
 }: VersionCompareSidebarProps) {
-  const [isExpanded, setIsExpanded] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(true)
   const [expandedVersions, setExpandedVersions] = useState<Set<string>>(new Set())
   const [draggedItem, setDraggedItem] = useState<SavedVersion | null>(null)
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
   const [isSelectDialogOpen, setIsSelectDialogOpen] = useState(false)
+  const [isTestSetSelectDialogOpen, setIsTestSetSelectDialogOpen] = useState(false)
+  const [selectedTestSetId, setSelectedTestSetId] = useState<string | null>(null)
+  const [initialLoad, setInitialLoad] = useState(true)
 
-	const { compareVersions, setCompareVersions, setIsInCompareView, setIsCompareMode, clearCompareSelectedVersions, setShowVersionHistory,
-		compareVersionsOrder, setInitialVersionOrder, onVersionReorder, clearCompareModelMessages } = usePromptStore();
+	const { compareVersions, compareVersionsOrder, onVersionReorder } = usePromptStore();
+	const { testMessageDatasets, visibleTestSetIds, setSelectedView } = useAdvancedStore()
+	const { handleSubmit } = useComparePromptChat();
 
 	const sortedVersions = useMemo(() => {
 		if (compareVersionsOrder.length === 0 || compareVersions.length === 0) {
@@ -74,6 +81,20 @@ export function VersionCompareSidebar({
 			.map((id) => versionMap.get(id))
 			.filter((v): v is SavedVersion => !!v)
 	}, [compareVersions, compareVersionsOrder])
+
+	const visibleTestSets = useMemo(() => {
+		if (initialLoad && visibleTestSetIds.length === 0) {
+			setInitialLoad(false)
+			return testMessageDatasets
+		}
+		const visibleSet = new Set(visibleTestSetIds)
+		return testMessageDatasets.filter(d => visibleSet.has(d.id))
+	}, [testMessageDatasets, visibleTestSetIds, initialLoad])
+
+	const selectedTestSet = useMemo(() => {
+		if (!selectedTestSetId) return null
+		return testMessageDatasets.find((set) => set.id === selectedTestSetId)
+	}, [selectedTestSetId, testMessageDatasets])
 
   const versionColorMap = useMemo(() => {
     const colorMap: { [versionId: string]: number } = {}
@@ -274,10 +295,23 @@ export function VersionCompareSidebar({
                 <div className={`px-3 pl-4 border-b border-gray-800 h-12 flex items-center ${isExpanded ? "justify-between" : "justify-center"} flex-shrink-0`}>
                   {isExpanded ? (
                     <>
-                      <h2 className="text-base text-white">預設測試集</h2>
+                      {selectedTestSetId ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedTestSetId(null)}
+                          className="text-xs text-gray-400 hover:text-white hover:bg-gray-800 p-2 -ml-2"
+                        >
+                          <ChevronLeft className="w-3 h-3" />
+                          選擇其他測試集
+                        </Button>
+                      ) : (
+                        <h2 className="text-base text-white">預設測試集</h2>
+                      )}
                       <Button
                         variant="ghost"
                         size="sm"
+                        onClick={() => setIsTestSetSelectDialogOpen(true)}
                         className="text-xs text-gray-400 hover:text-white hover:bg-gray-800 p-2"
                       >
                         <Settings className="w-3 h-3" />
@@ -301,9 +335,54 @@ export function VersionCompareSidebar({
                     </Tooltip>
                   )}
                 </div>
-                <div className="flex-1 p-4 overflow-y-auto">
+                <div className="flex-1 p-3 overflow-y-auto">
                   {isExpanded ? (
-                    <p className="text-gray-400">這裡是預設測試集的內容。</p>
+                    selectedTestSet ? (
+                      <div className="space-y-2">
+                        <h3 className="text-sm font-bold text-white px-2 mt-1 mb-3">{selectedTestSet.name}</h3>
+                        {selectedTestSet.messages.length > 0 ? (
+                          selectedTestSet.messages.map((msg, index) => (
+                            <button
+                              key={msg.id}
+                              onClick={() => handleSubmit(msg.message)}
+                              className="w-full text-left text-xs text-gray-300 bg-gray-900 p-2 rounded border border-gray-700/50 hover:bg-gray-800 transition-colors"
+                            >
+							<p className="font-semibold" style={{whiteSpace: "pre"}}>
+								{`${index + 1}.  ${msg.message}`}
+							</p>
+                            </button>
+                          ))
+                        ) : (
+                          <p className="text-gray-500 text-center p-4">此測試集沒有訊息。</p>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {visibleTestSets.length > 0 ? (
+                          visibleTestSets.map(dataset => (
+                            <button
+                              key={dataset.id}
+                              onClick={() => setSelectedTestSetId(dataset.id)}
+                              className="w-full text-left p-2 rounded-md hover:bg-gray-800 transition-colors text-sm text-white"
+                            >
+                              {dataset.name}
+                            </button>
+                          ))
+                        ) : (
+                          <div className="text-center p-4">
+                            <p className="text-gray-400 mb-4">沒有可用的測試集。</p>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setSelectedView('messages')}
+                              className="text-white bg-blue-600 hover:bg-blue-700 border-blue-600"
+                            >
+                              前往創建測試集
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    )
                   ) : (
                     <div className="text-gray-400 text-center">...</div>
                   )}
@@ -314,6 +393,7 @@ export function VersionCompareSidebar({
         </div>
       </div>
       <CompareVersionSelectDialog isOpen={isSelectDialogOpen} onOpenChange={setIsSelectDialogOpen} />
+      <DatasetSelectDialog isOpen={isTestSetSelectDialogOpen} onOpenChange={setIsTestSetSelectDialogOpen} />
     </TooltipProvider>
   )
 }

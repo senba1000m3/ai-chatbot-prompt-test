@@ -68,10 +68,9 @@ const sidebarItems = [
 ];
 
 export const AdvancedInterface = () => {
-  const [selected, setSelected] = useState('version');
   const [analyticsDropdown, setAnalyticsDropdown] = useState('overview');
   const { setIsInCompareView, setIsCompareMode, clearCompareSelectedVersions, clearCompareModelMessages, setCompareVersions, setInitialVersionOrder, setShowVersionHistory } = usePromptStore();
-	const { isRatingInProgress, setIsRatingInProgress } = useAdvancedStore();
+	const { isRatingInProgress, setIsRatingInProgress, selectedView, setSelectedView } = useAdvancedStore();
 
 	const [isAlertOpen, setIsAlertOpen] = useState(false);
 	const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null);
@@ -138,10 +137,10 @@ export const AdvancedInterface = () => {
                             <SidebarMenuItem key={sub.key}>
                               <SidebarMenuButton
                                 onClick={() => handleNavigation(() => {
-                                  setSelected(item.key);
+                                  setSelectedView(item.key);
                                   setAnalyticsDropdown(sub.key);
                                 })}
-                                className={`pl-8 text-md h-7 ${selected === item.key && analyticsDropdown === sub.key ? 'bg-muted font-semibold' : ''}`}
+                                className={`pl-8 text-md h-7 ${selectedView === item.key && analyticsDropdown === sub.key ? 'bg-muted font-semibold' : ''}`}
                               >
                                 <span>{sub.item}</span>
                               </SidebarMenuButton>
@@ -158,13 +157,13 @@ export const AdvancedInterface = () => {
                 <SidebarMenuButton
                   onClick={() => {
                     if (item.key === 'version') {
-                      setSelected(item.key);
+                      setSelectedView(item.key);
                     }
 					else {
-                      handleNavigation(() => setSelected(item.key));
+                      handleNavigation(() => setSelectedView(item.key));
                     }
                   }}
-                  className={`text-base font-medium ${selected === item.key ? 'bg-muted' : ''}`}
+                  className={`text-base font-medium ${selectedView === item.key ? 'bg-muted' : ''}`}
                 >
                   <div className="w-5 h-5 flex items-center justify-center text-white" style={{ transform: 'scale(0.9)' }}>{item.icon()}</div>
                   <span className="ml-1">{item.item}</span>
@@ -182,9 +181,9 @@ export const AdvancedInterface = () => {
       <div className="flex flex-row items-center w-full h-16 px-2">
         <SidebarTrigger className="w-12 h-12" />
         <div className="flex items-center h-full text-xl font-semibold ml-2">
-          {selected === "analytics"
+          {selectedView === "analytics"
             ? sidebarItems.find(v => v.key === "analytics")?.dropdown?.find(sub => sub.key === analyticsDropdown)?.title
-            : sidebarItems.find(v => v.key === selected)?.title}
+            : sidebarItems.find(v => v.key === selectedView)?.title}
         </div>
 		{/* 退出按鈕 */}
 		<div className="pt-1 flex-shrink-0 ml-auto mr-3">
@@ -209,7 +208,7 @@ export const AdvancedInterface = () => {
 	  {/* 顯示內容 */}
       <div className="flex-1 w-full h-full">
 		  {(() => {
-			  const selectedItem = sidebarItems.find(v => v.key === selected);
+			  const selectedItem = sidebarItems.find(v => v.key === selectedView);
 			  if (!selectedItem) return null;
 
 			  if (selectedItem.dropdown) {
