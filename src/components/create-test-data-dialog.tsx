@@ -25,21 +25,31 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-// import { Textarea } from "@/components/ui/textarea";
+import { Textarea } from "@/components/ui/textarea";
 import { Muted } from "./common/typography"
 import { useLoginStore } from "@/lib/store/prompt-login";
+import { nanoid } from "nanoid";
+import { cn } from "@/lib/utils";
 
 // Icons & Images
-// import { Upload } from "lucide-react";
+import { X } from "lucide-react";
 
 // Types & Interfaces
-import type { TestArea } from "@/lib/store/prompt-login";
+import { type TestArea } from "@/lib/store/prompt-login";
+import { type TestMessageSet} from "@/lib/store/advanced";
+
+interface ManualRatingCategory {
+	name: string;
+	rubrics: string[];
+}
 
 interface CreateTestDataDialogProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	onSubmit: (data: TestArea) => void;
 }
+
+type DefaultExample = (typeof DEFAULT_EXAMPLES)[number];
 
 // Constants & Variables
 const DEFAULT_EXAMPLES = [
@@ -122,8 +132,15 @@ export function CreateTestDataDialog({ open, onOpenChange, onSubmit }: CreateTes
 	const [activeTab, setActiveTab] = useState("examples");
 	const [isLoading, setIsLoading] = useState(false);
 	const [testAreaName, setTestAreaName] = useState("");
+	const [nameError, setNameError] = useState(false);
 	const [imageUrl, setImageUrl] = useState("");
 	const [groundTruth, setGroundTruth] = useState("");
+	const [selectedExample, setSelectedExample] = useState<DefaultExample | null>(null);
+
+	// 手動輸入狀態
+	const [manualHintMessages, setManualHintMessages] = useState("");
+	const [manualTestDatasets, setManualTestDatasets] = useState<TestMessageSet[]>([]);
+	const [manualRatingCategories, setManualRatingCategories] = useState<ManualRatingCategory[]>([]);
 
 	// CSV 相關狀態
 	const [csvData, setCsvData] = useState<any[]>([]);
@@ -165,18 +182,40 @@ export function CreateTestDataDialog({ open, onOpenChange, onSubmit }: CreateTes
 			setActiveTab("examples")
 			setSelectedRowIndex(null)
 			setCsvData([])
+			setSelectedExample(null)
+			setManualHintMessages("")
+			setManualTestDatasets([])
+			setManualRatingCategories([])
+			setNameError(false);
 		}
 	}, [open])
 
 	// 處理表單提交
 	const handleSubmit = () => {
 		if (!testAreaName.trim()) {
-			//   toast({
-			//     title: "請輸入名稱",
-			//     description: "產線名稱不能為空",
-			//     variant: "destructive",
-			//   })
+			setNameError(true);
+			toast.error("產線名稱不能為空");
 			return
+		}
+
+		if (activeTab === 'manual') {
+			const hintMessages = manualHintMessages.split('\n').filter(line => line.trim() !== '');
+			setDefaultHintMessage(hintMessages);
+			// Manually cast the type to match what the store expects.
+			const datasetsForStore = manualTestDatasets.map(d => ({
+				name: d.name,
+				messages: d.messages.map(m => ({
+					message: m.message,
+					require: m.require,
+				}))
+			}));
+			setDefaultTestMessageDatasets(datasetsForStore);
+
+			const categoriesForStore = manualRatingCategories.map(c => ({
+				name: c.name,
+				rubrics: c.rubrics.map(r => r) // Ensure it's a new array of strings
+			}));
+			setDefaultRatingCategories(categoriesForStore);
 		}
 
 		onSubmit({
@@ -186,6 +225,7 @@ export function CreateTestDataDialog({ open, onOpenChange, onSubmit }: CreateTes
 
 	const handleDefaultExample = (index: number) => {
 		const example = DEFAULT_EXAMPLES[index]
+		setSelectedExample(example);
 
 		setTestAreaName(example.name)
 		setGroundTruth(example.text);
@@ -200,136 +240,347 @@ export function CreateTestDataDialog({ open, onOpenChange, onSubmit }: CreateTes
 		}
 	}
 
+	// 手動輸入處理函數
+	const handleAddDataset = () => {
+		setManualTestDatasets([...manualTestDatasets, { id: nanoid(), name: '', messages: [{ id: nanoid(), message: '', require: '' }] }]);
+	};
+
+	const handleRemoveDataset = (index: number) => {
+		setManualTestDatasets(manualTestDatasets.filter((_, i) => i !== index));
+	};
+
+	const handleDatasetChange = (index: number, field: 'name', value: string) => {
+		const newDatasets = manualTestDatasets.map((dataset, i) => {
+			if (i === index) {
+				return { ...dataset, [field]: value };
+			}
+			return dataset;
+		});
+		setManualTestDatasets(newDatasets);
+	};
+
+	const handleAddMessage = (datasetIndex: number) => {
+		const newDatasets = manualTestDatasets.map((dataset, i) => {
+			if (i === datasetIndex) {
+				return { ...dataset, messages: [...dataset.messages, { id: nanoid(), message: '', require: '' }] };
+			}
+			return dataset;
+		});
+		setManualTestDatasets(newDatasets);
+	};
+
+	const handleRemoveMessage = (datasetIndex: number, messageIndex: number) => {
+		const newDatasets = manualTestDatasets.map((dataset, i) => {
+			if (i === datasetIndex) {
+				return { ...dataset, messages: dataset.messages.filter((_, j) => j !== messageIndex) };
+			}
+			return dataset;
+		});
+		setManualTestDatasets(newDatasets);
+	};
+
+	const handleMessageChange = (datasetIndex: number, messageIndex: number, field: 'message' | 'require', value: string) => {
+		const newDatasets = manualTestDatasets.map((dataset, i) => {
+			if (i === datasetIndex) {
+				const newMessages = dataset.messages.map((message, j) => {
+					if (j === messageIndex) {
+						return { ...message, [field]: value };
+					}
+					return message;
+				});
+				return { ...dataset, messages: newMessages };
+			}
+			return dataset;
+		});
+		setManualTestDatasets(newDatasets);
+	};
+
+	const handleAddCategory = () => {
+		setManualRatingCategories([...manualRatingCategories, { name: '', rubrics: [''] }]);
+	};
+
+	const handleRemoveCategory = (index: number) => {
+		setManualRatingCategories(manualRatingCategories.filter((_, i) => i !== index));
+	};
+
+	const handleCategoryChange = (index: number, value: string) => {
+		const newCategories = manualRatingCategories.map((category, i) => {
+			if (i === index) {
+				return { ...category, name: value };
+			}
+			return category;
+		});
+		setManualRatingCategories(newCategories);
+	};
+
+	const handleAddRubric = (categoryIndex: number) => {
+		const newCategories = manualRatingCategories.map((category, i) => {
+			if (i === categoryIndex) {
+				return { ...category, rubrics: [...category.rubrics, ''] };
+			}
+			return category;
+		});
+		setManualRatingCategories(newCategories);
+	};
+
+	const handleRemoveRubric = (categoryIndex: number, rubricIndex: number) => {
+		const newCategories = manualRatingCategories.map((category, i) => {
+			if (i === categoryIndex) {
+				return { ...category, rubrics: category.rubrics.filter((_, j) => j !== rubricIndex) };
+			}
+			return category;
+		});
+		setManualRatingCategories(newCategories);
+	};
+
+	const handleRubricChange = (categoryIndex: number, rubricIndex: number, value: string) => {
+		const newCategories = manualRatingCategories.map((category, i) => {
+			if (i === categoryIndex) {
+				const newRubrics = category.rubrics.map((rubric, j) => {
+					if (j === rubricIndex) {
+						return value;
+					}
+					return rubric;
+				});
+				return { ...category, rubrics: newRubrics };
+			}
+			return category;
+		});
+		setManualRatingCategories(newCategories);
+	};
+
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="max-w-2xl">
-				<DialogHeader>
-					<DialogTitle>創建新產線</DialogTitle>
-					<DialogDescription>創建一個新的聊天機器人研發產線，用於測試和比較不同模型的 Prompt 與參數。</DialogDescription>
-				</DialogHeader>
-
-				<ScrollArea className="py-4 max-h-[60svh]">
-					<div className="space-y-2 mb-4">
-						<Label htmlFor="test-area-name">產線名稱</Label>
-						<Input
-							id="test-area-name"
-							placeholder="輸入產線名稱"
-							value={testAreaName}
-							onChange={(e) => setTestAreaName(e.target.value)}
-						/>
-					</div>
-
-					<Tabs value={activeTab} onValueChange={setActiveTab}>
-						<TabsList className="grid w-full grid-cols-3">
-							<TabsTrigger value="examples">預設範例</TabsTrigger>
-							<TabsTrigger value="manual">手動輸入</TabsTrigger>
-							<TabsTrigger value="upload">上傳文件</TabsTrigger>
-						</TabsList>
-
-						{/* 預設範例 */}
-						<TabsContent value="examples" className="space-y-4 py-2">
-							<div className="grid gap-2">
-								{DEFAULT_EXAMPLES.map((example, index) => (
-									<Button
-										key={index}
-										variant="outline"
-										className="justify-start h-auto py-3 px-4"
-										onClick={() => handleDefaultExample(index)}
-									>
-										<div className="grid text-start">
-											<span className="font-medium text-base">{example.name}</span>
-											<Muted className="truncate">{example.text}</Muted>
-										</div>
-									</Button>
-								))}
-							</div>
-						</TabsContent>
-
-						{/* 手動輸入 */}
-						<TabsContent value="manual" className="space-y-4 py-2">
-							{/* <div className="space-y-2">
-								<Label htmlFor="image-url">圖片 URL 或 Base64</Label>
-								<Input
-									id="image-url"
-									placeholder="輸入圖片 URL 或粘貼 base64 數據"
-									value={imageUrl}
-									onChange={(e) => setImageUrl(e.target.value)}
-								/>
-							</div>
-
-							<div className="space-y-2">
-								<Label htmlFor="ground-truth">預期 OCR 文本</Label>
-								<Textarea
-									id="ground-truth"
-									placeholder="輸入預期的 OCR 文本輸出..."
-									value={groundTruth}
-									onChange={(e) => setGroundTruth(e.target.value)}
-									rows={6}
-								/>
-							</div> */}
-							<p className="text-center">暫時隱藏</p>
-						</TabsContent>
-
-						{/* 上傳文件 */}
-						<TabsContent value="upload" className="space-y-4 py-2">
-							{/* <div className="space-y-4">
-								<div className="grid grid-cols-2 gap-4">
-									<div>
-										<Label className="mb-2 block">上傳圖片</Label>
-										<Button variant="outline" className="w-full" asChild disabled={isLoading}>
-											<label>
-												<Upload className="h-4 w-4 mr-2" />
-												{isLoading ? "處理中..." : "選擇圖片文件"}
-												<input
-													type="file"
-													className="hidden"
-													accept="image/*"
-													onChange={handleFileUpload}
-													disabled={isLoading}
-												/>
-											</label>
-										</Button>
-									</div>
-
-									<div>
-										<Label className="mb-2 block">上傳 CSV</Label>
-										<Button variant="outline" className="w-full" asChild disabled={isLoading}>
-											<label>
-												<Upload className="h-4 w-4 mr-2" />
-												{isLoading ? "處理中..." : "選擇 CSV 文件"}
-												<input
-													type="file"
-													className="hidden"
-													accept=".csv"
-													onChange={handleCsvUpload}
-													disabled={isLoading}
-												/>
-											</label>
-										</Button>
-									</div>
-								</div>
-
-								<div className="text-xs text-muted-foreground">
-									CSV 文件應包含 imageUrl 和 text 列。將使用第一行數據。
-								</div>
-							</div> */}
-							<p className="text-center">暫時隱藏</p>
-						</TabsContent>
-					</Tabs>
-
-					{imageUrl && (
-						<div className="mt-4">
-							<Label className="mb-2 block">圖片預覽</Label>
+			<DialogContent className="min-w-6xl grid grid-cols-2 gap-8 p-0">
+				{/* Left Column */}
+				<div className="flex flex-col h-full">
+					<DialogHeader className="p-6 pb-4">
+						<DialogTitle className="text-2xl">創建新產線</DialogTitle>
+						<DialogDescription>創建一個新的聊天機器人研發產線，用於測試和比較不同模型的 Prompt 與參數。</DialogDescription>
+					</DialogHeader>
+					<div className="px-6 py-4 flex-1 min-h-0">
+						<div className="space-y-2 mb-4">
+							<Label htmlFor="test-area-name">產線名稱</Label>
+							<Input
+								id="test-area-name"
+								placeholder="輸入產線名稱"
+								value={testAreaName}
+								onChange={(e) => {
+									setTestAreaName(e.target.value)
+									if (nameError) {
+										setNameError(false)
+									}
+								}}
+								className={cn(nameError && "border-red-500 focus-visible:ring-red-500")}
+							/>
+							{nameError && <p className="text-sm text-red-500 mt-1">產線名稱不能為空</p>}
 						</div>
-					)}
-				</ScrollArea>
 
-				<DialogFooter>
-					<Button variant="outline" onClick={() => onOpenChange(false)}>
-						取消
-					</Button>
-					<Button onClick={handleSubmit}>創建產線</Button>
-				</DialogFooter>
+						<Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
+							<TabsList className="grid w-full grid-cols-2">
+								<TabsTrigger value="examples">預設範例</TabsTrigger>
+								<TabsTrigger value="manual">手動輸入</TabsTrigger>
+								{/*<TabsTrigger value="upload">上傳文件</TabsTrigger>*/}
+							</TabsList>
+
+							<div className="mt-2">
+								<TabsContent value="examples" className="space-y-4 mt-2 h-[calc(70vh-270px)] overflow-y-auto">
+									<div className="grid gap-2 pr-4">
+										{DEFAULT_EXAMPLES.map((example, index) => (
+											<Button
+												key={index}
+												variant="outline"
+												className="justify-start h-auto py-3 px-4"
+												onClick={() => handleDefaultExample(index)}
+											>
+												<div className="grid text-start">
+													<span className="font-medium text-base">{example.name}</span>
+													<Muted className="truncate">{example.text}</Muted>
+												</div>
+											</Button>
+										))}
+									</div>
+								</TabsContent>
+
+								{/* 手動輸入 */}
+								<TabsContent value="manual" className="space-y-4 py-2 mt-2 h-[calc(70vh-270px)] overflow-y-auto pr-4">
+									<div className="space-y-2">
+										<Label htmlFor="manual-hint-messages">提示訊息 (每行一則)</Label>
+										<Textarea
+											id="manual-hint-messages"
+											placeholder="請幫我分析這個問題&#x0a;能否提供更詳細的說明？"
+											value={manualHintMessages}
+											onChange={(e) => setManualHintMessages(e.target.value)}
+											rows={3}
+										/>
+									</div>
+									{/* 預設測試集 */}
+									<div className="space-y-4">
+										<Label>預設測試集</Label>
+										{manualTestDatasets.map((dataset, datasetIndex) => (
+											<div key={datasetIndex} className="p-4 border rounded-md space-y-4">
+												<div className="flex justify-between items-center">
+													<Label>測試集 #{datasetIndex + 1}</Label>
+													<Button variant="ghost" size="icon" onClick={() => handleRemoveDataset(datasetIndex)}>
+														<X className="h-4 w-4" />
+													</Button>
+												</div>
+												<div className="space-y-2">
+													<Label htmlFor={`dataset-name-${datasetIndex}`}>名稱</Label>
+													<Input
+														id={`dataset-name-${datasetIndex}`}
+														value={dataset.name}
+														onChange={(e) => handleDatasetChange(datasetIndex, 'name', e.target.value)}
+														placeholder="測試集名稱"
+													/>
+												</div>
+												{dataset.messages.map((message, messageIndex) => (
+													<div key={messageIndex} className="p-3 border rounded-md space-y-2">
+														<div className="flex justify-between items-center">
+															<Label>訊息 #{messageIndex + 1}</Label>
+															<Button variant="ghost" size="icon" onClick={() => handleRemoveMessage(datasetIndex, messageIndex)}>
+																<X className="h-4 w-4" />
+															</Button>
+														</div>
+														<Input
+															value={message.message}
+															onChange={(e) => handleMessageChange(datasetIndex, messageIndex, 'message', e.target.value)}
+															placeholder="訊息"
+														/>
+														<Input
+															value={message.require}
+															onChange={(e) => handleMessageChange(datasetIndex, messageIndex, 'require', e.target.value)}
+															placeholder="要求"
+														/>
+													</div>
+												))}
+												<Button variant="outline" onClick={() => handleAddMessage(datasetIndex)}>新增訊息</Button>
+											</div>
+										))}
+										<Button onClick={handleAddDataset}>新增測試集</Button>
+									</div>
+									{/* 預設評分項目 */}
+									<div className="space-y-4">
+										<Label>預設評分項目</Label>
+										{manualRatingCategories.map((category, categoryIndex) => (
+											<div key={categoryIndex} className="p-4 border rounded-md space-y-4">
+												<div className="flex justify-between items-center">
+													<Label>評分項目 #{categoryIndex + 1}</Label>
+													<Button variant="ghost" size="icon" onClick={() => handleRemoveCategory(categoryIndex)}>
+														<X className="h-4 w-4" />
+													</Button>
+												</div>
+												<div className="space-y-2">
+													<Label htmlFor={`category-name-${categoryIndex}`}>名稱</Label>
+													<Input
+														id={`category-name-${categoryIndex}`}
+														value={category.name}
+														onChange={(e) => handleCategoryChange(categoryIndex, e.target.value)}
+														placeholder="評分項目名稱"
+													/>
+												</div>
+												{category.rubrics.map((rubric, rubricIndex) => (
+													<div key={rubricIndex} className="flex items-center gap-2">
+														<Input
+															value={rubric}
+															onChange={(e) => handleRubricChange(categoryIndex, rubricIndex, e.target.value)}
+															placeholder={`評分標準 #${rubricIndex + 1}`}
+														/>
+														<Button variant="ghost" size="icon" onClick={() => handleRemoveRubric(categoryIndex, rubricIndex)}>
+															<X className="h-4 w-4" />
+														</Button>
+													</div>
+												))}
+												<Button variant="outline" onClick={() => handleAddRubric(categoryIndex)}>新增評分標準</Button>
+											</div>
+										))}
+										<Button onClick={handleAddCategory}>新增評分項目</Button>
+									</div>
+								</TabsContent>
+							</div>
+						</Tabs>
+
+						{imageUrl && (
+							<div className="mt-4">
+								<Label className="mb-2 block">圖片預覽</Label>
+							</div>
+						)}
+					</div>
+					<DialogFooter className="p-6 pt-1">
+						<Button variant="outline" onClick={() => onOpenChange(false)}>
+							取消
+						</Button>
+						<Button onClick={handleSubmit}>創建產線</Button>
+					</DialogFooter>
+				</div>
+
+
+				{/* Right Column */}
+				<div className="border-l">
+					<DialogTitle className="text-2xl px-6 pt-7">預設內容</DialogTitle>
+					<ScrollArea className="pb-4 min-h-[70vh] max-h-[70vh] h-full">
+						<div className="h-full p-6">
+							{selectedExample ? (
+								<div className="space-y-4">
+									{selectedExample.defaultHintMessage && selectedExample.defaultHintMessage.length > 0 && (
+										<div>
+											<div className="font-medium text-lg mb-1">提示訊息</div>
+											<ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
+												{selectedExample.defaultHintMessage.map((hint, i) => (
+													<li key={i}>{hint}</li>
+												))}
+											</ul>
+										</div>
+									)}
+									{selectedExample.defaultTestMessageDatasets && selectedExample.defaultTestMessageDatasets.length > 0 && <div className="border-t-2 border-gray-700 mt-6 pb-1"></div>}
+									{selectedExample.defaultTestMessageDatasets && selectedExample.defaultTestMessageDatasets.length > 0 && (
+										<div>
+											<div className="font-medium text-lg mb-2">預設測試集</div>
+											<div className="space-y-2">
+												{selectedExample.defaultTestMessageDatasets.map((dataset, i) => (
+													<div key={i}>
+														<p className="font-normal underline pb-1">{dataset.name}</p>
+														<div className="p-2 border rounded-md">
+															<ul className="list-disc list-inside text-sm text-muted-foreground space-y-1 mt-1">
+																{dataset.messages.map((msg, j) => (
+																	<li key={j}><strong>訊息:</strong> {msg.message} | <strong>要求:</strong> {msg.require}</li>
+																))}
+															</ul>
+														</div>
+													</div>
+												))}
+											</div>
+										</div>
+									)}
+									{selectedExample.defaultRatingCategories && selectedExample.defaultRatingCategories.length > 0 && <div className="border-t-2 border-gray-700 mt-6 pb-1"></div>}
+									{selectedExample.defaultRatingCategories && selectedExample.defaultRatingCategories.length > 0 && (
+										<div>
+											<div className="font-medium text-lg mb-2">預設評分項目</div>
+											<div className="space-y-2">
+												{selectedExample.defaultRatingCategories.map((category, i) => (
+													<div key={i}>
+														<p className="font-normal underline pb-1">{category.name}</p>
+														<div className="p-2 border rounded-md">
+															<ul className="list-disc list-inside text-sm text-muted-foreground space-y-1 mt-1">
+																{category.rubrics.map((rubric, j) => (
+																	<li key={j}>{rubric}</li>
+																))}
+															</ul>
+														</div>
+													</div>
+												))}
+											</div>
+										</div>
+									)}
+								</div>
+							) : (
+								<div className="flex items-center justify-center h-full">
+									<p className="text-muted-foreground">請在左側選擇一個預設範例以查看詳細資訊</p>
+								</div>
+							)}
+						</div>
+					</ScrollArea>
+				</div>
 			</DialogContent>
 
 			{/* CSV 數據選擇對話框 */}

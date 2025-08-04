@@ -167,7 +167,13 @@ export default function DashboardPage() {
 		if (testArea) {
 			loadPromptBackup(testArea.data);
 			loadAdvancedBackup(testArea.advancedData);
+			
+			const updated = testAreas.map(area =>
+				area.id === id ? { ...area, updatedAt: new Date().toISOString() } : area
+			);
+			useLoginStore.setState({ testAreas: updated });
 		}
+
 		router.push(`assembly/${id}`);
 	}
 
@@ -181,7 +187,8 @@ export default function DashboardPage() {
 			);
 			useLoginStore.setState({ testAreas: updated });
 			toast("名稱已更新", { description: `產線名稱已改為 \"${newName.trim()}\"` });
-		} catch (error) {
+		}
+		catch (error) {
 			toast.error("改名失敗", { description: "無法更改產線名稱" });
 		}
 	};
@@ -305,6 +312,5 @@ function ChangeNickNameButton() {
 		>
 		(更換暱稱)
 		</Button>
-);
+	);
 }
-
