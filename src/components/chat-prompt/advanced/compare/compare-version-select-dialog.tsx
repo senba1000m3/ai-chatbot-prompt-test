@@ -95,7 +95,7 @@ export function CompareVersionSelectDialog({ isOpen, onOpenChange }: CompareVers
 									id={`select-${version.id}`}
 									checked={isSelected}
 									onCheckedChange={() => handleSelectVersion(version.id)}
-									className="mt-3"
+									className="mt-3 w-13 h-13"
 								/>
 								<div className="flex-1">
 									<CompareVersionCard

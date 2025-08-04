@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { VersionCompareView } from './compare/version-compare-view';
 import { MessageDatasetView } from './dataset/message-dataset-view';
 import { AdvancedSidebar } from './advanced-sidebar';
+import { RatingScaleView } from "./rating/rating-scale-view";
+import { AnalyticsOverview } from "./analytics/analytics-overview";
+
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -12,7 +15,7 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
-import { ChevronRight, GitCompare, MessageCircle, Star, ChartLine, LogOut } from 'lucide-react';
+import { ChevronRight, GitCompare, MessageCircle, Star, ChartLine, LogOut, Undo2 } from 'lucide-react';
 import Link from "next/link";
 import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -38,7 +41,7 @@ const sidebarItems = [
 		title: "量表設定內容",
 		key: "rating",
 		icon: () => <Star />,
-		component: <div>量表設定內容</div>
+		component: <RatingScaleView />
 	},
 	{
 		item: "數據分析",
@@ -46,7 +49,7 @@ const sidebarItems = [
 		key: "analytics",
 		icon: () => <ChartLine />,
 		dropdown: [
-			{ item: "總覽", title: "數據分析總覽內容", key: "overview", component: <div>數據分析總覽內容</div> },
+			{ item: "總覽", title: "數據分析總覽內容", key: "overview", component: <AnalyticsOverview /> },
 			{ item: "量表", title: "數據分析總覽內容", key: "scale", component: <div>訊息量表內容</div>},
 			{ item: "報表", title: "數據分析圖表內容", key: "charts", component: <div>訊息報表內容</div>},
 		],
@@ -147,8 +150,8 @@ export const AdvancedInterface = () => {
 					transition={{ duration: 0.2 }}
 				>
 					<Button onClick={handleExitCompare} className="w-full">
-						<LogOut className="w-4 h-4 mr-2" />
-						退出比較模式
+						<Undo2  className="w-4 h-4" />
+						返回 RD 區
 					</Button>
 				</motion.div>
 			</AnimatePresence>

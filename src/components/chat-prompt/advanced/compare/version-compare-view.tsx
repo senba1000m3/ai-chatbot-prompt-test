@@ -21,13 +21,15 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "../../../ui/alert-dialog"
-import { ExternalLink, ChevronDown, GripVertical, Palette, PaintBucket, Eye, Filter, Search, Send, Paperclip, X, Trash2 } from "lucide-react"
+import { ExternalLink, ChevronDown, GripVertical, Palette, PaintBucket, Eye, Filter, Search, Send, Paperclip, X, Trash2, Star } from "lucide-react"
 import { useState, useMemo, useRef, useEffect, createRef } from "react"
 import { MessageBubble } from "../../chat/message-bubble"
 import { usePromptStore, type SavedVersion, type ModelMessage, type ModelAccuracy, availableModels, availableTools } from "../../../../lib/store/prompt"
+import { useAdvancedStore } from "@/lib/store/advanced"
 import { useComparePromptChat } from "../../../../hooks/use-compare-prompt-chat"
 import { VersionCompareSidebar } from "./version-compare-sidebar"
 import { UploadButton } from "../../upload-button"
+import { RatingScaleMessage } from "../rating/rating-scale-message"
 
 // 版本顏色配置
 const versionColors = [
@@ -54,6 +56,7 @@ export function VersionCompareView() {
 		compareVersions, compareVersionsOrder, onVersionReorder, compareModelMessages, compareSelectedModel, setCompareSelectedModel, selectedImage, addSelectedImage, removeSelectedImage,
 		clearCompareModelMessages
 	} = usePromptStore()
+	const { addTestResult, versionRatings } = useAdvancedStore()
 	const { handleSubmit } = useComparePromptChat();
 	const [colorMode, setColorMode] = useState(0)
 
@@ -87,12 +90,53 @@ export function VersionCompareView() {
 	const [draggedItem, setDraggedItem] = useState<SavedVersion | null>(null)
 	const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
 	const [fullscreenVersion, setFullscreenVersion] = useState<string | null>(null)
-	const [columnWidth, setColumnWidth] = useState(() => {
-		return sortedVersions.length === 2 ? 125 : 85
-	})
+	const [columnWidth, setColumnWidth] = useState(() => {return sortedVersions.length === 2 ? 125 : 85})
 
-	// 聊天輸入相關狀態
+	const [ratingStates, setRatingStates] = useState<{ [versionId: string]: boolean }>({})
+
 	const [inputMessage, setInputMessage] = useState("")
+
+	const handleClearConversation = () => {
+		setRatingStates({});
+		clearCompareModelMessages();
+	}
+
+	const handleSaveTestResult = (versionId: string) => {
+		if (!compareSelectedModel || !versionId) return;
+
+		const relevantMessages = {
+			[versionId]: {
+				[compareSelectedModel]: compareModelMessages[versionId]?.[compareSelectedModel] || {},
+			},
+		};
+
+		const relevantRatings: { [versionId: string]: { [modelId: string]: { [rubric_id: string]: number } } } = {};
+		if (versionRatings[versionId] && versionRatings[versionId][compareSelectedModel]) {
+			relevantRatings[versionId] = {
+				[compareSelectedModel]: versionRatings[versionId][compareSelectedModel],
+			};
+		}
+
+		const resultToSave = {
+			versionId: versionId,
+			modelId: compareSelectedModel,
+			messages: relevantMessages,
+			ratings: relevantRatings,
+		};
+		addTestResult(resultToSave);
+	};
+
+	const scrollToBottom = (index: number) => {
+		const ref = scrollRefs[index]
+		if (ref?.current) {
+			setTimeout(() => {
+				ref.current?.scrollTo({
+					top: ref.current.scrollHeight,
+					behavior: "smooth",
+				})
+			}, 100)
+		}
+	}
 
 	// 為每個版本分配固定的顏色索引，基於版本ID而不是當前位置
 	const versionColorMap = useMemo(() => {
@@ -458,12 +502,12 @@ export function VersionCompareView() {
 										</AlertDialogHeader>
 										<AlertDialogFooter className="flex justify-center space-x-4">
 											<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-												<AlertDialogAction onClick={clearCompareModelMessages} className="bg-red-600 hover:bg-red-700">
+												<AlertDialogAction onClick={handleClearConversation} className="bg-red-600 hover:bg-red-700">
 													確認
 												</AlertDialogAction>
 											</motion.div>
 											<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-												<AlertDialogCancel className="text-gray-300 border-gray-800 hover:bg-gray-900">
+													<AlertDialogCancel className="text-gray-300 border-gray-800 hover:bg-gray-900">
 													取消
 												</AlertDialogCancel>
 											</motion.div>
@@ -575,10 +619,23 @@ export function VersionCompareView() {
 														{version.name}
 													</Badge>
 												</div>
-												<div className="flex space-x-1">
-													<div className="text-xs text-green-400 font-mono mr-2 pt-[5] text-center leading-[1.6rem]">
-														{modelAccuracy.toFixed(1)}%
-													</div>
+												<div className="flex items-center space-x-1">
+													<Tooltip>
+														<TooltipTrigger asChild>
+															<Button
+																variant="ghost"
+																size="icon"
+																className="mr-1 h-8 w-16 text-gray-400 hover:text-white hover:bg-yellow-500/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+																onClick={() => setRatingStates(prev => ({ ...prev, [version.id]: true }))}
+																disabled={ratingStates[version.id]}
+															>
+																<Star className="w-4 h-4" />評分
+															</Button>
+														</TooltipTrigger>
+														<TooltipContent side="bottom" className="z-[9999] bg-gray-800 border-gray-700 text-white">
+															<p>對此版本進行評分</p>
+														</TooltipContent>
+													</Tooltip>
 													<Tooltip>
 														<TooltipTrigger asChild>
 															<motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
@@ -630,7 +687,7 @@ export function VersionCompareView() {
 												style={{ minHeight: 'calc(100vh - 80px - 160px - 70px - 160px)', maxHeight: 'calc(100vh - 80px - 160px - 70px - 160px)' }}
 											>
 												{(() => {
-													if (messageList.length === 0) {
+													if (messageList.length === 0 && !ratingStates[version.id]) {
 														return (
 															<div className="text-center text-gray-400 py-8">
 																<p>尚無對話記錄</p>
@@ -640,16 +697,31 @@ export function VersionCompareView() {
 														)
 													}
 
-													return messageList.map((message, msgIndex) => (
-														<MessageBubble
-															key={message.id || msgIndex}
-															message={message}
-															index={msgIndex}
-															modelId={compareSelectedModel}
-															versionId={version.id}
-															showRating={message.role === "assistant"}
-														/>
-													))
+													return (
+														<>
+															{messageList.map((message, msgIndex) => (
+																<MessageBubble
+																	key={message.id || msgIndex}
+																	message={message}
+																	index={msgIndex}
+																	modelId={compareSelectedModel}
+																	versionId={version.id}
+																	showRating={message.role === "assistant"}
+																	showDeleteButton={!ratingStates[version.id]}
+																/>
+															))}
+															{ratingStates[version.id] && (
+																<RatingScaleMessage
+																	versionId={version.id}
+																	modelId={compareSelectedModel}
+																	onComplete={() => setRatingStates(prev => ({ ...prev, [version.id]: false }))}
+																	onUpdate={() => scrollToBottom(versionIndex)}
+																	onSave={() => handleSaveTestResult(version.id)}
+																	onStartNewConversation={handleClearConversation}
+																/>
+															)}
+														</>
+													)
 												})()}
 											</div>
 										</Card>
@@ -687,7 +759,7 @@ export function VersionCompareView() {
 							<Input
 								value={inputMessage}
 								onChange={(e) => setInputMessage(e.target.value)}
-								placeholder="輸入訊息進行比較測試..."
+								placeholder={Object.values(ratingStates).some(Boolean) ? "正在評分中，暫時無法輸入..." : "輸入訊息進行比較測試..."}
 								className="flex-1 bg-gray-900/90 border-gray-600 text-white h-12 text-base focus:border-blue-500 focus:ring-blue-500 transition-colors backdrop-blur-sm"
 								onKeyPress={(e) => {
 									if (e.key === "Enter" && !e.shiftKey) {
@@ -695,13 +767,14 @@ export function VersionCompareView() {
 										handleSendMessage()
 									}
 								}}
+								disabled={Object.values(ratingStates).some(Boolean)}
 							/>
 							<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
 								<Button
 									onClick={handleSendMessage}
 									size="lg"
 									className="h-12 px-6 bg-blue-600 hover:bg-blue-700 transition-colors shadow-lg"
-									disabled={!inputMessage.trim() || !compareSelectedModel || compareSelectedModel === 'all'}
+									disabled={!inputMessage.trim() || !compareSelectedModel || compareSelectedModel === 'all' || Object.values(ratingStates).some(Boolean)}
 								>
 									<Send className="w-5 h-5" />
 								</Button>

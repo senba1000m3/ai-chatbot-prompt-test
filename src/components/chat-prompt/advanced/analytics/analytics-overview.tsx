@@ -1,0 +1,139 @@
+"use client"
+
+import { useState } from "react"
+import { useAdvancedStore, type TestResult } from "@/lib/store/advanced"
+import { usePromptStore } from "@/lib/store/prompt"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
+import { Eye, ChartNoAxesColumn } from "lucide-react"
+import { TestResultDetailView } from "./test-result-detail-view"
+import { TestResultRatingsView } from "./test-result-ratings-view"
+
+export const AnalyticsOverview = () => {
+  const { testResults } = useAdvancedStore()
+  const { savedVersions } = usePromptStore()
+  const [selectedResult, setSelectedResult] = useState<TestResult | null>(null)
+  const [isDetailViewOpen, setIsDetailViewOpen] = useState(false)
+  const [isRatingsViewOpen, setIsRatingsViewOpen] = useState(false)
+
+  const handleViewDetails = (result: TestResult) => {
+    setSelectedResult(result)
+    setIsDetailViewOpen(true)
+  }
+
+  const handleViewRatings = (result: TestResult) => {
+    setSelectedResult(result)
+    setIsRatingsViewOpen(true)
+  }
+
+  const calculateAverageScore = (ratings: any, versionId: string, modelId: string) => {
+    const modelRatings = ratings[versionId]?.[modelId]
+    if (!modelRatings) return "N/A"
+
+    const scores = Object.values(modelRatings) as number[]
+    if (scores.length === 0) return "N/A"
+
+    const total = scores.reduce((acc, score) => acc + score, 0)
+    const average = total / scores.length
+    return average.toFixed(2)
+  }
+
+  const getVersionName = (versionId: string) => {
+    const version = savedVersions.find(v => v.id === versionId)
+    return version ? version.name : "未知版本"
+  }
+
+  return (
+    <TooltipProvider>
+      <div className="p-4 md:p-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>測試結果總覽</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>測試時間</TableHead>
+                  <TableHead>測試版本</TableHead>
+                  <TableHead>使用模型</TableHead>
+                  <TableHead className="text-left">平均分數</TableHead>
+                  <TableHead className="text-left w-[250px]">操作</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {testResults.length > 0 ? (
+                  testResults.map(result => (
+                    <TableRow key={result.id}>
+                      <TableCell>{new Date(result.timestamp).toLocaleString()}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{getVersionName(result.versionId)}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">{result.modelId}</Badge>
+                      </TableCell>
+                      <TableCell className="text-left font-medium pl-3">
+                        {calculateAverageScore(result.ratings, result.versionId, result.modelId)}
+                      </TableCell>
+                      <TableCell className="text-left">
+                        <div className="flex space-x-1 -ml-2">
+						 <Tooltip>
+							<TooltipTrigger asChild>
+								<Button variant="ghost" size="icon" onClick={() => handleViewDetails(result)}>
+									<Eye className="h-4 w-4" />
+								</Button>
+							</TooltipTrigger>
+							<TooltipContent>
+								<p>查看對話紀錄</p>
+							</TooltipContent>
+						  </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" onClick={() => handleViewRatings(result)}>
+                                <ChartNoAxesColumn className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>查看評分細項</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center text-gray-500 py-8">
+                      尚無任何測試結果
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
+      <TestResultDetailView
+        result={selectedResult}
+        isOpen={isDetailViewOpen}
+        onClose={() => setIsDetailViewOpen(false)}
+      />
+      <TestResultRatingsView
+        result={selectedResult}
+        isOpen={isRatingsViewOpen}
+        onClose={() => setIsRatingsViewOpen(false)}
+      />
+    </TooltipProvider>
+  )
+}
+

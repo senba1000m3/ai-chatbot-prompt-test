@@ -15,9 +15,11 @@ interface MessageBubbleProps {
   modelId: string
   versionId?: string
   showRating?: boolean
+  showCopyButton?: boolean
+  showDeleteButton?: boolean
 }
 
-export function MessageBubble({ message, index, modelId, versionId, showRating = false, onDelete }: MessageBubbleProps & { messages?: ModelMessage[], onDelete?: (id: string) => void }) {
+export function MessageBubble({ message, index, modelId, versionId, showRating = false, showCopyButton = true, showDeleteButton = true}: MessageBubbleProps & { messages?: ModelMessage[], onDelete?: (id: string) => void }) {
   const { updateMessageRating, getCompareModelMessages, removeModelMessage } = usePromptStore()
   const [currentRating, setCurrentRating] = useState<"good" | "bad" | null>(message.rating || null)
 
@@ -97,66 +99,28 @@ export function MessageBubble({ message, index, modelId, versionId, showRating =
           >
             {message.spendTime}ms
           </div>
-          <div className="flex space-x-1">
-            <Button variant="ghost" size="icon" className="h-6 w-6 p-0" onClick={handleCopy} title="複製">
-              <Copy className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-6 w-6 p-0" onClick={handleDelete} title="刪除">
-              <Trash className="w-4 h-4" />
-            </Button>
+          <div className="flex space-x-1 mr-1">
+			  {showCopyButton && <Button variant="ghost" size="icon" className="h-6 w-6 p-0" onClick={handleCopy} title="複製">
+				  <Copy className="w-4 h-4" />
+			  </Button>}
+			  {showDeleteButton && <Button variant="ghost" size="icon" className="h-6 w-6 p-0" onClick={handleDelete} title="刪除">
+				  <Trash className="w-4 h-4" />
+			  </Button>}
           </div>
         </div>
       ) : (
         message.content !== "......" && (
-          <div className="flex justify-end items-center mt-2">
+          <div className="flex justify-end items-center mt-2 mr-3">
             <div className="flex space-x-1">
-              <Button variant="ghost" size="icon" className="h-6 w-6 p-0" onClick={handleCopy} title="複製">
-                <Copy className="w-4 h-4" />
-              </Button>
-              <Button variant="ghost" size="icon" className="h-6 w-6 p-0" onClick={handleDelete} title="刪除">
-                <Trash className="w-4 h-4" />
-              </Button>
+				{showCopyButton && <Button variant="ghost" size="icon" className="h-6 w-6 p-0" onClick={handleCopy} title="複製">
+                	<Copy className="w-4 h-4" />
+              	</Button>}
+				{showDeleteButton && <Button variant="ghost" size="icon" className="h-6 w-6 p-0" onClick={handleDelete} title="刪除">
+					<Trash className="w-4 h-4" />
+				</Button>}
             </div>
           </div>
         )
-      )}
-
-      {message.role === "assistant" && showRating && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.3 }}
-          className="flex justify-end space-x-1 mb-1"
-        >
-          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleRating("good")}
-              className={`h-6 w-6 p-0 transition-colors ${
-                currentRating === "good"
-                  ? "text-green-400 hover:text-green-300 bg-green-900/20"
-                  : "text-gray-400 hover:text-green-400 hover:bg-green-900/20"
-              }`}
-            >
-              <Smile className="w-3 h-3" />
-            </Button>
-          </motion.div>
-          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleRating("bad")}
-              className={`h-6 w-6 p-0 transition-colors ${
-                currentRating === "bad"
-                  ? "text-red-400 hover:text-red-300 bg-red-900/20"
-                  : "text-gray-400 hover:text-red-400 hover:bg-red-900/20"
-              }`}
-            >
-              <Frown className="w-3 h-3" />
-            </Button>
-          </motion.div>
-        </motion.div>
       )}
     </motion.div>
   )
