@@ -85,7 +85,7 @@ export const MessageDatasetView: React.FC = () => {
 					</Button>
 				)}
 			</div>
-			<div className="w-full flex-grow overflow-y-auto p-4">
+			<div className="w-full flex-grow overflow-y-auto px-2 py-4">
 				<div className="grid gap-4">
 					{isCreatingNewSet && (
 						<div className="border-2 border-gray-700 rounded-lg p-4 space-y-4 -mt-4">

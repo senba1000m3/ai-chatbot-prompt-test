@@ -383,9 +383,9 @@ export function CreateTestDataDialog({ open, onOpenChange, onSubmit }: CreateTes
 								{/*<TabsTrigger value="upload">上傳文件</TabsTrigger>*/}
 							</TabsList>
 
-							<div className="mt-2">
+							<div className="mt-2 w-full">
 								<TabsContent value="examples" className="space-y-4 mt-2 h-[calc(70vh-270px)] overflow-y-auto">
-									<div className="grid gap-2 pr-4">
+									<div className="grid gap-2">
 										{DEFAULT_EXAMPLES.map((example, index) => (
 											<Button
 												key={index}
@@ -402,8 +402,9 @@ export function CreateTestDataDialog({ open, onOpenChange, onSubmit }: CreateTes
 									</div>
 								</TabsContent>
 
+
 								{/* 手動輸入 */}
-								<TabsContent value="manual" className="space-y-4 py-2 mt-2 h-[calc(70vh-270px)] overflow-y-auto pr-4">
+								<TabsContent value="manual" className="space-y-4 py-2 mt-2 h-[calc(70vh-270px)] overflow-y-auto">
 									<div className="space-y-2">
 										<Label htmlFor="manual-hint-messages">提示訊息 (每行一則)</Label>
 										<Textarea
@@ -645,4 +646,5 @@ export function CreateTestDataDialog({ open, onOpenChange, onSubmit }: CreateTes
 		</Dialog>
 	)
 }
+
 

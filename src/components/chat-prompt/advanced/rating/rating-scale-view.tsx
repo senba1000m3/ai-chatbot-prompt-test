@@ -117,7 +117,7 @@ export const RatingScaleView = () => {
                     新增評分項目類別
                 </Button>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-3 px-2">
                 {ratingCategories.map(category => (
                     <fieldset key={category.category_id} className="px-4 border border-3 rounded-lg">
                         <legend className="px-2">

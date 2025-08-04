@@ -85,7 +85,7 @@ export function CompareVersionSelectDialog({ isOpen, onOpenChange }: CompareVers
 						/ {savedVersions.length} 個）
 					</DialogTitle>
 				</DialogHeader>
-				<div className="overflow-y-auto min-h-0 pr-6 -mr-6 py-3 gap-4 flex flex-col">
+				<div className="overflow-y-auto min-h-0 pr-6 -mr-6 py-5 px-1 gap-4 flex flex-col">
 					{savedVersions.map((version, index) => {
 						const isSelected = selectedIds.has(version.id)
 						const colorConfig = versionColors[versionColorMap[version.id]]
@@ -95,7 +95,7 @@ export function CompareVersionSelectDialog({ isOpen, onOpenChange }: CompareVers
 									id={`select-${version.id}`}
 									checked={isSelected}
 									onCheckedChange={() => handleSelectVersion(version.id)}
-									className="mt-3 w-13 h-13"
+									className="mt-7 mr-5 w-4 h-4"
 								/>
 								<div className="flex-1">
 									<CompareVersionCard
