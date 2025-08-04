@@ -139,9 +139,7 @@ export const AnalyticsCompareView = () => {
                     <TableHead>評分項目</TableHead>
                     {selectedResults.map(result => (
                       <TableHead key={result.id} className="text-center">
-                        <Badge variant="outline">
-                          {getVersionName(result.versionId)}
-                        </Badge>
+                        {getVersionName(result.versionId)}
                         <Badge variant="secondary" className="ml-2">
                           {result.modelId}
                         </Badge>
@@ -187,7 +185,7 @@ export const AnalyticsCompareView = () => {
                               {score !== undefined ? (
                                 score
                               ) : (
-                                <XIcon className="mx-auto h-4 w-4 text-muted-foreground" />
+                                <XIcon className="mx-auto h-4 w-4 text-muted-foreground text-red-500" />
                               )}
                             </TableCell>
                           )
@@ -209,7 +207,7 @@ export const AnalyticsCompareView = () => {
                 <LineChart
                   data={chartData}
                   margin={{
-                    top: 10,
+                    top: 30,
                     right: 70,
                     left: 20,
                     bottom: 200,

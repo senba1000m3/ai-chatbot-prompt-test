@@ -9,6 +9,7 @@ import {
   Tooltip,
   Legend,
   CartesianGrid,
+  Cell,
 } from "recharts"
 import { type TestResult } from "../../../../../lib/store/advanced"
 import { usePromptStore } from "../../../../../lib/store/prompt"
@@ -42,6 +43,15 @@ export const TestResultsChart = ({ data }: TestResultsChartProps) => {
     timestamp: new Date(result.timestamp).toLocaleString(),
   }))
 
+  const colors = [
+    "#8884d8",
+    "#82ca9d",
+    "#ffc658",
+    "#ff8042",
+    "#ca82aa",
+    "#a2ca82",
+  ]
+
   return (
     <ResponsiveContainer width="100%" height={350}>
       <BarChart data={chartData}>
@@ -69,7 +79,11 @@ export const TestResultsChart = ({ data }: TestResultsChartProps) => {
           labelStyle={{ color: "hsl(var(--foreground))" }}
         />
         <Legend />
-        <Bar dataKey="averageScore" name="平均分數" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+        <Bar dataKey="averageScore" name="平均分數" radius={[4, 4, 0, 0]}>
+          {chartData.map((entry, index) => (
+            <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+          ))}
+        </Bar>
       </BarChart>
     </ResponsiveContainer>
   )

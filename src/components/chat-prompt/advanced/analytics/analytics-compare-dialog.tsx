@@ -55,7 +55,7 @@ export const AnalyticsCompareDialog = ({ onCompare }: AnalyticsCompareDialogProp
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button>選擇比較項目</Button>
+        <Button className="pr-5 bg-blue-600 hover:bg-blue-700 transition-colors shadow-lg">選擇比較項目</Button>
       </DialogTrigger>
       <DialogContent className="max-w-4xl">
         <DialogHeader>
@@ -83,7 +83,7 @@ export const AnalyticsCompareDialog = ({ onCompare }: AnalyticsCompareDialogProp
                   </TableCell>
                   <TableCell>{new Date(result.timestamp).toLocaleString()}</TableCell>
                   <TableCell>
-                    <Badge variant="outline">{getVersionName(result.versionId)}</Badge>
+					{getVersionName(result.versionId)}
                   </TableCell>
                   <TableCell>
                     <Badge variant="secondary">{result.modelId}</Badge>
