@@ -11,11 +11,9 @@ import {
   CartesianGrid,
   Cell,
 } from "recharts"
-export const TestResultsChart: React.FC<{ colors: string[]; getVersionName: Function }> = ({
-  colors, getVersionName
+export const TestResultsChart: React.FC<{ colors: string[]; getVersionName: Function; testResults: any[] }> = ({
+  colors, getVersionName, testResults
 }) => {
-  const { testResults } = useAdvancedStore();
-
   const calculateAverageScore = (ratings: any, versionId: string, modelId: string) => {
     const modelRatings = ratings[versionId]?.[modelId]
     if (!modelRatings) return 0
@@ -71,5 +69,4 @@ export const TestResultsChart: React.FC<{ colors: string[]; getVersionName: Func
   )
 }
 
-import { useAdvancedStore, type TestResult } from "../../../../../lib/store/advanced"
-
+import { type TestResult } from "../../../../../lib/store/advanced"

@@ -2,16 +2,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { XIcon } from "lucide-react"
-import { useAdvancedStore } from "@/lib/store/advanced"
 
 export const TestRatingsTable: React.FC<{
   getVersionName: Function;
   allRubricIds: string[];
   getRubricContent: (rubricId: string) => string;
-}> = ({ getVersionName, allRubricIds, getRubricContent }) => {
-
-  const { testResults } = useAdvancedStore()
-
+  testResults: any[];
+}> = ({ getVersionName, allRubricIds, getRubricContent, testResults }) => {
   return (
     <Card>
       <CardContent>

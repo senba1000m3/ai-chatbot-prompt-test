@@ -80,6 +80,9 @@ export interface AdvancedStoreProps {
 	clearTestResults: () => void;
     isRatingInProgress: boolean;
     setIsRatingInProgress: (isRating: boolean) => void;
+
+    ratingSelectedTestset: string[];
+    setRatingSelectedTestset: (ids: string[]) => void;
 }
 
 export type AdvancedStoreData = Omit<AdvancedStoreProps,
@@ -101,6 +104,7 @@ export type AdvancedStoreData = Omit<AdvancedStoreProps,
 	| "deleteTestResult"
 	| "clearTestResults"
 	| "setIsRatingInProgress"
+    | "setRatingSelectedTestset"
 >;
 
 export const useAdvancedStore = create<AdvancedStoreProps>()(
@@ -224,6 +228,9 @@ export const useAdvancedStore = create<AdvancedStoreProps>()(
 			clearTestResults: () => set({ testResults: [] }),
             isRatingInProgress: false,
             setIsRatingInProgress: (isRating) => set({ isRatingInProgress: isRating }),
+
+            ratingSelectedTestset: [],
+            setRatingSelectedTestset: (ids: string[]) => set({ ratingSelectedTestset: ids }),
 		}),
 		{
 			name: "tai-factory-advanced",
@@ -237,6 +244,7 @@ export const useAdvancedStore = create<AdvancedStoreProps>()(
 				testResults: state.testResults,
                 isRatingInProgress: state.isRatingInProgress,
 				selectedView: state.selectedView,
+                ratingSelectedTestset: state.ratingSelectedTestset,
 			}),
 		}
 	)
@@ -252,6 +260,7 @@ const keysToWatch: (keyof AdvancedStoreData)[] = [
 	'versionRatings',
 	'testResults',
 	'isRatingInProgress',
+    'ratingSelectedTestset',
 ];
 
 useAdvancedStore.subscribe((state, prevState) => {

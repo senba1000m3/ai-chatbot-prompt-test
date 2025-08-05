@@ -8,17 +8,14 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts"
-import { useAdvancedStore } from "@/lib/store/advanced"
 
 export const TestRatingsLineChart: React.FC<{
   colors: string[];
   getVersionName: Function;
   allRubricIds: string[];
   getRubricContent: (rubricId: string) => string;
-}> = ({ colors, getVersionName, allRubricIds, getRubricContent }) => {
-
-  const { testResults } = useAdvancedStore()
-
+  testResults: any[];
+}> = ({ colors, getVersionName, allRubricIds, getRubricContent, testResults }) => {
   const chartData = allRubricIds.map(rubricId => {
     const dataPoint: { name: string; [key: string]: string | number | null } = {
       name: getRubricContent(rubricId),

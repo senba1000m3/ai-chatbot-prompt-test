@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useAdvancedStore, type TestResult } from "@/lib/store/advanced"
 import { usePromptStore } from "@/lib/store/prompt"
 import { Button } from "@/components/ui/button"
@@ -24,15 +24,22 @@ import {
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 
-interface AnalyticsCompareDialogProps {
-  onCompare: (selectedIds: string[]) => void
-}
-
-export const AnalyticsCompareDialog = ({ onCompare }: AnalyticsCompareDialogProps) => {
-  const { testResults } = useAdvancedStore()
+export const AnalyticsTestsetSelectDialog = ({ }) => {
+  const { testResults, ratingSelectedTestset, setRatingSelectedTestset } = useAdvancedStore()
   const { savedVersions } = usePromptStore()
-  const [selectedResultIds, setSelectedResultIds] = useState<string[]>([])
   const [isOpen, setIsOpen] = useState(false)
+  const [localSelected, setLocalSelected] = useState<string[]>([])
+
+  useEffect(() => {
+    const allIds = testResults.map(r => r.id)
+    setLocalSelected(allIds)
+  }, [testResults])
+
+  useEffect(() => {
+    if (isOpen) {
+      setLocalSelected(ratingSelectedTestset)
+    }
+  }, [isOpen])
 
   const getVersionName = (versionId: string) => {
     const version = savedVersions.find(v => v.id === versionId)
@@ -40,34 +47,45 @@ export const AnalyticsCompareDialog = ({ onCompare }: AnalyticsCompareDialogProp
   }
 
   const handleSelectResult = (resultId: string) => {
-    setSelectedResultIds(prev =>
-      prev.includes(resultId)
-        ? prev.filter(id => id !== resultId)
-        : [...prev, resultId]
+    setLocalSelected(
+      localSelected.includes(resultId)
+        ? localSelected.filter(id => id !== resultId)
+        : [...localSelected, resultId]
     )
   }
 
+  const handleSelectAll = () => {
+    setLocalSelected(testResults.map(r => r.id))
+  }
+
+  const handleClearAll = () => {
+    setLocalSelected([])
+  }
+
   const handleConfirm = () => {
-    onCompare(selectedResultIds)
+    setRatingSelectedTestset(localSelected)
     setIsOpen(false)
   }
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="pr-5 bg-blue-600 hover:bg-blue-700 transition-colors shadow-lg">選擇比較項目</Button>
+        <Button className="pr-5 bg-blue-600 hover:bg-blue-700 transition-colors shadow-lg">選擇測試資料</Button>
       </DialogTrigger>
       <DialogContent className="max-w-4xl">
         <DialogHeader>
-          <DialogTitle>選擇要比較的測試結果</DialogTitle>
-          <DialogDescription>勾選以下表格中的項目以進行比較。最少選擇一項。</DialogDescription>
+          <DialogTitle>選擇要比較的測試資料</DialogTitle>
+          <DialogDescription>勾選以下表格中的測試資料以進行比較。最少選擇一項。</DialogDescription>
         </DialogHeader>
+        <div className="flex gap-2 mb-2">
+          <Button variant="outline" size="sm" onClick={handleSelectAll}>全選</Button>
+          <Button variant="outline" size="sm" onClick={handleClearAll}>取消全選</Button>
+        </div>
         <div className="max-h-[60vh] overflow-y-auto">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[50px]"></TableHead>
-                <TableHead>測試時間</TableHead>
                 <TableHead>測試版本</TableHead>
                 <TableHead>使用模型</TableHead>
               </TableRow>
@@ -77,14 +95,11 @@ export const AnalyticsCompareDialog = ({ onCompare }: AnalyticsCompareDialogProp
                 <TableRow key={result.id}>
                   <TableCell>
                     <Checkbox
-                      checked={selectedResultIds.includes(result.id)}
+                      checked={localSelected.includes(result.id)}
                       onCheckedChange={() => handleSelectResult(result.id)}
                     />
                   </TableCell>
-                  <TableCell>{new Date(result.timestamp).toLocaleString()}</TableCell>
-                  <TableCell>
-					{getVersionName(result.versionId)}
-                  </TableCell>
+                  <TableCell>{getVersionName(result.versionId)}</TableCell>
                   <TableCell>
                     <Badge variant="secondary">{result.modelId}</Badge>
                   </TableCell>
@@ -94,7 +109,7 @@ export const AnalyticsCompareDialog = ({ onCompare }: AnalyticsCompareDialogProp
           </Table>
         </div>
         <DialogFooter>
-          <Button onClick={handleConfirm} disabled={selectedResultIds.length === 0}>
+          <Button onClick={handleConfirm} disabled={localSelected.length === 0}>
             開始比較
           </Button>
         </DialogFooter>
