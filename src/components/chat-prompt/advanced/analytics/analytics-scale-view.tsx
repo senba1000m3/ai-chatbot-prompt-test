@@ -17,8 +17,6 @@ import { Button } from "@/components/ui/button"
 
 export const AnalyticsScaleView = () => {
   const { testResults } = useAdvancedStore()
-  const [showRadar, setShowRadar] = useState(true)
-  const [showBar, setShowBar] = useState(true)
 
   const [showTable, setShowTable] = useState(true)
   const [showRadar, setShowRadar] = useState(true)
