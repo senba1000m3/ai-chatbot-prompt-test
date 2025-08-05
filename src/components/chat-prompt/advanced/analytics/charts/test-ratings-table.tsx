@@ -1,71 +1,21 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { XIcon } from "lucide-react"
 import { useAdvancedStore } from "@/lib/store/advanced"
-import { usePromptStore } from "@/lib/store/prompt"
 
-export const TestRatingsTable = ({ }) => {
-	const { testResults, rubrics, historyRubrics } = useAdvancedStore()
-	const { savedVersions } = usePromptStore()
+export const TestRatingsTable: React.FC<{
+  getVersionName: Function;
+  allRubricIds: string[];
+  getRubricContent: (rubricId: string) => string;
+}> = ({ getVersionName, allRubricIds, getRubricContent }) => {
 
-	const getVersionName = (versionId: string) => {
-		const version = savedVersions.find(v => v.id === versionId)
-		return version ? version.name : "未知版本"
-	}
-
-	const getRubricContent = (rubricId: string) => {
-		const rubric = rubrics.find(r => r.rubric_id === rubricId)
-		if (rubric) {
-			return rubric.content
-		}
-		const historyRubric = (historyRubrics || []).find(
-			r => r.rubric_id === rubricId
-		)
-		if (historyRubric) {
-			return `${historyRubric.content} (已棄用)`
-		}
-		return "未知評分項"
-	}
-
-	const allRubricIds = (() => {
-		const { ratingCategories, rubrics, historyRubrics } =
-			useAdvancedStore.getState()
-		const allAvailableRubrics = [...rubrics, ...(historyRubrics || [])]
-		const allRubricIdsFromRatings = testResults.flatMap(result =>
-			Object.values(result.ratings).flatMap(modelRatings =>
-				Object.values(modelRatings).flatMap(rubricScores =>
-					Object.keys(rubricScores)
-				)
-			)
-		)
-		const uniqueRubricIds = [...new Set(allRubricIdsFromRatings)]
-		const rubricIdToCategoryId: Record<string, string> = {}
-		uniqueRubricIds.forEach(rubricId => {
-			const rubricInfo = allAvailableRubrics.find(
-				r => r.rubric_id === rubricId
-			)
-			if (rubricInfo) {
-				rubricIdToCategoryId[rubricId] = rubricInfo.category_id
-			}
-		})
-		return uniqueRubricIds.sort((a, b) => {
-			const categoryA = rubricIdToCategoryId[a]
-			const categoryB = rubricIdToCategoryId[b]
-			const indexA = ratingCategories.findIndex(
-				c => c.category_id === categoryA
-			)
-			const indexB = ratingCategories.findIndex(
-				c => c.category_id === categoryB
-			)
-			return indexA - indexB
-		})
-	})()
+  const { testResults } = useAdvancedStore()
 
   return (
     <Card>
       <CardContent>
-        <div className="pt-2" style={{ overflowX: "auto"}}>
+        <div className="pt-2" style={{ overflowX: "auto" }}>
           <Table>
             <TableHeader>
               <TableRow>

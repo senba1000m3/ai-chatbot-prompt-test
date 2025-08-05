@@ -11,20 +11,10 @@ import {
   CartesianGrid,
   Cell,
 } from "recharts"
-import { type TestResult } from "../../../../../lib/store/advanced"
-import { usePromptStore } from "../../../../../lib/store/prompt"
-
-interface TestResultsChartProps {
-  data: TestResult[]
-}
-
-export const TestResultsChart = ({ data }: TestResultsChartProps) => {
-  const { savedVersions } = usePromptStore()
-
-  const getVersionName = (versionId: string) => {
-    const version = savedVersions.find(v => v.id === versionId)
-    return version ? version.name : "未知版本"
-  }
+export const TestResultsChart: React.FC<{ colors: string[]; getVersionName: Function }> = ({
+  colors, getVersionName
+}) => {
+  const { testResults } = useAdvancedStore();
 
   const calculateAverageScore = (ratings: any, versionId: string, modelId: string) => {
     const modelRatings = ratings[versionId]?.[modelId]
@@ -37,56 +27,49 @@ export const TestResultsChart = ({ data }: TestResultsChartProps) => {
     return total / scores.length
   }
 
-  const chartData = data.map(result => ({
+  const chartData = testResults.map(result => ({
     name: `${getVersionName(result.versionId)} (${result.modelId})`,
     averageScore: calculateAverageScore(result.ratings, result.versionId, result.modelId),
     timestamp: new Date(result.timestamp).toLocaleString(),
   }))
 
-  const colors = [
-    "#8884d8",
-    "#82ca9d",
-    "#ffc658",
-    "#ff8042",
-    "#ca82aa",
-    "#a2ca82",
-  ]
-
   return (
-    <ResponsiveContainer width="100%" height={350}>
-      <BarChart data={chartData}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis
-          dataKey="name"
-          stroke="#888888"
-          fontSize={12}
-          tickLine={false}
-          axisLine={false}
-        />
-        <YAxis
-          stroke="#888888"
-          fontSize={12}
-          tickLine={false}
-          axisLine={false}
-          tickFormatter={value => `${value}`}
-          domain={[0, 5]}
-		  ticks={[0, 1, 2, 3, 4, 5]}
-        />
-        <Tooltip
-          contentStyle={{
-            backgroundColor: "hsl(var(--card))",
-            borderColor: "hsl(var(--border))",
-          }}
-          labelStyle={{ color: "hsl(var(--foreground))" }}
-        />
-        <Legend />
-        <Bar dataKey="averageScore" name="平均分數" radius={[4, 4, 0, 0]}>
-          {chartData.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
-          ))}
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
+      <ResponsiveContainer width="100%" height={350}>
+        <BarChart data={chartData}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis
+              dataKey="name"
+              stroke="#888888"
+              fontSize={12}
+              tickLine={false}
+              axisLine={false}
+          />
+          <YAxis
+              stroke="#888888"
+              fontSize={12}
+              tickLine={false}
+              axisLine={false}
+              tickFormatter={value => `${value}`}
+              domain={[0, 5]}
+              ticks={[0, 1, 2, 3, 4, 5]}
+          />
+          <Tooltip
+              contentStyle={{
+                backgroundColor: "hsl(var(--card))",
+                borderColor: "hsl(var(--border))",
+              }}
+              labelStyle={{ color: "hsl(var(--foreground))" }}
+          />
+          <Legend />
+          <Bar dataKey="averageScore" name="平均分數" radius={[4, 4, 0, 0]}>
+            {chartData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
   )
 }
+
+import { useAdvancedStore, type TestResult } from "../../../../../lib/store/advanced"
 

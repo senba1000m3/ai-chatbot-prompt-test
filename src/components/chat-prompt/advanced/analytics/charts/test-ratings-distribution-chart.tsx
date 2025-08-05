@@ -9,56 +9,36 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from "recharts"
-import { type TestResult, useAdvancedStore } from "../../../../../lib/store/advanced"
-import { usePromptStore } from "../../../../../lib/store/prompt"
+import { useAdvancedStore } from "../../../../../lib/store/advanced"
 
-interface TestRatingsDistributionChartProps {
-  data: TestResult[]
-}
+export const TestRatingsDistributionChart: React.FC<{
+  colors: string[];
+  getVersionName: Function;
+  allRubricIds: string[];
+  getRubricContent: (rubricId: string) => string;
+}> = ({ colors, getVersionName, allRubricIds, getRubricContent }) => {
+  const { testResults, ratingCategories, rubrics } = useAdvancedStore()
 
-
-function getCategoryAverage(categoryId: string, rubrics: any[], data: TestResult[]) {
-  const categoryRubrics = rubrics.filter(rubric => rubric.category_id === categoryId)
-  if (categoryRubrics.length === 0) return 0
-  const rubricAverages = categoryRubrics.map(rubric => {
-    let total = 0
-    let count = 0
-    data.forEach(result => {
-      const modelRatings = result.ratings[result.versionId]?.[result.modelId]
-      const score = modelRatings?.[rubric.rubric_id]
-      if (typeof score === 'number') {
-        total += score
-        count++
-      }
+  const getCategoryAverage = (rubricIds: string[]) => {
+    const rubricAverages = rubricIds.map(rubricId => {
+      let total = 0
+      let count = 0
+      testResults.forEach(result => {
+        const modelRatings = result.ratings[result.versionId]?.[result.modelId]
+        const score = modelRatings?.[rubricId]
+        if (typeof score === 'number') {
+          total += score
+          count++
+        }
+      })
+      return count > 0 ? total / count : 0
     })
-    return count > 0 ? total / count : 0
-  })
-  return rubricAverages.length > 0
-    ? rubricAverages.reduce((a, b) => a + b, 0) / rubricAverages.length
-    : 0
-}
-
-export const TestRatingsDistributionChart = ({
-  data,
-}: TestRatingsDistributionChartProps) => {
-  const { ratingCategories, rubrics } = useAdvancedStore()
-  const { savedVersions } = usePromptStore()
-
-  const getVersionName = (versionId: string) => {
-    const version = savedVersions.find(v => v.id === versionId)
-    return version ? version.name : "未知版本"
+    return rubricAverages.length > 0
+      ? rubricAverages.reduce((a, b) => a + b, 0) / rubricAverages.length
+      : 0
   }
 
-  const colors = [
-    "#8884d8",
-    "#82ca9d",
-    "#ffc658",
-    "#ff8042",
-    "#ca82aa",
-    "#a2ca82",
-  ]
-
-  const legendPayload = data.map((result, index) => ({
+  const legendPayload = testResults.map((result, index) => ({
     value: `${getVersionName(result.versionId)} (${result.modelId})`,
     type: "rect",
     color: colors[index % colors.length],
@@ -68,27 +48,24 @@ export const TestRatingsDistributionChart = ({
     <div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {ratingCategories.map(category => {
-          const categoryRubrics = rubrics.filter(
-            rubric => rubric.category_id === category.category_id
-          )
-
-          if (categoryRubrics.length === 0) {
+          const categoryRubricIds = allRubricIds.filter(rubricId => {
+            const rubric = rubrics.find(r => r.rubric_id === rubricId)
+            return rubric && rubric.category_id === category.category_id
+          })
+          if (categoryRubricIds.length === 0) {
             return null
           }
-
-          const transformedData = categoryRubrics.map(rubric => {
+          const transformedData = categoryRubricIds.map(rubricId => {
             const criterionScores: { [key: string]: any } = {
-              subject: rubric.content,
+              subject: getRubricContent(rubricId),
             }
-            data.forEach(result => {
-              const modelRatings =
-                result.ratings[result.versionId]?.[result.modelId]
-              criterionScores[result.id] =
-                modelRatings?.[rubric.rubric_id] || 0
+            testResults.forEach(result => {
+              const modelRatings = result.ratings[result.versionId]?.[result.modelId]
+              criterionScores[result.id] = modelRatings?.[rubricId] || 0
             })
             return criterionScores
           })
-
+          const categoryAverage = getCategoryAverage(categoryRubricIds)
           return (
             <div key={category.category_id}>
               <div className="text-lg font-semibold text-center mb-1">
@@ -96,7 +73,7 @@ export const TestRatingsDistributionChart = ({
               </div>
               <div className="text-sm font-semibold text-center -mb-2">
                 平均：
-                <span className="text-primary">{getCategoryAverage(category.category_id, rubrics, data).toFixed(2)}</span>
+                <span className="text-primary">{categoryAverage.toFixed(2)}</span>
               </div>
               <ResponsiveContainer width="100%" height={350}>
                 <RadarChart
@@ -119,12 +96,10 @@ export const TestRatingsDistributionChart = ({
                       borderColor: "hsl(var(--border))",
                     }}
                   />
-                  {data.map((result, index) => (
+                  {testResults.map((result, index) => (
                     <Radar
                       key={result.id}
-                      name={`${getVersionName(result.versionId)} (${
-                        result.modelId
-                      })`}
+                      name={`${getVersionName(result.versionId)} (${result.modelId})`}
                       dataKey={result.id}
                       stroke={colors[index % colors.length]}
                       fill={colors[index % colors.length]}
