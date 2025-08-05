@@ -6,6 +6,7 @@ import { RatingScaleView } from "./rating/rating-scale-view";
 import { AnalyticsOverview } from "./analytics/analytics-overview";
 import { AnalyticsScaleView } from "./analytics/analytics-scale-view";
 import { AnalyticsCompareView } from "./analytics/analytics-compare-view";
+import { AnalyticsRankingView } from "./analytics/analytics-ranking-view";
 
 import {
   SidebarGroup,
@@ -64,6 +65,7 @@ const sidebarItems = [
 		dropdown: [
 			{ item: "總覽", title: "數據分析總覽內容", key: "overview", component: <AnalyticsOverview /> },
 			{ item: "量表", title: "數據分析量表", key: "scale", component: <AnalyticsScaleView />},
+			{ item: "排行榜", title: "數據排名排行榜", key: "ranking", component: <AnalyticsRankingView />},
 			// { item: "數據比較", title: "比較不同版本之間的數據", key: "charts", component: <AnalyticsCompareView />},
 		],
 	},

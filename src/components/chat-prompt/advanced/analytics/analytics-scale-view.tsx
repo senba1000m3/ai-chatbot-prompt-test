@@ -255,7 +255,7 @@ export const AnalyticsScaleView = () => {
           </div>
         </div>
       </div>
-      {/* 篩選選項 Badge 顯示區塊 */}
+
        <div className="flex flex-wrap gap-2 space-y-2 mt-5 mb-4 items-start">
         {selectedBadges.map(badge => (
           <Badge key={badge.type + badge.value} className="flex items-center gap-1">
