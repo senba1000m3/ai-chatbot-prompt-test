@@ -13,11 +13,12 @@ import { useAdvancedStore } from "../../../../../lib/store/advanced"
 
 export const TestRatingsDistributionChart: React.FC<{
   colors: string[];
-  getVersionName: Function;
+  getVersionNameAction: (versionId: string) => string;
   allRubricIds: string[];
   getRubricContent: (rubricId: string) => string;
   testResults: any[];
-}> = ({ colors, getVersionName, allRubricIds, getRubricContent, testResults }) => {
+  countMap: Record<string, number>;
+}> = ({ colors, getVersionNameAction, allRubricIds, getRubricContent, testResults, countMap }) => {
   const { ratingCategories, rubrics } = useAdvancedStore()
 
   const getCategoryAverage = (rubricIds: string[]) => {
@@ -40,7 +41,7 @@ export const TestRatingsDistributionChart: React.FC<{
   }
 
   const legendPayload = testResults.map((result, index) => ({
-    value: `${getVersionName(result.versionId)} (${result.modelId})`,
+    value: `${getVersionNameAction(result.versionId)} (${result.modelId}）（${countMap[`${result.versionId}|||${result.modelId}`] ?? 1}）`,
     type: "rect",
     color: colors[index % colors.length],
   }))
@@ -100,7 +101,7 @@ export const TestRatingsDistributionChart: React.FC<{
                   {testResults.map((result, index) => (
                     <Radar
                       key={result.id}
-                      name={`${getVersionName(result.versionId)} (${result.modelId})`}
+                      name={`${getVersionNameAction(result.versionId)} (${result.modelId})`}
                       dataKey={result.id}
                       stroke={colors[index % colors.length]}
                       fill={colors[index % colors.length]}

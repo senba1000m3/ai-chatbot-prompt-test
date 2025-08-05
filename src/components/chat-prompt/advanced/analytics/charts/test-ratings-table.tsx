@@ -4,13 +4,28 @@ import { Badge } from "@/components/ui/badge"
 import { XIcon } from "lucide-react"
 
 export const TestRatingsTable: React.FC<{
-  getVersionName: Function;
+  getVersionNameAction: (versionId: string) => string;
   allRubricIds: string[];
   getRubricContent: (rubricId: string) => string;
   testResults: any[];
-}> = ({ getVersionName, allRubricIds, getRubricContent, testResults }) => {
+  countMap: Record<string, number>;
+}> = ({ getVersionNameAction, allRubricIds, getRubricContent, testResults, countMap }) => {
+
+  const totalScores = testResults.map(result => {
+    let sum = 0;
+    let count = 0;
+    allRubricIds.forEach(rubricId => {
+      const score = result.ratings[result.versionId]?.[result.modelId]?.[rubricId];
+      if (typeof score === 'number') {
+        sum += score;
+        count++;
+      }
+    });
+    return count > 0 ? sum / count : 0;
+  });
+
   return (
-    <Card>
+    <Card className="-pt-3">
       <CardContent>
         <div className="pt-2" style={{ overflowX: "auto" }}>
           <Table>
@@ -24,7 +39,7 @@ export const TestRatingsTable: React.FC<{
                 </TableHead>
                 {testResults.map(result => (
                   <TableHead key={result.id} className="text-center">
-                    {getVersionName(result.versionId)}
+                    {getVersionNameAction(result.versionId)}（{countMap[`${result.versionId}|||${result.modelId}`] ?? 1}）
                     <Badge variant="secondary" className="ml-2">
                       {result.modelId}
                     </Badge>
@@ -33,6 +48,14 @@ export const TestRatingsTable: React.FC<{
               </TableRow>
             </TableHeader>
             <TableBody>
+              <TableRow>
+                <TableCell className="sticky left-0 z-10 bg-card pr-8 font-bold text-sm">總分</TableCell>
+                {totalScores.map((score, idx) => (
+                  <TableCell key={testResults[idx].id} className="text-center font-bold text-sm text-blue-600">
+                    {score.toFixed(2)}
+                  </TableCell>
+                ))}
+              </TableRow>
               {allRubricIds.map(rubricId => {
                 const scores = testResults
                   .map(result => {
@@ -59,7 +82,7 @@ export const TestRatingsTable: React.FC<{
                           className={`text-center font-medium ${isMax ? "text-green-500" : ""}`}
                         >
                           {score !== undefined ? (
-                            score
+                            score.toFixed(2)
                           ) : (
                             <XIcon className="mx-auto h-4 w-4 text-muted-foreground text-red-500" />
                           )}

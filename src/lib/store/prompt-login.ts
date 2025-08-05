@@ -87,6 +87,7 @@ function getDefaultAdvancedStoreData(get: () => LoginStoreProps): AdvancedStoreD
 		versionRatings: {},
 		testResults: [],
 		isRatingInProgress: false,
+		ratingSelectedTestset: [], // 新增預設值
 	}
 }
 
@@ -266,3 +267,4 @@ export const useLoginStore = create<LoginStoreProps>()(
 		}
 	)
 );
+

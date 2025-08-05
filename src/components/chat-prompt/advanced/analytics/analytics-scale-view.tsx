@@ -13,6 +13,9 @@ import { TestRatingsDistributionChart } from "./charts/test-ratings-distribution
 import { TestResultsChart } from "./charts/test-results-chart"
 import { TestRatingsTable } from "./charts/test-ratings-table"
 import { TestRatingsLineChart } from "./charts/test-ratings-line-chart"
+import { SingleTestRatingsChart } from "./charts/single-test-ratings-chart"
+import { TestRatingsRadarChart } from "./charts/test-ratings-radar-chart"
+import { TestCountChart } from "./charts/test-count-chart"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/select"
@@ -21,6 +24,7 @@ import { AnalyticsTestsetSelectDialog } from "./analytics-testset-select-dialog"
 import { Badge } from "@/components/ui/badge"
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 import { Checkbox } from "@/components/ui/checkbox"
+import { mergeTestResults } from "./merge-test-results";
 
 export const AnalyticsScaleView = () => {
   const { savedVersions } = usePromptStore()
@@ -54,9 +58,10 @@ export const AnalyticsScaleView = () => {
   const [sortKey, setSortKey] = useState<string>("timestamp")
   const [sortOrder, setSortOrder] = useState<"asc"|"desc">("desc")
 
+  // 先用篩選條件過濾 testResults
   const filteredTestResults = testResults ? testResults.filter(result => {
     if (filterModels.length > 0 && !filterModels.includes(result.modelId)) return false
-    if (ratingSelectedTestset.length > 0 && !ratingSelectedTestset.includes(result.id)) return false
+    if (ratingSelectedTestset.length > 0 && !ratingSelectedTestset.includes(`${result.versionId}|||${result.modelId}`)) return false
     if (filterCategories.length > 0) {
       const allRubricIdsInResult = Object.values(result.ratings).flatMap(modelRatings =>
         Object.values(modelRatings).flatMap(rubricScores =>
@@ -72,7 +77,10 @@ export const AnalyticsScaleView = () => {
     return true
   }) : []
 
-  const sortedTestResults = [...filteredTestResults].sort((a, b) => {
+  const { mergedResults, countMap } = mergeTestResults(filteredTestResults);
+
+  // 排序合併後的結果
+  const sortedTestResults = [...mergedResults].sort((a, b) => {
     if (sortKey === "timestamp") {
       return sortOrder === "asc"
           ? a.timestamp - b.timestamp
@@ -126,24 +134,34 @@ export const AnalyticsScaleView = () => {
 
   const allCharts = [
     {
+      title: "單個測試資料平均",
+      description: "每個測試資料的各分類平均分數。",
+      content: <SingleTestRatingsChart getVersionNameAction={getVersionName} colors={colors} testResults={sortedTestResults} countMap={countMap} />,
+    },
+    {
       title: "評分比較表格",
       description: "此表格顯示所有測試的各項評分分數。",
-      content: <TestRatingsTable getVersionName={getVersionName} allRubricIds={filteredRubricIds} getRubricContent={getRubricContent} testResults={sortedTestResults} />,
+      content: <TestRatingsTable getVersionNameAction={getVersionName} allRubricIds={filteredRubricIds} getRubricContent={getRubricContent} testResults={sortedTestResults} countMap={countMap} />,
     },
     {
-      title: "評分分佈雷達圖",
-      description: "此圖表顯示了不同測試中，各個評分項目的平均分數。",
-      content: <TestRatingsDistributionChart colors={colors} getVersionName={getVersionName} allRubricIds={filteredRubricIds} getRubricContent={getRubricContent} testResults={sortedTestResults} />,
+      title: "各分類評分分佈雷達圖",
+      description: "此圖表顯示了不同測試中，各個分類中評分的平均分數。",
+      content: (<TestRatingsRadarChart colors={colors} getVersionNameAction={getVersionName} allRubricIds={filteredRubricIds} getRubricContent={getRubricContent} testResults={sortedTestResults} countMap={countMap}/>),
     },
     {
-      title: "評分折線比較圖",
+      title: "各項目評分折線比較圖",
       description: "此折線圖比較所有測試在各評分項目的分數。",
-      content: <TestRatingsLineChart colors={colors} getVersionName={getVersionName} allRubricIds={filteredRubricIds} getRubricContent={getRubricContent} testResults={sortedTestResults} />,
+      content: <TestRatingsLineChart colors={colors} getVersionNameAction={getVersionName} allRubricIds={filteredRubricIds} getRubricContent={getRubricContent} testResults={sortedTestResults} countMap={countMap} />,
     },
     {
-      title: "平均平方長條圖",
+      title: "資料數比較圖",
+      description: "此長條圖顯示每個『版本－模型』的評分資料次數。",
+      content: <TestCountChart colors={colors} getVersionNameAction={getVersionName} testResults={sortedTestResults} countMap={countMap} />,
+    },
+    {
+      title: "平均評分長條圖",
       description: "此長條圖顯示了不同測試的平均分數。",
-      content: <TestResultsChart colors={colors} getVersionName={getVersionName} testResults={sortedTestResults} />,
+      content: <TestResultsChart colors={colors} getVersionNameAction={getVersionName} testResults={sortedTestResults} countMap={countMap} />,
     },
   ]
 
@@ -223,7 +241,7 @@ export const AnalyticsScaleView = () => {
         </div>
         <div className="flex gap-4 items-end">
           <div>
-            <Label className="text-lg mb-3">排序</Label>
+            <Label className="text-lg mb-3">排序依據</Label>
             <div className="h-10">
               <Select value={sortKey} onValueChange={setSortKey}>
                 <SelectTrigger className="w-40 truncate">

@@ -8,22 +8,32 @@ import {
   PolarRadiusAxis,
   ResponsiveContainer,
   Tooltip,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Legend,
 } from "recharts"
 import { useAdvancedStore } from "../../../../../lib/store/advanced"
 
-export const TestRatingsDistributionChart: React.FC<{
-  colors: string[];
-  getVersionName: Function;
-  allRubricIds: string[];
-  getRubricContent: (rubricId: string) => string;
-  testResults: any[];
-}> = ({ colors, getVersionName, allRubricIds, getRubricContent, testResults }) => {
+export const TestRatingsRadarChart: React.FC<{
+  	colors: string[];
+	getVersionNameAction: (versionId: string) => string;
+  	allRubricIds: string[];
+  	getRubricContent: (rubricId: string) => string;
+  	testResults: any[];
+  	countMap: any;
+}> = ({ colors, getVersionNameAction, allRubricIds, testResults, countMap }) => {
   const { ratingCategories, rubrics } = useAdvancedStore()
 
-  const getCategoryAverage = (rubricIds: string[]) => {
-    const rubricAverages = rubricIds.map(rubricId => {
-      let total = 0
-      let count = 0
+  const radarData = ratingCategories.map(category => {
+    const categoryRubricIds = allRubricIds.filter(rubricId => {
+      const rubric = rubrics.find(r => r.rubric_id === rubricId)
+      return rubric && rubric.category_id === category.category_id
+    })
+    let total = 0
+    let count = 0
+    categoryRubricIds.forEach(rubricId => {
       testResults.forEach(result => {
         const modelRatings = result.ratings[result.versionId]?.[result.modelId]
         const score = modelRatings?.[rubricId]
@@ -32,97 +42,91 @@ export const TestRatingsDistributionChart: React.FC<{
           count++
         }
       })
-      return count > 0 ? total / count : 0
     })
-    return rubricAverages.length > 0
-      ? rubricAverages.reduce((a, b) => a + b, 0) / rubricAverages.length
-      : 0
-  }
-
-  const legendPayload = testResults.map((result, index) => ({
-    value: `${getVersionName(result.versionId)} (${result.modelId})`,
-    type: "rect",
-    color: colors[index % colors.length],
-  }))
+    const entry: any = {
+      category: category.name,
+      avg: count > 0 ? total / count : 0,
+    }
+    // 各測試版本
+    testResults.forEach((result, idx) => {
+      let total = 0
+      let count = 0
+      categoryRubricIds.forEach(rubricId => {
+        const modelRatings = result.ratings[result.versionId]?.[result.modelId]
+        const score = modelRatings?.[rubricId]
+        if (typeof score === 'number') {
+          total += score
+          count++
+        }
+      })
+      entry[result.id] = count > 0 ? total / count : 0
+    })
+    return entry
+  })
 
   return (
-    <div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {ratingCategories.map(category => {
-          const categoryRubricIds = allRubricIds.filter(rubricId => {
-            const rubric = rubrics.find(r => r.rubric_id === rubricId)
-            return rubric && rubric.category_id === category.category_id
-          })
-          if (categoryRubricIds.length === 0) {
-            return null
-          }
-          const transformedData = categoryRubricIds.map(rubricId => {
-            const criterionScores: { [key: string]: any } = {
-              subject: getRubricContent(rubricId),
-            }
-            testResults.forEach(result => {
-              const modelRatings = result.ratings[result.versionId]?.[result.modelId]
-              criterionScores[result.id] = modelRatings?.[rubricId] || 0
-            })
-            return criterionScores
-          })
-          const categoryAverage = getCategoryAverage(categoryRubricIds)
-          return (
-            <div key={category.category_id}>
-              <div className="text-lg font-semibold text-center mb-1">
-                {category.name}
-              </div>
-              <div className="text-sm font-semibold text-center -mb-2">
-                平均：
-                <span className="text-primary">{categoryAverage.toFixed(2)}</span>
-              </div>
-              <ResponsiveContainer width="100%" height={350}>
-                <RadarChart
-                  cx="50%"
-                  cy="50%"
-                  outerRadius="75%"
-                  data={transformedData}
-                >
-                  <PolarGrid />
-                  <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10 }} />
-                  <PolarRadiusAxis
-                    angle={30}
-                    domain={[0, 6]}
-                    tickCount={7}
-                    tickFormatter={value => (value > 5 ? "" : value)}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--card))",
-                      borderColor: "hsl(var(--border))",
-                    }}
-                  />
-                  {testResults.map((result, index) => (
-                    <Radar
-                      key={result.id}
-                      name={`${getVersionName(result.versionId)} (${result.modelId})`}
-                      dataKey={result.id}
-                      stroke={colors[index % colors.length]}
-                      fill={colors[index % colors.length]}
-                      fillOpacity={0.6}
-                    />
-                  ))}
-                </RadarChart>
-              </ResponsiveContainer>
-            </div>
-          )
-        })}
-      </div>
-      <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-2">
-        {legendPayload.map((entry, index) => (
-          <div key={`legend-${index}`} className="flex items-center text-sm">
-            <div
-              className="w-3 h-3 mr-2 rounded-sm"
-              style={{ backgroundColor: entry.color }}
+    <div className="space-y-8">
+      <div className="w-full flex flex-col items-center">
+        <div className="text-xl font-semibold text-center mb-1">各分類分數雷達圖</div>
+        <ResponsiveContainer width="100%" height={400}>
+          <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
+            <PolarGrid />
+            <PolarAngleAxis dataKey="category" tick={{ fontSize: 12 }} />
+            <PolarRadiusAxis angle={30} domain={[0, 6]} tickCount={7} tickFormatter={value => (value > 5 ? "" : value)} />
+            <Tooltip
+              content={({ active, payload, label }) => {
+                if (!active || !payload) return null;
+
+                const sortedPayload = [...payload].sort((a, b) => {
+                  if (a.dataKey === 'avg') return -1;
+                  if (b.dataKey === 'avg') return 1;
+                  return 0;
+                });
+                return (
+                  <div style={{ background: '#222', color: '#fff', border: '1px solid #222', padding: 10 }}>
+                    <div style={{ marginBottom: 8 }}>{label}</div>
+                    {sortedPayload.map((item, idx) => (
+                      <div
+                        key={item.dataKey}
+                        style={{
+                          color: item.dataKey === 'avg' ? '#e53935' : colors[idx % colors.length],
+                          padding: '2px 0'
+                        }}
+                      >
+                        <span>{item.name}: </span>
+                        <span>{typeof item.value === 'number' ? item.value.toFixed(2) : item.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                );
+              }}
             />
-            <span>{entry.value}</span>
+            <Radar name="平均分數" dataKey="avg" stroke="#e53935" fill="#e53935" fillOpacity={0.6} strokeWidth={3} />
+            {testResults.map((result, idx) => (
+              <Radar
+                key={result.id}
+                name={`${getVersionNameAction(result.versionId)} (${result.modelId})`}
+                dataKey={result.id}
+                stroke={colors[idx % colors.length]}
+                fill={colors[idx % colors.length]}
+                fillOpacity={0.3}
+                strokeWidth={3}
+              />
+            ))}
+          </RadarChart>
+        </ResponsiveContainer>
+        <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-2 mt-2">
+          <div className="flex items-center text-sm">
+            <div className="w-3 h-3 mr-2 rounded-sm" style={{ backgroundColor: "#e53935" }} />
+            <span>平均分數</span>
           </div>
-        ))}
+          {testResults.map((result, idx) => (
+            <div key={`legend-radar-${idx}`} className="flex items-center text-sm">
+              <div className="w-3 h-3 mr-2 rounded-sm" style={{ backgroundColor: colors[idx % colors.length] }} />
+              <span>{getVersionNameAction(result.versionId)} ({result.modelId})</span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )

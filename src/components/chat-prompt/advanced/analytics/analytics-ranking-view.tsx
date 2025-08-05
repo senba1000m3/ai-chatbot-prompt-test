@@ -1,10 +1,11 @@
 import React from "react";
 import { useAdvancedStore } from "@/lib/store/advanced";
-import type { RatingCategory } from "@/lib/store/advanced";
+import { type RatingCategory, type TestResult } from "@/lib/store/advanced";
 import { usePromptStore } from "@/lib/store/prompt";
+import { mergeTestResults } from "./merge-test-results";
 
 // 從 testResults 計算全部平均分前十名
-function getOverallTopAveragesFromResults(testResults) {
+function getOverallTopAveragesFromResults(testResults: TestResult[]) {
   const scores: { versionId: string; modelId: string; avg: number }[] = [];
   for (const result of testResults) {
     for (const versionId in result.ratings) {
@@ -21,7 +22,7 @@ function getOverallTopAveragesFromResults(testResults) {
 }
 
 // 從 testResults 計算每個類別前十名
-function getCategoryTopScoresFromResults(testResults: any[], ratingCategories: RatingCategory[], rubrics: any[]) {
+function getCategoryTopScoresFromResults(testResults: TestResult[], ratingCategories: RatingCategory[], rubrics: any[]) {
   // 先根據 category_id 分組 rubrics
   const categoryRubricMap: Record<string, string[]> = {};
   for (const rubric of rubrics) {
@@ -72,15 +73,27 @@ export const AnalyticsRankingView: React.FC = () => {
     return map;
   }, [savedVersions]);
 
-  const overallTops = getOverallTopAveragesFromResults(testResults);
-  const categoryTops = getCategoryTopScoresFromResults(testResults, ratingCategories, rubrics);
+  // 取得合併後的版本-模型組合及其數量
+  const { mergedResults, countMap } = mergeTestResults(testResults);
+
+  // 取得全部平均分前十名（合併後）
+  const overallTops = getOverallTopAveragesFromResults(mergedResults);
+  // 取得每個類別前十名（合併後）
+  const categoryTops = getCategoryTopScoresFromResults(mergedResults, ratingCategories, rubrics);
 
   return (
-    <div className="space-y-8 p-7">
-      <div className="bg-gray-900 rounded-lg shadow-lg p-6 mb-8 text-white">
-        <div className="font-bold text-lg mb-4 flex items-center gap-2">
+    <div className="space-y-8 p-7 overflow-y-auto h-[calc(100vh-130px)]">
+      <div className="bg-gray-900 rounded-lg shadow-lg p-6 mb-6 text-white">
+        <div className="font-bold text-lg mb-6 flex items-center gap-2">
           <span className="inline-block w-2 h-6 bg-blue-500 rounded mr-2"></span>
-          全部平均前十名
+          全部平均（前十名）
+        </div>
+        <div className="flex items-center gap-3 px-2 py-1 font-semibold text-gray-300 border-b border-gray-700 mb-2">
+          <span className="w-15">排名</span>
+          <span className="flex-1">版本名稱</span>
+          <span className="flex-1">使用模型</span>
+          <span className="w-16 text-center">次數</span>
+          <span className="w-20 text-center">分數</span>
         </div>
         {overallTops.length === 0 ? (
           <div className="text-gray-400">暫無資料</div>
@@ -88,10 +101,14 @@ export const AnalyticsRankingView: React.FC = () => {
           <ol className="space-y-2">
             {overallTops.map((top, idx) => (
               <li key={top.versionId + top.modelId + idx} className="flex items-center gap-3 p-2 rounded hover:bg-gray-800 transition">
-                <span className="font-bold text-blue-400 w-8">#{idx + 1}</span>
-                <span className="font-semibold">{versionNameMap[top.versionId] || top.versionId}</span>
-                <span className="text-gray-300">| {top.modelId}</span>
-                <span className="ml-auto font-bold text-green-400">平均分: {top.avg.toFixed(2)}</span>
+                <span className="font-bold text-blue-400 w-15">#{idx + 1}</span>
+                <span className="font-semibold flex-1">{versionNameMap[top.versionId] || top.versionId}</span>
+                <span className="text-gray-300 flex-1 ml-5">{top.modelId}</span>
+                <span className="ml-4 w-16 text-center text-base text-gray-400">{countMap[`${top.versionId}|||${top.modelId}`]}</span>
+                <span className="ml-auto w-20 text-center font-bold"
+                  style={{ color: top.avg === 5 ? '#65dbff' : top.avg >= 4 ? '#22c55e' : top.avg >= 3 ? '#eab308' : '#ef4444' }}>
+                  {top.avg.toFixed(2)}
+                </span>
               </li>
             ))}
           </ol>
@@ -101,9 +118,16 @@ export const AnalyticsRankingView: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {categoryTops.map(cat => (
           <div key={cat.category.category_id} className="bg-gray-800 rounded-lg shadow p-5 text-white flex flex-col">
-            <div className="font-bold text-base mb-4 flex items-center gap-2">
+            <div className="font-bold text-lg mb-6 flex items-center gap-2">
               <span className="inline-block w-2 h-5 bg-purple-500 rounded mr-2"></span>
-              {cat.category.name}
+              {cat.category.name}（前十名）
+            </div>
+            <div className="flex items-center gap-3 px-2 py-1 font-semibold text-gray-300 border-b border-gray-700 mb-2">
+              <span className="w-15">排名</span>
+              <span className="flex-1">版本名稱</span>
+              <span className="flex-1">使用模型</span>
+              <span className="w-16 text-center">次數</span>
+              <span className="w-20 text-center">分數</span>
             </div>
             <ol className="space-y-2 flex-1">
               {cat.tops.length === 0 ? (
@@ -111,10 +135,14 @@ export const AnalyticsRankingView: React.FC = () => {
               ) : (
                 cat.tops.map((top, idx) => (
                   <li key={top.versionId + top.modelId + idx} className="flex items-center gap-3 p-2 rounded hover:bg-gray-700 transition">
-                    <span className="font-bold text-purple-400 w-8">#{idx + 1}</span>
-                    <span className="font-semibold">{versionNameMap[top.versionId] || top.versionId}</span>
-                    <span className="text-gray-300">| {top.modelId}</span>
-                    <span className="ml-auto font-bold text-green-400">分數: {top.avg.toFixed(2)}</span>
+                    <span className="font-bold text-purple-400 w-15">#{idx + 1}</span>
+                    <span className="font-semibold flex-1">{versionNameMap[top.versionId] || top.versionId}</span>
+                    <span className="text-gray-300 flex-1 ml-5">{top.modelId}</span>
+                    <span className="ml-4 w-16 text-center text-base text-gray-400">{countMap[`${top.versionId}|||${top.modelId}`]}</span>
+                    <span className="ml-auto w-20 text-center font-bold"
+                      style={{ color: top.avg === 5 ? '#65dbff' : top.avg >= 4 ? '#22c55e' : top.avg >= 3 ? '#eab308' : '#ef4444' }}>
+                      {top.avg.toFixed(2)}
+                    </span>
                   </li>
                 ))
               )}
@@ -126,5 +154,4 @@ export const AnalyticsRankingView: React.FC = () => {
   );
 };
 
-export default AnalyticsRankingView;
 

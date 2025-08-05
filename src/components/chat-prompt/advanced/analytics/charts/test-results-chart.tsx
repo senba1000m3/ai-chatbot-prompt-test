@@ -11,8 +11,13 @@ import {
   CartesianGrid,
   Cell,
 } from "recharts"
-export const TestResultsChart: React.FC<{ colors: string[]; getVersionName: Function; testResults: any[] }> = ({
-  colors, getVersionName, testResults
+export const TestResultsChart: React.FC<{
+    colors: string[];
+    getVersionNameAction: (versionId: string) => string;
+    testResults: any[];
+    countMap: Record<string, number>;
+}> = ({
+  colors, getVersionNameAction, testResults, countMap
 }) => {
   const calculateAverageScore = (ratings: any, versionId: string, modelId: string) => {
     const modelRatings = ratings[versionId]?.[modelId]
@@ -26,7 +31,7 @@ export const TestResultsChart: React.FC<{ colors: string[]; getVersionName: Func
   }
 
   const chartData = testResults.map(result => ({
-    name: `${getVersionName(result.versionId)} (${result.modelId})`,
+    name: `${getVersionNameAction(result.versionId)} (${result.modelId}）（${countMap[`${result.versionId}|||${result.modelId}`] ?? 1}）`,
     averageScore: calculateAverageScore(result.ratings, result.versionId, result.modelId),
     timestamp: new Date(result.timestamp).toLocaleString(),
   }))
@@ -38,7 +43,7 @@ export const TestResultsChart: React.FC<{ colors: string[]; getVersionName: Func
           <XAxis
               dataKey="name"
               stroke="#888888"
-              fontSize={12}
+              fontSize={16}
               tickLine={false}
               axisLine={false}
           />
@@ -52,11 +57,26 @@ export const TestResultsChart: React.FC<{ colors: string[]; getVersionName: Func
               ticks={[0, 1, 2, 3, 4, 5]}
           />
           <Tooltip
-              contentStyle={{
-                backgroundColor: "hsl(var(--card))",
-                borderColor: "hsl(var(--border))",
+              content={({ active, payload, label }) => {
+                if (!active || !payload) return null;
+                return (
+                    <div style={{ background: '#222', color: '#fff', border: '1px solid #222', padding: 10 }}>
+                      <div style={{ marginBottom: 8 }}>{label}</div>
+                      {payload.map((item, idx) => (
+                          <div
+                              key={item.dataKey}
+                              style={{
+                                color: colors[idx % colors.length],
+                                padding: '2px 0'
+                              }}
+                          >
+                            <span>{item.name}: </span>
+                            <span>{typeof item.value === 'number' ? item.value.toFixed(2) : item.value}</span>
+                          </div>
+                      ))}
+                    </div>
+                );
               }}
-              labelStyle={{ color: "hsl(var(--foreground))" }}
           />
           <Legend />
           <Bar dataKey="averageScore" name="平均分數" radius={[4, 4, 0, 0]}>
