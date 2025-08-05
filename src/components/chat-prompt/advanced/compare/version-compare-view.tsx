@@ -672,7 +672,7 @@ export function VersionCompareView() {
 																	size="icon"
 																	className="mr-3 h-8 w-16 text-gray-400 hover:text-white hover:bg-yellow-500/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
 																	onClick={() => setRatingStates((prev) => ({ ...prev, [version.id]: true }))}
-																	disabled={Object.values(ratingStates).some(Boolean)}
+																	// disabled={Object.values(ratingStates).some(Boolean)}
 																>
 																	<Star className="w-4 h-4" />
 																	評分

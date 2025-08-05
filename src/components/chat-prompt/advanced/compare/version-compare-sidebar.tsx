@@ -18,7 +18,7 @@ import {
   AlertDialogTrigger,
 } from "../../../ui/alert-dialog"
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "../../../ui/tooltip"
-import { X, ChevronRight, GripVertical, LogOut, Settings, ChevronLeft } from "lucide-react"
+import { X, ChevronRight, GripVertical, LogOut, Settings, ChevronLeft, Send } from "lucide-react"
 import { useState, useMemo, useEffect } from "react"
 import { usePromptStore, type SavedVersion } from "../../../../lib/store/prompt"
 import { useComparePromptChat } from "@/hooks/use-compare-prompt-chat"
@@ -150,6 +150,13 @@ export function VersionCompareSidebar({
   const handleDragEnd = () => {
     setDraggedItem(null)
     setDragOverIndex(null)
+  }
+
+  const handleSubmitAll = () => {
+    if (!selectedTestSet) return
+    selectedTestSet.messages.forEach(msg => {
+      handleSubmit(msg.message)
+    })
   }
 
   return (
@@ -308,31 +315,64 @@ export function VersionCompareSidebar({
                       ) : (
                         <h2 className="text-base text-white">預設測試集</h2>
                       )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setIsTestSetSelectDialogOpen(true)}
-                        className="text-xs text-gray-400 hover:text-white hover:bg-gray-800 p-2"
-                      >
-                        <Settings className="w-3 h-3" />
-                        設定
-                      </Button>
+					  {selectedTestSetId ? (
+						  <Button
+							  variant="ghost"
+							  size="sm"
+							  onClick={handleSubmitAll}
+							  className="text-xs text-gray-400 hover:text-white hover:bg-gray-800 p-2"
+						  >
+							  <Send className="w-3 h-3" />
+							  全部送出
+						  </Button>
+					  ) : (
+						  <Button
+							variant="ghost"
+							size="sm"
+							onClick={() => setIsTestSetSelectDialogOpen(true)}
+							className="text-xs text-gray-400 hover:text-white hover:bg-gray-800 p-2"
+						  >
+							<Settings className="w-3 h-3" />
+							設定
+						  </Button>)}
                     </>
                   ) : (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-gray-400 hover:text-white hover:bg-gray-800"
-                        >
-                          <Settings className="w-5 h-5" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent side="right">
-                        <p>設定預設測試集</p>
-                      </TooltipContent>
-                    </Tooltip>
+                    <div>
+						{selectedTestSetId ? (
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<Button
+										variant="ghost"
+										size="icon"
+										className="text-gray-400 hover:text-white hover:bg-gray-800"
+										onClick={handleSubmitAll}
+										disabled={!selectedTestSetId}
+									>
+										<Send className="w-5 h-5" />
+									</Button>
+								</TooltipTrigger>
+								<TooltipContent side="right">
+									<p>全部送出</p>
+								</TooltipContent>
+							</Tooltip>
+						) : (
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<Button
+										variant="ghost"
+										size="icon"
+										className="text-gray-400 hover:text-white hover:bg-gray-800"
+										onClick={() => setIsTestSetSelectDialogOpen(true)}
+									>
+										<Settings className="w-5 h-5" />
+									</Button>
+								</TooltipTrigger>
+								<TooltipContent side="right">
+									<p>設定預設測試集</p>
+								</TooltipContent>
+							</Tooltip>
+						)}
+                    </div>
                   )}
                 </div>
                 <div className="flex-1 p-3 overflow-y-auto">

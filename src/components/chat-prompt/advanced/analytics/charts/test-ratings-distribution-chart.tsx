@@ -16,6 +16,28 @@ interface TestRatingsDistributionChartProps {
   data: TestResult[]
 }
 
+
+function getCategoryAverage(categoryId: string, rubrics: any[], data: TestResult[]) {
+  const categoryRubrics = rubrics.filter(rubric => rubric.category_id === categoryId)
+  if (categoryRubrics.length === 0) return 0
+  const rubricAverages = categoryRubrics.map(rubric => {
+    let total = 0
+    let count = 0
+    data.forEach(result => {
+      const modelRatings = result.ratings[result.versionId]?.[result.modelId]
+      const score = modelRatings?.[rubric.rubric_id]
+      if (typeof score === 'number') {
+        total += score
+        count++
+      }
+    })
+    return count > 0 ? total / count : 0
+  })
+  return rubricAverages.length > 0
+    ? rubricAverages.reduce((a, b) => a + b, 0) / rubricAverages.length
+    : 0
+}
+
 export const TestRatingsDistributionChart = ({
   data,
 }: TestRatingsDistributionChartProps) => {
@@ -69,9 +91,13 @@ export const TestRatingsDistributionChart = ({
 
           return (
             <div key={category.category_id}>
-              <h3 className="text-lg font-semibold text-center -mb-8">
+              <div className="text-lg font-semibold text-center mb-1">
                 {category.name}
-              </h3>
+              </div>
+              <div className="text-sm font-semibold text-center -mb-2">
+                平均：
+                <span className="text-primary">{getCategoryAverage(category.category_id, rubrics, data).toFixed(2)}</span>
+              </div>
               <ResponsiveContainer width="100%" height={350}>
                 <RadarChart
                   cx="50%"

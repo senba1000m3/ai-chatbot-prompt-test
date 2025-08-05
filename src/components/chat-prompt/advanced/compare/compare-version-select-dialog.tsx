@@ -71,7 +71,7 @@ export function CompareVersionSelectDialog({ isOpen, onOpenChange }: CompareVers
 		onOpenChange(false)
 	}
 
-	const isConfirmDisabled = selectedIds.size < 2
+	const isConfirmDisabled = selectedIds.size < 1
 
 	return (
 		<Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -79,7 +79,7 @@ export function CompareVersionSelectDialog({ isOpen, onOpenChange }: CompareVers
 				<DialogHeader>
 					<DialogTitle>
 						選擇要進行比較的版本（已選{" "}
-						<span className={selectedIds.size < 2 ? "text-red-500" : ""}>
+						<span className={isConfirmDisabled ? "text-red-500" : ""}>
 							{selectedIds.size}
 						</span>{" "}
 						/ {savedVersions.length} 個）
@@ -120,9 +120,9 @@ export function CompareVersionSelectDialog({ isOpen, onOpenChange }: CompareVers
 				</div>
 				<DialogFooter>
 					{isConfirmDisabled && (
-						<p className="text-base text-yellow-500 mr-auto mt-2">請至少選擇兩個版本進行比較</p>
+						<p className="text-base text-yellow-500 mr-auto mt-2">請至少選擇一個版本</p>
 					)}
-					<Button onClick={handleConfirm} disabled={isConfirmDisabled}>確定</Button>
+					<Button onClick={handleConfirm}>確定</Button>
 					<DialogClose asChild>
 						<Button variant="ghost" className="border border-gray-700">取消</Button>
 					</DialogClose>

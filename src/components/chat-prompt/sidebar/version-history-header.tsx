@@ -209,7 +209,7 @@ export function VersionHistoryHeader({
 								className="text-blue-300 border-blue-600 hover:bg-blue-800 bg-transparent"
 							>
 								<GitCompare className="w-4 h-4 mr-1" />
-								版本比對
+								進入 QC 區
 							</Button>
 						</>
 					)}
@@ -238,7 +238,7 @@ export function VersionHistoryHeader({
 								variant="outline"
 								size="sm"
 								onClick={handleConfirmCompare}
-								disabled={compareSelectedVersions.length < 2}
+								disabled={compareSelectedVersions.length < 1}
 								className="bg-green-600 border-green-500 text-white hover:bg-green-700 disabled:opacity-50"
 							>
 								確認
@@ -264,7 +264,8 @@ export function VersionHistoryHeader({
 					className="mb-3 p-2 bg-blue-900/20 border border-blue-500/30 rounded-lg"
 				>
 					<div className="text-sm text-blue-400">
-						已選擇 {compareSelectedVersions.length} 個版本進行比較
+						已選擇 {compareSelectedVersions.length} 個基礎版本
+						{compareSelectedVersions.length == 1 && <span className="text-green-400 ml-2">✓ 可以單個測試</span>}
 						{compareSelectedVersions.length >= 2 && <span className="text-green-400 ml-2">✓ 可以開始比較</span>}
 					</div>
 				</motion.div>
