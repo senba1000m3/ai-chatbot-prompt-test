@@ -40,6 +40,7 @@ export const TestCountChart: React.FC<{
           tickLine={false}
           axisLine={false}
           tickFormatter={value => `${value}`}
+          allowDecimals={false}
         />
         <Tooltip
           content={({ active, payload, label }) => {
