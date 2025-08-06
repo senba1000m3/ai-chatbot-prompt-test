@@ -18,6 +18,8 @@ import {
 } from "@/components/ui/alert-dialog"
 import { AnimatePresence } from "framer-motion"
 import { usePromptStore, availableModels, type SavedVersion, type ModelAccuracy } from "@/lib/store/prompt"
+import { useAdvancedStore } from "@/lib/store/advanced";
+import { mergeTestResults } from "@/components/chat-prompt/advanced/analytics/merge-test-results";
 
 interface VersionCardProps {
   version: SavedVersion
@@ -34,39 +36,18 @@ const availableTools = [
 export function VersionCard({version, onDownloadVersion, filteredModelAccuracy, setIsReadOnly}: VersionCardProps) {
   const { loadVersion, copyVersion, deleteVersion, toggleVersionExpanded, setEditingVersionID } = usePromptStore()
   const [isDeleting, setIsDeleting] = useState(false)
+  const [showModelScore, setShowModelScore] = useState(false)
 
-  // 使用篩選後的準確率，如果沒有則使用原始準確率
-  const displayModelAccuracy = filteredModelAccuracy || version.modelAccuracy || []
-
-  // 獲取準確率顏色
-  const getAccuracyColor = (accuracy: number) => {
-    if (accuracy >= 90) return "text-green-400"
-    if (accuracy >= 80) return "text-yellow-400"
-    if (accuracy >= 70) return "text-orange-400"
-    return "text-red-400"
-  }
-
-  // 獲取準確率背景顏色
-  const getAccuracyBgColor = (accuracy: number) => {
-    if (accuracy >= 90) return "bg-green-500/20 border-green-500/30"
-    if (accuracy >= 80) return "bg-yellow-500/20 border-yellow-500/30"
-    if (accuracy >= 70) return "bg-orange-500/20 border-orange-500/30"
-    return "bg-red-500/20 border-red-500/30"
-  }
-
-  // 獲取模型名稱
   const getModelName = (modelId: string) => {
     const model = availableModels.find((m) => m.id === modelId)
     return model?.name || modelId
   }
 
-  // 獲取工具名稱
   const getToolName = (toolId: string) => {
     const tool = availableTools.find((t) => t.id === toolId)
     return tool?.name || toolId
   }
 
-  // 獲取系統提示項目的顯示值 - 添加安全檢查
   const getSystemPromptDisplay = (value: string | undefined, label: string) => {
     if (!value || value.trim() === "") {
       return `${label}: 未設定`
@@ -95,7 +76,6 @@ export function VersionCard({version, onDownloadVersion, filteredModelAccuracy, 
     tools: version.data?.tools || [],
   }
 
-  // 系統提示的所有項目
   const systemPromptItems = [
     { key: "characterSettings", label: "角色設定", value: safeVersionData.systemPrompt.characterSettings },
     { key: "selfAwareness", label: "自我認知", value: safeVersionData.systemPrompt.selfAwareness },
@@ -106,7 +86,6 @@ export function VersionCard({version, onDownloadVersion, filteredModelAccuracy, 
     { key: "preventLeaks", label: "防洩漏", value: safeVersionData.systemPrompt.preventLeaks },
   ]
 
-  // 參數項目
   const parameterItems = [
     { key: "temperature", label: "Temperature", value: safeVersionData.parameters.temperature.toString() },
   ]
@@ -117,6 +96,60 @@ export function VersionCard({version, onDownloadVersion, filteredModelAccuracy, 
     // After deletion, the component will unmount, so no need to setIsDeleting(false)
   }
 
+  const ratingCategories = useAdvancedStore(state => state.ratingCategories)
+  const rubrics = useAdvancedStore(state => state.rubrics)
+  const testResults = useAdvancedStore(state => state.testResults)
+
+  const { mergedResults, countMap } = mergeTestResults(testResults)
+
+  function getCategoryAveragesForVersion(versionId: string) {
+    const categoryRubricMap: Record<string, string[]> = {}
+    for (const rubric of rubrics) {
+      if (!categoryRubricMap[rubric.category_id]) categoryRubricMap[rubric.category_id] = []
+      categoryRubricMap[rubric.category_id].push(rubric.rubric_id)
+    }
+    return ratingCategories.map(category => {
+      const rubricIds = categoryRubricMap[category.category_id] || []
+      const scores: number[] = []
+      for (const result of mergedResults) {
+        if (result.versionId !== versionId) continue
+        for (const modelId in result.ratings[versionId] || {}) {
+          for (const rubricId of rubricIds) {
+            const score = result.ratings[versionId][modelId][rubricId]
+            if (typeof score === 'number') scores.push(score)
+          }
+        }
+      }
+      const avg = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null
+      return { category, avg }
+    })
+  }
+
+  function getOverallAverage(versionId: string) {
+    const scores: number[] = []
+    for (const result of mergedResults) {
+      if (result.versionId !== versionId) continue
+      for (const modelId in result.ratings[versionId] || {}) {
+        for (const rubricId in result.ratings[versionId][modelId]) {
+          const score = result.ratings[versionId][modelId][rubricId]
+          if (typeof score === 'number') {
+            scores.push(score)
+          }
+        }
+      }
+    }
+    return scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null
+  }
+  const overallAvg = getOverallAverage(version.id)
+
+  // 計算此版本的 countMap 次數總和
+  const versionCount = Object.entries(countMap).reduce((acc, [key, val]) => {
+    if (key.startsWith(version.id + '|||')) return acc + val
+    return acc
+  }, 0)
+
+  const categoryAverages = getCategoryAveragesForVersion(version.id)
+
   return (
     <motion.div
       layout
@@ -126,8 +159,7 @@ export function VersionCard({version, onDownloadVersion, filteredModelAccuracy, 
       transition={{ duration: 0.3, ease: "easeInOut" }}
       className="bg-gray-900 border border-gray-700 rounded-lg px-2 pt-3 pb-1 hover:border-gray-600 transition-colors"
     >
-      {/* 版本標題和操作按鈕 */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-2">
         <div className="flex items-center space-x-2 flex-1 min-w-0">
           <Button
             variant="ghost"
@@ -232,22 +264,38 @@ export function VersionCard({version, onDownloadVersion, filteredModelAccuracy, 
         </div>
       </div>
 
-      {/* 模型準確率顯示 */}
-      <div className="ml-1 mb-3">
-        <div className="flex flex-wrap gap-2">
-          {displayModelAccuracy.length > 0 ? (
-            displayModelAccuracy.map((acc) => (
-              <Badge
-                key={acc.model}
-                variant="outline"
-                className={`text-xs ${getAccuracyColor(acc.accuracy)} border ${getAccuracyBgColor(acc.accuracy)}`}
+      <div className="ml-2 mb-3 flex items-center">
+        {overallAvg !== null ? (
+          <>
+            <span className="text-sm font-bold mr-4">
+              總平均：<span
+                style={{ color: overallAvg === 5 ? '#65dbff' : overallAvg >= 4 ? '#22c55e' : overallAvg >= 3 ? '#eab308' : '#ef4444' }}
               >
-                {getModelName(acc.model)}: {acc.accuracy}%
+                {overallAvg.toFixed(2)}
+              </span>
+            </span>
+            <span className="text-sm font-bold">次數：<span className="text-blue-400">{versionCount}</span></span>
+          </>
+        ) : (
+          <span className="text-red-400 text-sm font-bold">未測試版本</span>
+        )}
+      </div>
+
+      <div className="ml-1 mb-4">
+        <div className="flex flex-wrap gap-2">
+          {categoryAverages.length > 0 && categoryAverages.some(c => c.avg !== null) ? (
+            categoryAverages.map(({ category, avg }) => (
+              <Badge
+                key={category.category_id}
+                variant="outline"
+                className={`text-xs border ${avg === null ? 'text-gray-400 border-gray-600' : avg == 5 ? 'text-blue-400 bg-blue-500/20 border-blue-500/30' : avg >= 4 ? 'text-green-400 bg-green-500/20 border-green-500/30' : avg >= 3 ? 'text-yellow-400 bg-yellow-500/20 border-yellow-500/30' : 'text-red-400 bg-red-500/20 border-red-500/30'}`}
+              >
+                {category.name}：{avg !== null ? avg.toFixed(2) : '無'}
               </Badge>
             ))
           ) : (
             <Badge variant="outline" className="text-xs text-gray-400 border-gray-600">
-              無準確率數據
+              無評分數據
             </Badge>
           )}
         </div>
@@ -266,9 +314,8 @@ export function VersionCard({version, onDownloadVersion, filteredModelAccuracy, 
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="space-y-4 pt-3 border-t border-gray-700 overflow-hidden"
+            className="space-y-4 pt-3 border-t border-gray-700 overflow-hidden ml-2"
           >
-            {/* System Prompt 詳情 */}
             <div>
               <h4 className="text-sm font-medium text-white mb-2">System Prompt</h4>
               <div className="space-y-1">
@@ -306,6 +353,56 @@ export function VersionCard({version, onDownloadVersion, filteredModelAccuracy, 
                     {item.label}: {item.value}
                   </div>
                 ))}
+              </div>
+            </div>
+
+            {/* Test Models */}
+            <div>
+              <h4 className="text-sm font-medium text-white mb-2 flex items-center gap-2">
+                Test Models {filteredModelAccuracy && filteredModelAccuracy.length > 0 ? `(${filteredModelAccuracy.length})` : ''}
+                {/* 分數顯示開關按鈕 */}
+                {filteredModelAccuracy && filteredModelAccuracy.length > 0 && (
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-5 w-16 p-0 text-xs border border-gray-500/30 text-gray-400 hover:bg-purple-500/10"
+                    onClick={() => setShowModelScore((v) => !v)}
+                    tabIndex={0}
+                    aria-label="顯示/隱藏模型分數"
+                  >
+                    {showModelScore ? '隱藏分數' : '顯示分數'}
+                  </Button>
+                )}
+              </h4>
+              <div className="flex flex-wrap gap-1">
+                {filteredModelAccuracy && filteredModelAccuracy.length > 0 ? (
+                  filteredModelAccuracy.map((item) => {
+                    const scores: number[] = [];
+                    for (const result of mergedResults) {
+                      if (result.versionId !== version.id) continue;
+                      if (result.ratings[version.id] && result.ratings[version.id][item.model]) {
+                        for (const rubricId in result.ratings[version.id][item.model]) {
+                          const score = result.ratings[version.id][item.model][rubricId];
+                          if (typeof score === 'number') scores.push(score);
+                        }
+                      }
+                    }
+                    const avg = scores.length > 0 ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(2) : null;
+                    return (
+                      <Badge
+                        key={item.model}
+                        variant="secondary"
+                        className="text-xs bg-purple-500/20 border-purple-500/30 text-purple-400"
+                      >
+                        {item.model}{showModelScore && (avg !== null ? ` | ${avg}` : ' | NaN')}
+                      </Badge>
+                    );
+                  })
+                ) : (
+                  <Badge variant="outline" className="text-xs text-gray-400 border-gray-600">
+                    無測試模型
+                  </Badge>
+                )}
               </div>
             </div>
 

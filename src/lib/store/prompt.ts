@@ -363,13 +363,12 @@ export const usePromptStore = create<PromptStoreProps>()(
 			savedVersions: [],
 			setSavedVersions: (versions) => set({ savedVersions: versions }),
 			addSavedVersion: (version) => set((state) => {
-					const modelAccuracy = version.data.models.map(model => ({ model, accuracy: 0 }));
+					// const modelAccuracy = version.data.models.map(model => ({ model, accuracy: 0 }));
 					const newVersion: SavedVersion = {
 						id: nanoid(),
 						savedAt: new Date(),
 						expanded: false,
 						...version,
-						modelAccuracy,
 					};
 					if (version.name.startsWith("Untitled")) {
 						state.addUntitledCounter();
@@ -484,7 +483,7 @@ export const usePromptStore = create<PromptStoreProps>()(
 							const modelAccuracy = version.modelAccuracy.map((ma) =>
 								ma.model === modelId ? { ...ma, accuracy } : ma
 							);
-							// Check if the model exists in modelAccuracy, if not, add it.
+
 							if (!modelAccuracy.some(ma => ma.model === modelId)) {
 								modelAccuracy.push({ model: modelId, accuracy });
 							}

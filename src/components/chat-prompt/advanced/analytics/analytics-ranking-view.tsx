@@ -4,7 +4,6 @@ import { type RatingCategory, type TestResult } from "@/lib/store/advanced";
 import { usePromptStore } from "@/lib/store/prompt";
 import { mergeTestResults } from "./merge-test-results";
 
-// 從 testResults 計算全部平均分前十名
 function getOverallTopAveragesFromResults(testResults: TestResult[]) {
   const scores: { versionId: string; modelId: string; avg: number }[] = [];
   for (const result of testResults) {
@@ -21,9 +20,8 @@ function getOverallTopAveragesFromResults(testResults: TestResult[]) {
   return scores.sort((a, b) => b.avg - a.avg).slice(0, 10);
 }
 
-// 從 testResults 計算每個類別前十名
+
 function getCategoryTopScoresFromResults(testResults: TestResult[], ratingCategories: RatingCategory[], rubrics: any[]) {
-  // 先根據 category_id 分組 rubrics
   const categoryRubricMap: Record<string, string[]> = {};
   for (const rubric of rubrics) {
     if (!categoryRubricMap[rubric.category_id]) categoryRubricMap[rubric.category_id] = [];
@@ -32,7 +30,6 @@ function getCategoryTopScoresFromResults(testResults: TestResult[], ratingCatego
   const result = [];
   for (const category of ratingCategories) {
     const rubricIds = categoryRubricMap[category.category_id] || [];
-    // key: versionId+modelId, value: { versionId, modelId, scores: number[] }
     const versionScores: Record<string, { versionId: string; modelId: string; scores: number[] }> = {};
     for (const testResult of testResults) {
       for (const versionId in testResult.ratings) {
@@ -73,12 +70,9 @@ export const AnalyticsRankingView: React.FC = () => {
     return map;
   }, [savedVersions]);
 
-  // 取得合併後的版本-模型組合及其數量
   const { mergedResults, countMap } = mergeTestResults(testResults);
-
-  // 取得全部平均分前十名（合併後）
+  
   const overallTops = getOverallTopAveragesFromResults(mergedResults);
-  // 取得每個類別前十名（合併後）
   const categoryTops = getCategoryTopScoresFromResults(mergedResults, ratingCategories, rubrics);
 
   return (
