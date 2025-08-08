@@ -5,13 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2bde2842-93ff-406e-8324-c9261fb31562" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/src/app/[locale]/tools/chat-prompt/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/[locale]/tools/chat-prompt/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/chat-prompt/chat/model-chat-card.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/chat-prompt/chat/model-chat-card.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/chat-prompt/chat/unified-chat-view.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/chat-prompt/chat/unified-chat-view.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/chat-prompt/compare/version-compare-view.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/chat-prompt/compare/version-compare-view.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/[locale]/dashboard/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/[locale]/dashboard/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/[locale]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/[locale]/page.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/components/chat-prompt/layout/header.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/chat-prompt/layout/header.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/chat-prompt/sidebar/prompt-inputs.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/chat-prompt/sidebar/prompt-inputs.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/chat-prompt/sidebar/read-only-indicator.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/chat-prompt/sidebar/read-only-indicator.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -47,10 +44,10 @@
     "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "feat/chat-prompt-tester",
+    "git-widget-placeholder": "main",
     "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "E:/MyWebsite",
+    "last_opened_file_path": "E:/MyWebsite/tau-prompt/src/components/chat-prompt/advanced/analytics/charts",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -62,11 +59,32 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="E:\MyWebsite" />
+      <recent name="E:\MyWebsite\tau-prompt\src\components\chat-prompt\advanced\analytics\charts" />
+      <recent name="E:\MyWebsite\tau-prompt\src\app\[locale]\tools\chat-prompt\textarea" />
+      <recent name="E:\MyWebsite\tau-prompt\src\components\ui" />
+      <recent name="E:\MyWebsite\tau-prompt\src\lib\chat" />
+      <recent name="E:\MyWebsite\tau-prompt\src\hooks" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="E:\MyWebsite\tau-prompt\src\app\[locale]\assembly" />
       <recent name="E:\MyWebsite\tau-prompt\src\app\[locale]" />
+      <recent name="E:\MyWebsite\tau-prompt\src\app\assemblyassembly" />
+      <recent name="E:\MyWebsite\tau-prompt\src\components\chat-prompt\advanced\analytics\charts" />
+      <recent name="E:\MyWebsite\tau-prompt\src\components\chat-prompt\advanced\compare" />
     </key>
+  </component>
+  <component name="RunManager">
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="tau-prompt" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="tau-prompt" />
+      <option name="filePath" />
+      <method v="2" />
+    </configuration>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
@@ -87,7 +105,13 @@
       <workItem from="1751257272138" duration="2852000" />
       <workItem from="1751353926871" duration="6422000" />
       <workItem from="1751390901268" duration="1855000" />
-      <workItem from="1751392764604" duration="12093000" />
+      <workItem from="1751392764604" duration="12906000" />
+      <workItem from="1752085046995" duration="1028000" />
+      <workItem from="1752141169138" duration="639000" />
+      <workItem from="1752141814953" duration="31078000" />
+      <workItem from="1752599752829" duration="133730000" />
+      <workItem from="1753716546663" duration="5616000" />
+      <workItem from="1753722248032" duration="256269000" />
     </task>
     <servers />
   </component>

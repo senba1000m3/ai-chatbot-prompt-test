@@ -50,7 +50,7 @@ export default function DashboardPage() {
 	// 只負責判斷 nickname
 	useEffect(() => {
 		if (!nickname) {
-			router.push("/tools/chat-prompt");
+			router.push("./");
 		}
 	}, [router, nickname]);
 
@@ -300,7 +300,7 @@ function ChangeNickNameButton() {
 
 	function handleClick() {
 		setNickname("");
-		router.push("/tools/chat-prompt");
+		router.push("./");
 	}
 
 	return (

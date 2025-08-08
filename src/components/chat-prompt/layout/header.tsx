@@ -32,7 +32,7 @@ export function Header() {
           className="flex items-center space-x-4"
         >
           <h1 className="text-xl font-bold text-white"><button onClick={() =>{
-			  router.push("/tools/chat-prompt/dashboard")
+			  router.push("/dashboard")
 		  }}>TAI 工廠</button></h1>
           <div className="flex items-center space-x-2 text-sm text-gray-400">
 			  <Home className="w-4 h-4" />
