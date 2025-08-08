@@ -1,29 +1,29 @@
 "use client"
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { type PromptStoreProps } from "../../../../../lib/store/prompt";
-import { usePromptStore } from "../../../../../lib/store/prompt";
-import { useLoginStore, type TestArea } from "../../../../../lib/store/prompt-login";
+import { type PromptStoreProps } from "../../../lib/store/prompt";
+import { usePromptStore } from "../../../lib/store/prompt";
+import { useLoginStore, type TestArea } from "../../../lib/store/prompt-login";
 import { nanoid } from "nanoid";
 import { formatDistanceToNow } from "date-fns";
 import { zhTW } from "date-fns/locale";
-import { cn } from "../../../../../lib/utils";
+import { cn } from "../../../lib/utils";
 
 // Components & UI
-import { TestDataTable } from "../../../../../components/test-data-table";
-import { CreateTestDataDialog } from "../../../../../components/create-test-data-dialog";
+import { TestDataTable } from "../../../components/test-data-table";
+import { CreateTestDataDialog } from "../../../components/create-test-data-dialog";
 
 import { toast } from "sonner";
-import { Button } from "../../../../../components/ui/button";
+import { Button } from "../../../components/ui/button";
 import {
 	Card,
 	CardContent,
 	CardDescription,
 	CardHeader,
 	CardTitle,
-} from "../../../../../components/ui/card";
-import { H1, Muted } from "../../../../../components/common/typography";
-import { WrapperLayout } from "../../../../../components/common/layouts";
+} from "../../../components/ui/card";
+import { H1, Muted } from "../../../components/common/typography";
+import { WrapperLayout } from "../../../components/common/layouts";
 
 // Icons & Images
 import {
@@ -167,7 +167,7 @@ export default function DashboardPage() {
 		if (testArea) {
 			loadPromptBackup(testArea.data);
 			loadAdvancedBackup(testArea.advancedData);
-			
+
 			const updated = testAreas.map(area =>
 				area.id === id ? { ...area, updatedAt: new Date().toISOString() } : area
 			);

@@ -3,7 +3,7 @@ import './globals.css'
 
 import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
 import { extractRouterConfig } from "uploadthing/server";
-import { ourFileRouter } from "@/app/api/uploadthing/core";
+import { ourFileRouter } from "../../../api/uploadthing/core";
 
 export const metadata: Metadata = {
   title: '產線測試區',

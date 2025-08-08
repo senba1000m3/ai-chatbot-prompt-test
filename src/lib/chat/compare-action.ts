@@ -2,12 +2,6 @@
 import { generateText, generateObject } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
-import { createStreamableValue } from "ai/rsc";
-import { getChatModel } from "./models";
-import { ensureError } from "@/lib/response";
-
-// 驗證
-import { userAuthorization } from "@/lib/auth/utils";
 
 // 資料庫
 import { db } from "@/lib/db/drizzle";
@@ -17,7 +11,6 @@ const redis = Redis.fromEnv();
 
 // 型別與介面
 import type { CoreMessage } from "ai";
-import type { StreamableValue } from "ai/rsc";
 
 export async function generate({
 	messages = [],

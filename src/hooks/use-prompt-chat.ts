@@ -3,9 +3,7 @@ import { useCallback, useTransition } from "react";
 import { usePromptStore, type MessageContent } from "@/lib/store/prompt";
 import { ensureError } from "@/lib/response";
 import { generate } from "@/lib/chat/prompt-action";
-import { nanoid } from "@/lib/utils";
 import type { CoreMessage } from "ai";
-import { readStreamableValue } from "ai/rsc";
 
 const promptDictionary: Record<string, string> = {
 	characterSettings: "character-settings",

@@ -1,22 +1,22 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { TooltipProvider } from "../../../../../../components/ui/tooltip"
+import { TooltipProvider } from "../../../../components/ui/tooltip"
 import { motion } from "framer-motion"
 
 // Layout Components
-import { Header } from "../../../../../../components/chat-prompt/layout/header"
+import { Header } from "../../../../components/chat-prompt/layout/header"
 
 // Container Components
-import { SidebarContainer } from "../../../../../../components/chat-prompt/sidebar/sidebar-container"
-import { ChatViewContainer } from "../../../../../../components/chat-prompt/chat/chat-view-container"
+import { SidebarContainer } from "../../../../components/chat-prompt/sidebar/sidebar-container"
+import { ChatViewContainer } from "../../../../components/chat-prompt/chat/chat-view-container"
 
 // Compare Components
-import { AdvancedInterface } from "../../../../../../components/chat-prompt/advanced/advanced-interface"
+import { AdvancedInterface } from "../../../../components/chat-prompt/advanced/advanced-interface"
 
 // Chat Components
-import { RightPanelControls } from "../../../../../../components/chat-prompt/chat/right-panel-controls"
-import { availableModels, usePromptStore, type SavedVersion, type SystemPromptData, type ModelAccuracy, type HintMessage } from "../../../../../../lib/store/prompt"
+import { RightPanelControls } from "../../../../components/chat-prompt/chat/right-panel-controls"
+import { availableModels, usePromptStore, type SavedVersion, type SystemPromptData, type ModelAccuracy, type HintMessage } from "../../../../lib/store/prompt"
 
 type ViewMode = "popup" | "unified" | "separate"
 

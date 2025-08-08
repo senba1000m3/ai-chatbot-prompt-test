@@ -63,9 +63,9 @@ export function MessageContentRenderer({
 					.with({ type: "reasoning" }, () => (
 						<div key={index}>Reasoning content here</div>
 					))
-					.with({ type: "redacted-reasoning" }, () => (
-						<div key={index}>Redacted reasoning content here</div>
-					))
+					// .with({ type: "redacted-reasoning" }, () => (
+					// 	<div key={index}>Redacted reasoning content here</div>
+					// ))
 					// TODO: customize this for each tool
 					.with({ type: "tool-call" }, (part) => (
 						<Muted key={index} className="font-mono">
@@ -187,9 +187,9 @@ export function MessageToolbarRenderer({
 
 function InlineToolResultContent({ part }: { part: ToolResultPart }) {
 	const Component = CHAT_TOOL_CONFIGS[part.toolName]?.component;
-	const result = part.result;
 
-	return Component && result ? (
-		<Component result={result} />
+	// 直接將整個 part 物件傳遞給你的 Component
+	return Component ? (
+		<Component part={part} />
 	) : null;
 }
