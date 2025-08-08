@@ -11,7 +11,7 @@ import { ModelChatCard } from "./model-chat-card"
 import { UnifiedChatView } from "./unified-chat-view"
 import { PopupViewPlaceholder } from "./popup-view-placeholder"
 import { ChatInputSection } from "./chat-input-section"
-import { usePromptStore, type ModelMessage, type HintMessage} from "@/lib/store/prompt"
+import { usePromptStore, type ModelMessage, type HintMessage, availableModels} from "@/lib/store/prompt"
 
 type ViewMode = "popup" | "unified" | "separate"
 
@@ -221,7 +221,7 @@ export function ChatViewContainer({
                       key={modelId}
                       model={{
                         id: modelId,
-                        name: modelId,
+                        name: availableModels.find((m) => m.id === modelId)?.name || modelId,
                         messages: getModelMessages(modelId).filter(m => m.role !== 'system'),
                         isLoading: false,
                       }}

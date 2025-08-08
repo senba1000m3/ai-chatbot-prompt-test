@@ -79,7 +79,7 @@ export function ModelChatCard({
             : "calc(100vh - 80px - 48px - 160px)"
         }}>
           <div className="flex items-center justify-between mb-4">
-            <div className="font-bold text-lg text-blue-300">{model.name || model.id}</div>
+            <div className="font-bold text-lg text-blue-300">{model.name}</div>
             <div className="flex space-x-1">
               <TooltipProvider>
                 <Tooltip>
