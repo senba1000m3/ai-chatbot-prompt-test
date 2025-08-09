@@ -13,7 +13,7 @@
 	},
 	"dependencies": {
 		"@ai-sdk/elevenlabs": "^0.0.3",
-		"@ai-sdk/google": "^1.2.19",
+		"@ai-sdk/google": "^2.0.3",
 		"@ai-sdk/openai": "^2.0.6",
 		"@better-auth-kit/feedback": "^0.1.1",
 		"@neondatabase/serverless": "^1.0.1",
